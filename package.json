@@ -1,0 +1,38 @@
+{
+  "name": "zotero-addon-template",
+  "addonName": "Zotero Addon Template",
+  "addonID": "addontemplate@euclpts.com",
+  "addonRef": "addontemplate",
+  "version": "0.0.0",
+  "description": "Zotero Addon Template",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "node build.js",
+    "start": "node start.js",
+    "stop": "node stop.js",
+    "prerestart": "npm run build",
+    "restart": "node restart.js",
+    "release": "release-it",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/windingwind/zotero-addon-template.git"
+  },
+  "author": "windingwind",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/windingwind/zotero-addon-template/issues"
+  },
+  "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
+  "releasepage": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
+  "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/master/update.rdf",
+  "dependencies": {
+    "compressing": "^1.5.1",
+    "esbuild": "^0.14.34",
+    "replace-in-file": "^6.3.2"
+  },
+  "devDependencies": {
+    "release-it": "^14.14.0"
+  }
+}

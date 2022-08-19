@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE window SYSTEM "chrome://__addonRef__/locale/overlay.dtd">
+
+<overlay id="__addonRef__-preferences" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" xmlns:html="http://www.w3.org/1999/xhtml">
+
+  <prefwindow id="zotero-prefs">
+    <prefpane id="zotero-prefpane-__addonRef__" insertafter="zotero-prefpane-advanced" label="__addonName__" image="chrome://__addonRef__/skin/favicon.png" onpaneload="Zotero.AddonTemplate.prefs.initPreferences(window)">
+      <preferences id="zotero-preferences-__addonRef__">
+        <preference id="pref-__addonRef__-enable" name="extensions.zotero.__addonRef__.enable" type="bool" />
+      </preferences>
+      <checkbox id="zotero-prefpane-__addonRef__-enable" preference="pref-__addonRef__-enable" label="&zotero.__addonRef__.pref.enable.label;" />
+    </prefpane>
+  </prefwindow>
+</overlay>

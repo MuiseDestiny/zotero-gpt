@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://__addonRef__/skin/overlay.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://__addonRef__/locale/overlay.dtd">
+
+<overlay id="__addonRef__" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <script src="chrome://__addonRef__/content/scripts/index.js" />
+    <popup id="zotero-itemmenu">
+        <menuseparator />
+        <menuitem id="zotero-itemmenu-__addonRef__-test" label="&zotero.__addonRef__.itemmenu.test.label;" oncommand="alert('Hello World!')" class="menuitem-iconic" style="list-style-image: url('chrome://__addonRef__/skin/favicon@0.5x.png');" />
+    </popup>
+</overlay>
