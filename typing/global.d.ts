@@ -81,165 +81,67 @@ declare const OS: {
 
 declare const NetUtil: { [attr: string]: any };
 
-declare interface ZoteroItem {
-  getFilePathAsync(): any;
-  id: number;
-  isRegularItem: () => boolean;
-  isNote: () => boolean;
-  getNote: () => string;
-  setNote: (string) => void;
-  getNoteTitle: () => string;
-  isAttachment: () => boolean;
-  isAnnotation: () => boolean;
-  isPDFAttachment: () => boolean;
-  addTag: (name: string, type: number) => boolean;
-  removeTag(tag: string): boolean;
-  itemTypeID: number;
-  libraryID: number;
-  parentID: number;
-  parentItem: ZoteroItem;
-  key: string;
-  _version: any;
-  getField: (
-    name: string,
-    unformatted?: boolean,
-    includeBaseMapped?: boolean
-  ) => any;
-  setField: (name: string, value: string | number) => void;
-  getCreators: () => {
-    firstName?: string;
-    lastName: string;
-    fieldMode: number;
-    creatorTypeID: number;
-  }[];
-  getCreatorsJSON: () => {
-    firstName?: string;
-    lastName?: string;
-    name?: string;
-    creatorType: string;
-  }[];
-  getNotes: () => ZoteroItem[];
-  getCollections: () => number[];
-  getAttachments: () => ZoteroItem[];
-  getTags: () => { tag: string; type: number }[];
-  annotationType?: string;
-  annotationComment?: string;
-  annotationText?: string;
-  annotationPosition: string;
-  save: (obj?: any) => Promise<void>;
-  saveTx: (obj?: any) => Promise<void>;
-  addToCollection(id: number);
-}
-
 // https://stackoverflow.com/questions/39040108/import-class-in-definition-file-d-ts
 declare const Zotero: {
   [attr: string]: any;
-  debug: (args: any) => void;
+  debug: (message, level?, maxDepth?, stack?) => void;
+  log: (
+    message,
+    type?,
+    sourceName?,
+    sourceLine?,
+    lineNumber?,
+    columnNumber?
+  ) => void;
   Prefs: {
-    get: (key: string) => any;
-    set: (key: string, value: any) => any;
+    get: (pref: string, global: boolean = false) => boolean | string | number;
+    set: (
+      pref: string,
+      value: boolean | string | number,
+      global: boolean = false
+    ) => any;
   };
-  Items: {
-    get: (key: string | number) => ZoteroItem;
+  Notifier: {
+    registerObserver: (
+      ref: { notify: Function },
+      types?: string[],
+      id?: string,
+      priority?: null
+    ) => string;
+    unregisterObserver: (id: String) => void;
   };
-  Reader: Reader;
-  Notes: Notes;
-  Knowledge4Zotero: import("../src/addon");
-};
-
-declare const ZoteroPane: {
-  [attr: string]: any;
-  canEdit: () => boolean;
-  displayCannotEditLibraryMessage: () => void;
-  getSelectedCollection: (arg: boolean) => ZoteroCollection;
-  getSelectedItems: () => Array<ZoteroItem>;
+  DataObject: _ZoteroDataObjectConstructable;
+  Item: _ZoteroItemConstructable;
+  Items: _ZoteroItems;
+  Collection: _ZoteroCollectionConstructable;
+  Collections: _ZoteroCollection;
+  Library: _ZoteroLibraryConstructable;
+  Libraries: _ZoteroLibraries;
+  Reader: _ZoteroReader;
+  EditorInstance: _ZoteroEditorInstanceConstructable;
+  EditorInstanceUtilities: _ZoteroEditorInstanceUtilities;
+  Notes: _ZoteroNotes;
+  AddonTemplate: import("../src/addon");
 };
 
 declare const ZoteroPane_Local: {
-  getSelectedCollection: () => ZoteroCollection;
+  getSelectedCollection: () => _ZoteroCollection;
   newNote: (popup?, parentKey?, text?, citeURI?) => Promise<number>;
 };
 
 declare const Zotero_File_Interface: {
-  exportItemsToClipboard: (items: ZoteroItem[], translatorID: string) => void;
+  exportItemsToClipboard: (items: _ZoteroItem[], translatorID: string) => void;
 };
 
-declare class ZoteroCollection {
-  getName: () => string;
-  getChildItems: (arg1: boolean, arg2: boolean) => Array<ZoteroItem>;
-}
-
 declare class Zotero_File_Exporter {
-  items: ZoteroItem[];
+  items: _ZoteroItem[];
   save = async () => {};
 }
 
 declare const Components: any;
 declare const Services: any;
 
-declare class Reader {
-  [attr: string]: any;
-  _readers: Array<ReaderObj>;
-  getByTabID: (tabID: string) => ReaderObj;
-}
-
-declare class ReaderObj {
-  [attr: string]: any;
-  itemID: number;
-  _iframeWindow: XULWindow;
-  _initPromise: Promise;
-}
-
-declare class EditorInstance {
-  [attr: string]: any;
-  _iframeWindow: XULWindow;
-  _item: ZoteroItem;
-  _initPromise: Promise;
-}
-
-declare class Notes {
-  _editorInstances: EditorInstance[];
-  registerEditorInstance: (instance: EditorInstance) => void;
-  // custom
-  _registerEditorInstance?: (instance: EditorInstance) => void;
-}
-
 declare const ZoteroContextPane: {
   [attr: string]: any;
-  getActiveEditor: () => EditorInstance;
+  getActiveEditor: () => _ZoteroEditorInstance;
 };
-
-declare class Annotation {
-  text: string;
-}
-
-declare const Zotero_Tabs: {
-  _getTab(tabId: string);
-  jump(workspaceTabId: Number);
-  close(tabId: string);
-  select(tabId: string);
-  add(arg0: {
-    type: string;
-    title: any;
-    index: any;
-    data: object;
-    select: boolean;
-    onClose: Function;
-  });
-  _tabs: Array<any>;
-  selectedID: string;
-};
-
-declare const openWindowByType: (
-  uri: string,
-  type: string,
-  features: string
-) => Window;
-
-declare class Shortcut {
-  id: number;
-  func: any;
-  modifiers: string;
-  key: string;
-  keycode?: string;
-}

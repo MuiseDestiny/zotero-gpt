@@ -44,7 +44,7 @@ declare namespace XUL {
   }
 
   class ItemElement extends XUL.Element {
-    public item?: ZoteroItem;
+    public item?: _ZoteroItem;
   }
 
   class Box extends XUL.Element {

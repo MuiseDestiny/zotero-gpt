@@ -2,7 +2,7 @@ import { Addon, addonName } from "./addon";
 import AddonModule from "./module";
 
 class AddonEvents extends AddonModule {
-  private notifierCallback: object;
+  private notifierCallback: any;
   constructor(parent: Addon) {
     super(parent);
     this.notifierCallback = {
