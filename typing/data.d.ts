@@ -32,6 +32,7 @@ declare interface _ZoteroDataObjectConstructable {
 }
 
 // chrome/content/zotero/xpcom/data/item.js
+// TODO: complete this part
 
 declare interface _ZoteroItem extends _ZoteroDataObject {
   isRegularItem: () => boolean;
@@ -64,6 +65,9 @@ declare interface _ZoteroItem extends _ZoteroDataObject {
     name?: string;
     creatorType: string;
   }[];
+  getBestAttachment: () => Promise<_ZoteroItem>;
+  getBestAttachments: () => Promise<_ZoteroItem[]>;
+  getBestAttachmentState: () => Promise<object>;
   // Only image annotation & attachment item
   getFilePathAsync: () => string;
   // Only notes
@@ -72,10 +76,13 @@ declare interface _ZoteroItem extends _ZoteroDataObject {
   setNote: (content: string) => void;
   getNoteTitle: () => string;
   // Only Annotation
+  getAnnotations: (includeTrashed: boolean = false) => _ZoteroItem[];
   annotationType: string;
   annotationComment: string;
   annotationText: string;
   annotationPosition: string;
+  annotationColor: string;
+  annotationPageLabel: string;
 }
 
 declare interface _ZoteroItemConstructable {
@@ -130,10 +137,12 @@ declare interface _ZoteroCollection extends _ZoteroDataObject {
   loadFromRow: (row: object[]) => void;
   hasChildCollections: (includeTrashed: boolean = false) => boolean;
   hasChildItems: () => boolean;
-  getChildCollections: (asIDs: boolean) => _ZoteroCollection[] | number[];
+  getChildCollections: (
+    asIDs: boolean = false
+  ) => _ZoteroCollection[] | number[];
   getChildItems: (
     asIDs: boolean,
-    includeDeleted: boolean
+    includeDeleted: boolean = false
   ) => _ZoteroItem[] | number[];
   addItem: (itemID: number, options: object = {}) => Promise<any>; // do not require save
   addItems: (itemIDs: number[], options: object = {}) => Promise<any>; // do not require save
@@ -144,7 +153,7 @@ declare interface _ZoteroCollection extends _ZoteroDataObject {
   diff: (collection: _ZoteroCollection, includeMatches: boolean) => Array<any>;
   clone: (libraryID: number) => _ZoteroCollection; // not saved
   isCollection: () => true;
-  serialize: (nested: boolean) => {
+  serialize: (nested: boolean = false) => {
     primary: {
       collectionID: number;
       libraryID: number;
