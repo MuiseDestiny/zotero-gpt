@@ -1,3 +1,4 @@
+import { Zotero } from "zotero-types";
 import { Addon } from "./addon";
 
 Zotero.AddonTemplate = new Addon();

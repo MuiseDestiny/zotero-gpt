@@ -1,3 +1,4 @@
+import { Zotero } from "zotero-types";
 import { Addon, addonName } from "./addon";
 import AddonModule from "./module";
 

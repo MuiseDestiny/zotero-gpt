@@ -1,3 +1,4 @@
+import { XUL, Zotero } from "zotero-types";
 import { Addon } from "./addon";
 import AddonModule from "./module";
 const { addonRef } = require("../package.json");
