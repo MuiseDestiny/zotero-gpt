@@ -31,7 +31,7 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 
 > Be careful to set the addonID and addonRef to avoid confliction.
 
-- Run `npm i` to setup the plugin and install dependencies. If you don't have NodeJS installed, please download it [here](https://nodejs.org/en/);
+- Run `npm install` to setup the plugin and install dependencies. If you don't have NodeJS installed, please download it [here](https://nodejs.org/en/);
 - Run `npm run build` to build the plugin. The xpi for installation and the built code is under builds folder.
 
 ### Directory Structure
