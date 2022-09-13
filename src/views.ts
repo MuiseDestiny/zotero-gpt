@@ -16,9 +16,27 @@ class AddonViews extends AddonModule {
     };
   }
 
-  public initViews() {
+  public initViews(_Zotero) {
     // You can init the UI elements that
     // cannot be initialized with overlay.xul
+    console.log("Initializing UI");
+    const _window: Window = _Zotero.getMainWindow();
+    const menuitem = _window.document.createElement("menuitem");
+    menuitem.id = "zotero-itemmenu-addontemplate-test";
+    menuitem.setAttribute("label", "Addon Template");
+    menuitem.setAttribute("oncommand", "alert('Hello World!')");
+    menuitem.className = "menuitem-iconic";
+    menuitem.style["list-style-image"] =
+      "url('chrome://addontemplate/skin/favicon@0.5x.png')";
+    _window.document.querySelector("#zotero-itemmenu").appendChild(menuitem);
+  }
+
+  public unInitViews(_Zotero) {
+    console.log("Uninitializing UI");
+    const _window: Window = _Zotero.getMainWindow();
+    _window.document
+      .querySelector("#zotero-itemmenu-addontemplate-test")
+      ?.remove();
   }
 
   public showProgressWindow(

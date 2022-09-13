@@ -27,30 +27,32 @@ class AddonEvents extends AddonModule {
     };
   }
 
-  public async onInit() {
+  public async onInit(_Zotero) {
     // This function is the setup code of the addon
-    Zotero.debug(`${addonName}: init called`);
+    console.log(`${addonName}: init called`);
+    _Zotero.debug(`${addonName}: init called`);
+    // alert(112233);
 
     // Reset prefs
     this.resetState();
 
     // Register the callback in Zotero as an item observer
-    let notifierID = Zotero.Notifier.registerObserver(this.notifierCallback, [
+    let notifierID = _Zotero.Notifier.registerObserver(this.notifierCallback, [
       "tab",
       "item",
       "file",
     ]);
 
     // Unregister callback when the window closes (important to avoid a memory leak)
-    window.addEventListener(
+    _Zotero.getMainWindow().addEventListener(
       "unload",
       function (e) {
-        Zotero.Notifier.unregisterObserver(notifierID);
+        _Zotero.Notifier.unregisterObserver(notifierID);
       },
       false
     );
 
-    this._Addon.views.initViews();
+    this._Addon.views.initViews(_Zotero);
   }
 
   private resetState(): void {
@@ -64,6 +66,15 @@ class AddonEvents extends AddonModule {
     // if (typeof testPref === "undefined") {
     //   Zotero.Prefs.set("addonTemplate.testPref", true);
     // }
+  }
+
+  public onUnInit(_Zotero): void {
+    console.log(`${addonName}: uninit called`);
+    _Zotero.debug(`${addonName}: uninit called`);
+    //  Remove elements and do clean up
+    this._Addon.views.unInitViews(_Zotero);
+    // Remove addon object
+    _Zotero.AddonTemplate = undefined;
   }
 }
 

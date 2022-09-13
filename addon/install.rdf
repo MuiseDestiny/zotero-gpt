@@ -13,7 +13,10 @@
         em:description="__description__"
         em:homepageURL="__homepage__"
         em:iconURL="chrome://__addonRef__/skin/favicon.png"
-        em:updateURL="__updaterdf__">>
+        em:optionsURL="chrome://__addonRef__/content/preferences.xul"
+        em:updateURL="__updaterdf__"
+        em:multiprocessCompatible="true"
+        em:bootstrap="true">>
         <em:type>2</em:type>
         <em:targetApplication RDF:resource="rdf:#$x61SL3"/>
         <em:targetApplication>

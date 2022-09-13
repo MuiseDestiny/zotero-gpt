@@ -1,11 +1,9 @@
 import { Addon } from "./addon";
 
-Zotero.AddonTemplate = new Addon();
-
-window.addEventListener(
-  "load",
-  async function (e) {
-    Zotero.AddonTemplate.events.onInit();
-  },
-  false
-);
+var _Zotero = Components.classes["@zotero.org/Zotero;1"].getService(
+  Components.interfaces.nsISupports
+).wrappedJSObject;
+if (!_Zotero.AddonTemplate) {
+  _Zotero.AddonTemplate = new Addon();
+  _Zotero.AddonTemplate.events.onInit(_Zotero);
+}

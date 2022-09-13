@@ -115,6 +115,7 @@ async function main() {
       path.join(buildDir, "**/*.xul"),
       path.join(buildDir, "**/*.manifest"),
       path.join(buildDir, "addon/defaults", "**/*.js"),
+      path.join(buildDir, "addon/bootstrap.js"),
       "update.rdf",
     ],
     from: [
