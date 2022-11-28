@@ -33,7 +33,8 @@
     "replace-in-file": "^6.3.2"
   },
   "devDependencies": {
+    "@types/node": "^18.7.20",
     "release-it": "^14.14.0",
-    "zotero-types": "^0.0.4"
+    "zotero-types": "^0.0.7"
   }
 }

@@ -3,69 +3,114 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-"use strict";
-/* global Components, Services */
-/* global addon, APP_SHUTDOWN */
-const { classes: Cc, utils: Cu } = Components;
+if (typeof Zotero == "undefined") {
+  var Zotero;
+}
 
-Cu.import("resource://gre/modules/Services.jsm");
+// In Zotero 6, bootstrap methods are called before Zotero is initialized, and using include.js
+// to get the Zotero XPCOM service would risk breaking Zotero startup. Instead, wait for the main
+// Zotero window to open and get the Zotero object from there.
+//
+// In Zotero 7, bootstrap methods are not called until Zotero is initialized, and the 'Zotero' is
+// automatically made available.
+async function waitForZotero() {
+  if (typeof Zotero != "undefined") {
+    await Zotero.initializationPromise;
+  }
+
+  var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+  var windows = Services.wm.getEnumerator("navigator:browser");
+  var found = false;
+  while (windows.hasMoreElements()) {
+    let win = windows.getNext();
+    if (win.Zotero) {
+      Zotero = win.Zotero;
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    await new Promise((resolve) => {
+      var listener = {
+        onOpenWindow: function (aWindow) {
+          // Wait for the window to finish loading
+          let domWindow = aWindow
+            .QueryInterface(Ci.nsIInterfaceRequestor)
+            .getInterface(Ci.nsIDOMWindowInternal || Ci.nsIDOMWindow);
+          domWindow.addEventListener(
+            "load",
+            function () {
+              domWindow.removeEventListener("load", arguments.callee, false);
+              if (domWindow.Zotero) {
+                Services.wm.removeListener(listener);
+                Zotero = domWindow.Zotero;
+                resolve();
+              }
+            },
+            false
+          );
+        },
+      };
+      Services.wm.addListener(listener);
+    });
+  }
+  await Zotero.initializationPromise;
+}
 
 function install(data, reason) {}
 
-function startup(data, reason) {
-  // Load the addon to Zotero if window is ready
-  const loadAddon = (window) => {
-    console.log(window);
-    if (window.document.readyState === "complete" && window.Zotero) {
-      Services.scriptloader.loadSubScript(
-        "chrome://__addonRef__/content/scripts/index.js"
-      );
-    } else {
-      window.addEventListener("load", (e) => {
-        if (window.Zotero) {
-          Services.scriptloader.loadSubScript(
-            "chrome://__addonRef__/content/scripts/index.js"
-          );
-        }
-      });
-    }
-  };
+async function startup({ id, version, resourceURI, rootURI }, reason) {
+  await waitForZotero();
 
-  // Listen to windows
-  var WindowListener = {
-    onOpenWindow: function (xulWindow) {
-      loadAddon(
-        xulWindow
-          .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-          .getInterface(Components.interfaces.nsIDOMWindow)
-      );
-    },
-  };
-  Services.wm.addListener(WindowListener);
+  // String 'rootURI' introduced in Zotero 7
+  if (!rootURI) {
+    rootURI = resourceURI.spec;
+  }
 
-  // Scan current windows
-  const windows = Services.wm.getEnumerator("navigator:browser");
-  while (windows.hasMoreElements()) {
-    loadAddon(
-      windows.getNext().QueryInterface(Components.interfaces.nsIDOMWindow)
-    );
+  Services.scriptloader.loadSubScript(
+    `${rootURI}/chrome/content/scripts/index.js`
+  );
+
+  Zotero.AddonTemplate.rootURI = rootURI;
+
+  if (Zotero.platformMajorVersion >= 102) {
+    var aomStartup = Components.Cc[
+      "@mozilla.org/addons/addon-manager-startup;1"
+    ].getService(Components.Ci.amIAddonManagerStartup);
+    var manifestURI = Services.io.newURI(rootURI + "manifest.json");
+    var chromeHandle = aomStartup.registerChrome(manifestURI, [
+      ["content", "__addonRef__", "chrome/content/"],
+      ["locale", "__addonRef__", "en-US", "chrome/locale/en-US/"],
+      ["locale", "__addonRef__", "zh-CN", "chrome/locale/zh-CN/"],
+    ]);
+
+    Zotero.PreferencePanes.register({
+      pluginID: "__addonID__",
+      src: `${rootURI}/chrome/content/preferences.xhtml`,
+      extraDTD: [`chrome://__addonRef__/locale/overlay.dtd`],
+    });
   }
 }
 
-function shutdown(data, reason) {
+function shutdown({ id, version, resourceURI, rootURI }, reason) {
   if (reason === APP_SHUTDOWN) {
     return;
   }
-  var _Zotero = Components.classes["@zotero.org/Zotero;1"].getService(
-    Components.interfaces.nsISupports
-  ).wrappedJSObject;
-  _Zotero.AddonTemplate.events.onUnInit(_Zotero);
+  if (typeof Zotero === "undefined") {
+    Zotero = Components.classes["@zotero.org/Zotero;1"].getService(
+      Components.interfaces.nsISupports
+    ).wrappedJSObject;
+  }
+  Zotero.AddonTemplate.events.onUnInit(Zotero);
 
   Cc["@mozilla.org/intl/stringbundle;1"]
     .getService(Components.interfaces.nsIStringBundleService)
     .flushBundles();
 
-  Cu.unload("chrome://_addonRef__/scripts/index.js");
+  Cu.unload(`${rootURI}/chrome/content/scripts/index.js`);
+
+  chromeHandle.destruct();
+  chromeHandle = null;
 }
 
 function uninstall(data, reason) {}

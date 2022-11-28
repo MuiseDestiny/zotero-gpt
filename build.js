@@ -96,6 +96,8 @@ async function main() {
 
   copyFolderRecursiveSync("addon", buildDir);
 
+  copyFileSync("update-template.json", "update.json");
+
   await esbuild
     .build({
       entryPoints: ["src/index.ts"],
@@ -113,10 +115,12 @@ async function main() {
       path.join(buildDir, "**/*.rdf"),
       path.join(buildDir, "**/*.dtd"),
       path.join(buildDir, "**/*.xul"),
-      path.join(buildDir, "**/*.manifest"),
+      path.join(buildDir, "**/*.xhtml"),
+      path.join(buildDir, "**/*.json"),
       path.join(buildDir, "addon/defaults", "**/*.js"),
+      path.join(buildDir, "addon/chrome.manifest"),
       path.join(buildDir, "addon/bootstrap.js"),
-      "update.rdf",
+      "update.json",
     ],
     from: [
       /__author__/g,
@@ -129,7 +133,6 @@ async function main() {
       /__addonRef__/g,
       /__buildVersion__/g,
       /__buildTime__/g,
-      /<em:version>\S*<\/em:version>/g,
     ],
     to: [
       author,
@@ -142,7 +145,6 @@ async function main() {
       addonRef,
       version,
       buildTime,
-      `<em:version>${version}</em:version>`,
     ],
     countMatches: true,
   };

@@ -1,9 +1,8 @@
-import { Addon } from "./addon";
+import { Addon, getZotero } from "./addon";
 
-var _Zotero = Components.classes["@zotero.org/Zotero;1"].getService(
-  Components.interfaces.nsISupports
-).wrappedJSObject;
-if (!_Zotero.AddonTemplate) {
-  _Zotero.AddonTemplate = new Addon();
-  _Zotero.AddonTemplate.events.onInit(_Zotero);
+const Zotero = getZotero();
+
+if (!Zotero.AddonTemplate) {
+  Zotero.AddonTemplate = new Addon();
+  Zotero.AddonTemplate.events.onInit();
 }
