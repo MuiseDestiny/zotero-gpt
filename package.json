@@ -29,7 +29,7 @@
   "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/master/update.rdf",
   "dependencies": {
     "compressing": "^1.5.1",
-    "esbuild": "^0.14.34",
+    "esbuild": "^0.15.16",
     "replace-in-file": "^6.3.2"
   },
   "devDependencies": {
