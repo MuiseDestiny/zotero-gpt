@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
   "releasepage": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
-  "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/master/update.rdf",
+  "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/master/update.json",
   "dependencies": {
     "compressing": "^1.5.1",
     "esbuild": "^0.14.34",

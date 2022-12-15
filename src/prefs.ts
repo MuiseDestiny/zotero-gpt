@@ -1,5 +1,6 @@
-import { Addon, addonName } from "./addon";
+import Addon from "./addon";
 import AddonModule from "./module";
+import { addonName } from "../package.json";
 
 class AddonPrefs extends AddonModule {
   private _window: Window;
