@@ -74,9 +74,9 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
   Zotero.AddonTemplate.rootURI = rootURI;
 
   if (Zotero.platformMajorVersion >= 102) {
-    var aomStartup = Components.Cc[
+    var aomStartup = Components.classes[
       "@mozilla.org/addons/addon-manager-startup;1"
-    ].getService(Components.Ci.amIAddonManagerStartup);
+    ].getService(Components.interfaces.amIAddonManagerStartup);
     var manifestURI = Services.io.newURI(rootURI + "manifest.json");
     var chromeHandle = aomStartup.registerChrome(manifestURI, [
       ["content", "__addonRef__", "chrome/content/"],
