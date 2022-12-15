@@ -8,7 +8,7 @@ class Addon {
   public events: AddonEvents;
   public views: AddonViews;
   public prefs: AddonPrefs;
-  public utils: AddonUtils;
+  public Utils: AddonUtils;
   // root path to access the resources
   public rootURI: string;
 
@@ -16,7 +16,7 @@ class Addon {
     this.events = new AddonEvents(this);
     this.views = new AddonViews(this);
     this.prefs = new AddonPrefs(this);
-    this.utils = new AddonUtils(this);
+    this.Utils = new AddonUtils(this);
   }
 }
 

@@ -94,6 +94,7 @@ class AddonUtils extends AddonModule {
       },
     };
     this.UI = {
+      addonElements: [],
       createElement: (
         doc: Document,
         tagName: string,
@@ -107,12 +108,25 @@ class AddonUtils extends AddonModule {
         if (tagName === "fragment") {
           return doc.createDocumentFragment();
         } else if (namespace === "xul") {
-          return this.Compat.createXULElement(doc, tagName);
+          const e = this.Compat.createXULElement(doc, tagName);
+          this.UI.addonElements.push(e);
+          return e;
         } else {
-          return doc.createElementNS(namespaces[namespace], tagName) as
+          const e = doc.createElementNS(namespaces[namespace], tagName) as
             | HTMLElement
             | SVGAElement;
+          this.UI.addonElements.push(e);
+          return e;
         }
+      },
+      removeAddonElements: () => {
+        this.UI.addonElements.forEach((e) => {
+          try {
+            e?.remove();
+          } catch (e) {
+            this._Addon.Utils.Tool.log(e);
+          }
+        });
       },
       creatElementsFromJSON: (doc: Document, options: ElementOptions) => {
         this.Tool.log(options);

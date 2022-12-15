@@ -17,11 +17,13 @@ declare interface ZoteroTool {
 }
 
 declare interface ZoteroUI {
+  addonElements: Element[];
   createElement: (
     doc: Document,
     tagName: string,
     namespace: "html" | "svg" | "xul"
   ) => XUL.Element | DocumentFragment | HTMLElement | SVGAElement;
+  removeAddonElements: () => void;
   creatElementsFromJSON: (
     doc: Document,
     options: ElementOptions
@@ -60,9 +62,9 @@ declare interface ElementOptions {
 }
 
 declare interface MenuitemOptions {
-  tag: "menuitem" | "menu";
+  tag: "menuitem" | "menu" | "menuseparator";
   id?: string;
-  label: string;
+  label?: string;
   // data url (chrome://xxx.png) or base64 url (data:image/png;base64,xxx)
   icon?: string;
   class?: string;
