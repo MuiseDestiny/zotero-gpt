@@ -1,6 +1,8 @@
+import Addon from "./addon";
+
 class AddonModule {
-  protected _Addon: any;
-  constructor(parent: any) {
+  protected _Addon: Addon;
+  constructor(parent: Addon) {
     this._Addon = parent;
   }
 }

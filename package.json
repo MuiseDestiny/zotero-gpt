@@ -35,6 +35,6 @@
   "devDependencies": {
     "@types/node": "^18.7.20",
     "release-it": "^14.14.0",
-    "zotero-types": "^0.0.7"
+    "zotero-types": "^0.0.8"
   }
 }

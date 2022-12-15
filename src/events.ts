@@ -1,5 +1,6 @@
-import { Addon, addonName, getZotero } from "./addon";
+import Addon from "./addon";
 import AddonModule from "./module";
+import { addonName } from "../package.json";
 
 class AddonEvents extends AddonModule {
   private notifierCallback: any;
@@ -27,8 +28,8 @@ class AddonEvents extends AddonModule {
     };
   }
 
-  public async onInit() {
-    const Zotero = getZotero();
+  public async onInit(_Zotero: _ZoteroConstructable) {
+    this._Addon.Zotero = _Zotero;
     // This function is the setup code of the addon
     Zotero.debug(`${addonName}: init called`);
     // alert(112233);
@@ -70,7 +71,7 @@ class AddonEvents extends AddonModule {
   }
 
   public onUnInit(): void {
-    const Zotero = getZotero();
+    const Zotero = this._Addon.Zotero;
     Zotero.debug(`${addonName}: uninit called`);
     //  Remove elements and do clean up
     this._Addon.views.unInitViews();
