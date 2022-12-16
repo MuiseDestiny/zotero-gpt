@@ -20,8 +20,7 @@ class AddonViews extends AddonModule {
     // You can init the UI elements that
     // cannot be initialized with overlay.xul
     this._Addon.Utils.Tool.log("Initializing UI");
-    const menuIcon =
-      'url("chrome://addontemplate/content/icons/favicon@0.5x.png")';
+    const menuIcon = "chrome://addontemplate/content/icons/favicon@0.5x.png";
     // item menuitem with icon
     this._Addon.Utils.UI.insertMenuItem("item", {
       tag: "menuitem",
