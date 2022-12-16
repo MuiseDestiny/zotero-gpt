@@ -108,12 +108,19 @@ class AddonUtils extends AddonModule {
                   this.Tool.log("registerPrefPane:detected", options);
                   const Zotero = this.Compat.getZotero();
                   options.id || (options.id = `plugin-${new Date().getTime()}`);
+                  const contenrOrXHR = await Zotero.File.getContentsAsync(
+                    options.src
+                  );
+                  const content =
+                    typeof contenrOrXHR === "string"
+                      ? contenrOrXHR
+                      : (contenrOrXHR as any as XMLHttpRequest).response;
                   const src = `<prefpane id="${
                     options.id
                   }" insertafter="zotero-prefpane-advanced" label="${
                     options.label || options.pluginID
                   }" image="${options.image || ""}">
-                  ${(await Zotero.File.getContentsAsync(options.src)) as string}
+                  ${content}
                   </prefpane>`;
                   const frag = this.Compat.parseXHTMLToFragment(
                     src,
