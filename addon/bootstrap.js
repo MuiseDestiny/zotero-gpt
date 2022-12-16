@@ -69,11 +69,12 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
     rootURI = resourceURI.spec;
   }
 
-  Services.scriptloader.loadSubScript(
-    `${rootURI}/chrome/content/scripts/index.js`
-  );
+  const ctx = { Zotero, rootURI };
 
-  Zotero.AddonTemplate.rootURI = rootURI;
+  Services.scriptloader.loadSubScript(
+    `${rootURI}/chrome/content/scripts/index.js`,
+    ctx
+  );
 
   if (Zotero.platformMajorVersion >= 102) {
     var aomStartup = Components.classes[
@@ -86,12 +87,12 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
       ["locale", "__addonRef__", "zh-CN", rootURI + "chrome/locale/zh-CN/"],
     ]);
 
-    Zotero.PreferencePanes.register({
-      pluginID: "__addonID__",
-      src: rootURI + "chrome/content/preferences.xhtml",
-      extraDTD: [`chrome://__addonRef__/locale/overlay.dtd`],
-      defaultXUL: true,
-    });
+    // Zotero.PreferencePanes.register({
+    //   pluginID: "__addonID__",
+    //   src: rootURI + "chrome/content/preferences.xhtml",
+    //   extraDTD: ["chrome://__addonRef__/locale/overlay.dtd"],
+    //   defaultXUL: true,
+    // });
   }
 }
 

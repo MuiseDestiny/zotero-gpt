@@ -21,12 +21,19 @@ class AddonUtils extends AddonModule {
       // Check if it's running on Zotero 7 (Firefox 102)
       isZotero7: () => Zotero.platformMajorVersion >= 102,
       // Firefox 102 support DOMParser natively
-      getDOMParser: () =>
-        this.Compat.isZotero7()
-          ? new DOMParser()
-          : Components.classes[
-              "@mozilla.org/xmlextras/domparser;1"
-            ].createInstance(Components.interfaces.nsIDOMParser),
+      getDOMParser: () => {
+        if (this.Compat.isZotero7()) {
+          return new DOMParser();
+        }
+        try {
+          return new (this.Compat.getZotero().getMainWindow().DOMParser)();
+        } catch (e) {
+          return Components.classes[
+            "@mozilla.org/xmlextras/domparser;1"
+          ].createInstance(Components.interfaces.nsIDOMParser);
+        }
+      },
+
       // create XUL element
       createXULElement: (doc: Document, type: string) => {
         if (this.Compat.isZotero7()) {
@@ -37,6 +44,111 @@ class AddonUtils extends AddonModule {
             "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul",
             type
           ) as XUL.Element;
+        }
+      },
+      parseXHTMLToFragment: (
+        str: string,
+        entities: string[] = [],
+        defaultXUL = true
+      ) => {
+        // Adapted from MozXULElement.parseXULToFragment
+
+        /* eslint-disable indent */
+        let parser = this.Compat.getDOMParser();
+        // parser.forceEnableXULXBL();
+        const xulns =
+          "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+        const htmlns = "http://www.w3.org/1999/xhtml";
+        const wrappedStr = `${
+          entities.length
+            ? `<!DOCTYPE bindings [ ${entities.reduce(
+                (preamble, url, index) => {
+                  return (
+                    preamble +
+                    `<!ENTITY % _dtd-${index} SYSTEM "${url}"> %_dtd-${index}; `
+                  );
+                },
+                ""
+              )}]>`
+            : ""
+        }
+        <html:div xmlns="${defaultXUL ? xulns : htmlns}"
+            xmlns:xul="${xulns}" xmlns:html="${htmlns}">
+        ${str}
+        </html:div>`;
+        this.Tool.log(wrappedStr, parser);
+        let doc = parser.parseFromString(wrappedStr, "text/xml");
+        /* eslint-enable indent */
+        console.log(doc);
+
+        if (doc.documentElement.localName === "parsererror") {
+          throw new Error("not well-formed XHTML");
+        }
+
+        // We use a range here so that we don't access the inner DOM elements from
+        // JavaScript before they are imported and inserted into a document.
+        let range = doc.createRange();
+        range.selectNodeContents(doc.querySelector("div"));
+        return range.extractContents();
+      },
+      prefPaneCache: { win: undefined, listeners: [], ids: [] },
+      registerPrefPane: (options: PrefPaneOptions) => {
+        const windowListener = {
+          onOpenWindow: (xulWindow) => {
+            const win: Window = xulWindow
+              .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+              .getInterface(Components.interfaces.nsIDOMWindow);
+            win.addEventListener(
+              "load",
+              async () => {
+                if (
+                  win.location.href ===
+                  "chrome://zotero/content/preferences/preferences.xul"
+                ) {
+                  this.Tool.log("registerPrefPane:detected", options);
+                  const Zotero = this.Compat.getZotero();
+                  options.id || (options.id = `plugin-${new Date().getTime()}`);
+                  const src = `<prefpane id="${
+                    options.id
+                  }" insertafter="zotero-prefpane-advanced" label="${
+                    options.label || options.pluginID
+                  }" image="${options.image || ""}">
+                  ${(await Zotero.File.getContentsAsync(options.src)) as string}
+                  </prefpane>`;
+                  const frag = this.Compat.parseXHTMLToFragment(
+                    src,
+                    options.extraDTD,
+                    options.defaultXUL
+                  );
+                  this.Tool.log(frag);
+                  const prefWindow = win.document.querySelector("prefwindow");
+                  prefWindow.appendChild(frag);
+                  const prefPane = win.document.querySelector(`#${options.id}`);
+                  // @ts-ignore
+                  prefWindow.addPane(prefPane);
+                  this.Compat.prefPaneCache.win = win;
+                  this.Compat.prefPaneCache.listeners.push(windowListener);
+                  this.Compat.prefPaneCache.ids.push(options.id);
+                  if (options.onload) {
+                    options.onload(win);
+                  }
+                }
+              },
+              false
+            );
+          },
+        };
+        Services.wm.addListener(windowListener);
+      },
+      unregisterPrefPane: () => {
+        this.Compat.prefPaneCache.listeners.forEach((l) =>
+          Services.wm.removeListener(l)
+        );
+        const win = this.Compat.prefPaneCache.win;
+        if (win && !win.closed) {
+          this.Compat.prefPaneCache.ids.forEach((id) =>
+            win.document.querySelector(id)?.remove()
+          );
         }
       },
     };
@@ -84,7 +196,7 @@ class AddonUtils extends AddonModule {
       },
       log: (...data: any[]) => {
         try {
-          this._Addon.Zotero.getMainWindow().console.log(data);
+          this._Addon.Zotero.getMainWindow().console.log(...data);
           for (const d of data) {
             this._Addon.Zotero.debug(d);
           }

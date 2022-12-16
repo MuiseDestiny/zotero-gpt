@@ -28,10 +28,11 @@ class AddonEvents extends AddonModule {
     };
   }
 
-  public async onInit(_Zotero: _ZoteroConstructable) {
+  public async onInit(_Zotero: _ZoteroConstructable, rootURI) {
     this._Addon.Zotero = _Zotero;
+    this._Addon.rootURI = rootURI;
     // This function is the setup code of the addon
-    Zotero.debug(`${addonName}: init called`);
+    this._Addon.Utils.Tool.log(`${addonName}: init called`);
     // alert(112233);
 
     // Reset prefs
@@ -72,7 +73,7 @@ class AddonEvents extends AddonModule {
 
   public onUnInit(): void {
     const Zotero = this._Addon.Zotero;
-    Zotero.debug(`${addonName}: uninit called`);
+    this._Addon.Utils.Tool.log(`${addonName}: uninit called`);
     //  Remove elements and do clean up
     this._Addon.views.unInitViews();
     // Remove addon object

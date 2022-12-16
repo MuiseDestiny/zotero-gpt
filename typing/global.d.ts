@@ -3,6 +3,14 @@ declare interface ZoteroCompat {
   isZotero7: () => boolean;
   getDOMParser: () => DOMParser;
   createXULElement: (doc: Document, type: string) => XUL.Element;
+  parseXHTMLToFragment: (
+    str: string,
+    entities: string[],
+    defaultXUL?: boolean
+  ) => DocumentFragment;
+  prefPaneCache: { win: Window; listeners: any[]; ids: string[] };
+  registerPrefPane: (options: PrefPaneOptions) => void;
+  unregisterPrefPane: () => void;
 }
 
 declare interface ZoteroTool {
@@ -77,6 +85,20 @@ declare interface MenuitemOptions {
   popupId?: string;
   onpopupshowing?: string;
   subElementOptions?: Array<MenuitemOptions>;
+}
+
+declare interface PrefPaneOptions {
+  pluginID: string;
+  src: string;
+  id?: string;
+  parent?: string;
+  label?: string;
+  image?: string;
+  extraDTD?: string[];
+  scripts?: string[];
+  defaultXUL?: boolean;
+  // Only for Zotero 6
+  onload?: (win: Window) => any;
 }
 
 declare class CopyHelper {
