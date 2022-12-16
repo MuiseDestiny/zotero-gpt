@@ -7,6 +7,8 @@ if (typeof Zotero == "undefined") {
   var Zotero;
 }
 
+var chromeHandle;
+
 // In Zotero 6, bootstrap methods are called before Zotero is initialized, and using include.js
 // to get the Zotero XPCOM service would risk breaking Zotero startup. Instead, wait for the main
 // Zotero window to open and get the Zotero object from there.
@@ -78,16 +80,17 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
       "@mozilla.org/addons/addon-manager-startup;1"
     ].getService(Components.interfaces.amIAddonManagerStartup);
     var manifestURI = Services.io.newURI(rootURI + "manifest.json");
-    var chromeHandle = aomStartup.registerChrome(manifestURI, [
-      ["content", "__addonRef__", "chrome/content/"],
-      ["locale", "__addonRef__", "en-US", "chrome/locale/en-US/"],
-      ["locale", "__addonRef__", "zh-CN", "chrome/locale/zh-CN/"],
+    chromeHandle = aomStartup.registerChrome(manifestURI, [
+      ["content", "__addonRef__", rootURI + "chrome/content/"],
+      ["locale", "__addonRef__", "en-US", rootURI + "chrome/locale/en-US/"],
+      ["locale", "__addonRef__", "zh-CN", rootURI + "chrome/locale/zh-CN/"],
     ]);
 
     Zotero.PreferencePanes.register({
       pluginID: "__addonID__",
-      src: `${rootURI}/chrome/content/preferences.xhtml`,
+      src: rootURI + "chrome/content/preferences.xhtml",
       extraDTD: [`chrome://__addonRef__/locale/overlay.dtd`],
+      defaultXUL: true,
     });
   }
 }

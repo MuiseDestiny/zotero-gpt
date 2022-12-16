@@ -62,11 +62,6 @@ class AddonViews extends AddonModule {
 
   public initPrefs() {
     const Zotero = this._Addon.Zotero;
-    Zotero.PreferencePanes.register({
-      pluginID: addonID,
-      src: `${this._Addon.rootURI}/chrome/content/preferences.xhtml`,
-      extraDTD: [`chrome://${addonRef}/locale/overlay.dtd`],
-    });
   }
 
   public unInitViews() {
