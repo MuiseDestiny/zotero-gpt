@@ -1,5 +1,6 @@
-import { Addon, addonName } from "./addon";
+import Addon from "./addon";
 import AddonModule from "./module";
+import { addonName } from "../package.json";
 
 class AddonEvents extends AddonModule {
   private notifierCallback: any;
@@ -27,32 +28,34 @@ class AddonEvents extends AddonModule {
     };
   }
 
-  public async onInit(_Zotero) {
+  public async onInit(_Zotero: _ZoteroConstructable, rootURI) {
+    this._Addon.Zotero = _Zotero;
+    this._Addon.rootURI = rootURI;
     // This function is the setup code of the addon
-    console.log(`${addonName}: init called`);
-    _Zotero.debug(`${addonName}: init called`);
+    this._Addon.Utils.Tool.log(`${addonName}: init called`);
     // alert(112233);
 
     // Reset prefs
     this.resetState();
 
     // Register the callback in Zotero as an item observer
-    let notifierID = _Zotero.Notifier.registerObserver(this.notifierCallback, [
+    let notifierID = Zotero.Notifier.registerObserver(this.notifierCallback, [
       "tab",
       "item",
       "file",
     ]);
 
     // Unregister callback when the window closes (important to avoid a memory leak)
-    _Zotero.getMainWindow().addEventListener(
+    Zotero.getMainWindow().addEventListener(
       "unload",
       function (e) {
-        _Zotero.Notifier.unregisterObserver(notifierID);
+        Zotero.Notifier.unregisterObserver(notifierID);
       },
       false
     );
 
-    this._Addon.views.initViews(_Zotero);
+    this._Addon.views.initViews();
+    this._Addon.views.initPrefs();
   }
 
   private resetState(): void {
@@ -68,13 +71,13 @@ class AddonEvents extends AddonModule {
     // }
   }
 
-  public onUnInit(_Zotero): void {
-    console.log(`${addonName}: uninit called`);
-    _Zotero.debug(`${addonName}: uninit called`);
+  public onUnInit(): void {
+    const Zotero = this._Addon.Zotero;
+    this._Addon.Utils.Tool.log(`${addonName}: uninit called`);
     //  Remove elements and do clean up
-    this._Addon.views.unInitViews(_Zotero);
+    this._Addon.views.unInitViews();
     // Remove addon object
-    _Zotero.AddonTemplate = undefined;
+    Zotero.AddonTemplate = undefined;
   }
 }
 

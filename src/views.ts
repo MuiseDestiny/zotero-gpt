@@ -1,10 +1,9 @@
-import { Addon } from "./addon";
+import Addon from "./addon";
 import AddonModule from "./module";
-const { addonRef } = require("../package.json");
+const { addonRef, addonID } = require("../package.json");
 
 class AddonViews extends AddonModule {
   // You can store some element in the object attributes
-  private testButton: XUL.Button;
   private progressWindowIcon: object;
 
   constructor(parent: Addon) {
@@ -12,31 +11,83 @@ class AddonViews extends AddonModule {
     this.progressWindowIcon = {
       success: "chrome://zotero/skin/tick.png",
       fail: "chrome://zotero/skin/cross.png",
-      default: `chrome://${addonRef}/skin/favicon.png`,
+      default: `chrome://${addonRef}/content/icons/favicon.png`,
     };
   }
 
-  public initViews(_Zotero) {
+  public initViews() {
+    const Zotero = this._Addon.Zotero;
     // You can init the UI elements that
     // cannot be initialized with overlay.xul
-    console.log("Initializing UI");
-    const _window: Window = _Zotero.getMainWindow();
-    const menuitem = _window.document.createElement("menuitem");
-    menuitem.id = "zotero-itemmenu-addontemplate-test";
-    menuitem.setAttribute("label", "Addon Template");
-    menuitem.setAttribute("oncommand", "alert('Hello World!')");
-    menuitem.className = "menuitem-iconic";
-    menuitem.style["list-style-image"] =
-      "url('chrome://addontemplate/skin/favicon@0.5x.png')";
-    _window.document.querySelector("#zotero-itemmenu").appendChild(menuitem);
+    this._Addon.Utils.Tool.log("Initializing UI");
+    const menuIcon =
+      'url("chrome://addontemplate/content/icons/favicon@0.5x.png")';
+    // item menuitem with icon
+    this._Addon.Utils.UI.insertMenuItem("item", {
+      tag: "menuitem",
+      id: "zotero-itemmenu-addontemplate-test",
+      label: "Addon Template: Menuitem",
+      oncommand: "alert('Hello World! Default Menuitem.')",
+      icon: menuIcon,
+    });
+    // item menupopup with sub-menuitems
+    this._Addon.Utils.UI.insertMenuItem(
+      "item",
+      {
+        tag: "menu",
+        label: "Addon Template: Menupopup",
+        subElementOptions: [
+          {
+            tag: "menuitem",
+            label: "Addon Template",
+            oncommand: "alert('Hello World! Sub Menuitem.')",
+          },
+        ],
+      },
+      "before",
+      this._Addon.Zotero.getMainWindow().document.querySelector(
+        "#zotero-itemmenu-addontemplate-test"
+      )
+    );
+    this._Addon.Utils.UI.insertMenuItem("menuFile", {
+      tag: "menuseparator",
+    });
+    // menu->File menuitem
+    this._Addon.Utils.UI.insertMenuItem("menuFile", {
+      tag: "menuitem",
+      label: "Addon Template: File Menuitem",
+      oncommand: "alert('Hello World! File Menuitem.')",
+    });
   }
 
-  public unInitViews(_Zotero) {
-    console.log("Uninitializing UI");
-    const _window: Window = _Zotero.getMainWindow();
-    _window.document
-      .querySelector("#zotero-itemmenu-addontemplate-test")
-      ?.remove();
+  public initPrefs() {
+    const Zotero = this._Addon.Zotero;
+    this._Addon.Utils.Tool.log(this._Addon.rootURI);
+    const prefOptions = {
+      pluginID: addonID,
+      src: this._Addon.rootURI + "chrome/content/preferences.xhtml",
+      label: "Template",
+      image: `chrome://${addonRef}/content/icons/favicon.png`,
+      extraDTD: [`chrome://${addonRef}/locale/overlay.dtd`],
+      defaultXUL: true,
+      onload: (win: Window) => {
+        this._Addon.prefs.initPreferences(win);
+      },
+    };
+    if (this._Addon.Utils.Compat.isZotero7()) {
+      Zotero.PreferencePanes.register(prefOptions);
+    } else {
+      this._Addon.Utils.Compat.registerPrefPane(prefOptions);
+    }
+  }
+
+  public unInitViews() {
+    const Zotero = this._Addon.Zotero;
+    this._Addon.Utils.Tool.log("Uninitializing UI");
+    this._Addon.Utils.UI.removeAddonElements();
+    if (!this._Addon.Utils.Compat.isZotero7()) {
+      this._Addon.Utils.Compat.unregisterPrefPane();
+    }
   }
 
   public showProgressWindow(

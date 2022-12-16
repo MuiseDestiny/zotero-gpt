@@ -26,14 +26,15 @@
   },
   "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
   "releasepage": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
-  "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/master/update.rdf",
+  "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/master/update.json",
   "dependencies": {
     "compressing": "^1.5.1",
     "esbuild": "^0.15.16",
     "replace-in-file": "^6.3.2"
   },
   "devDependencies": {
-    "release-it": "^15.5.0",
-    "zotero-types": "^0.0.6"
+    "@types/node": "^18.7.20",
+    "release-it": "^14.14.0",
+    "zotero-types": "^0.0.8"
   }
 }
