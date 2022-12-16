@@ -115,11 +115,11 @@ You only need to maintain one `preferences.xhtml` which runs natively on Zotero 
 <table style="margin-left: auto; margin-right: auto;">
     <tr>
         <td>
-          <img height="400" src="https://user-images.githubusercontent.com/33902321/208080125-2a776a98-f427-4c81-8924-7877bf803e3d.png"/>
+          <img width="350px" src="https://user-images.githubusercontent.com/33902321/208080125-2a776a98-f427-4c81-8924-7877bf803e3d.png"/>
           <div>Zotero 7</div>
         </td>
         <td>
-          <img height="400" src="https://user-images.githubusercontent.com/33902321/208080491-b7006c08-2679-4f85-9a28-dba8e622d745.png"/>
+          <img width="300px" src="https://user-images.githubusercontent.com/33902321/208080491-b7006c08-2679-4f85-9a28-dba8e622d745.png"/>
           <div>Zotero 6</div>
         </td>
     </tr>
