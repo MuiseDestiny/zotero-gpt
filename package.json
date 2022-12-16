@@ -3,7 +3,7 @@
   "addonName": "Zotero Addon Template",
   "addonID": "addontemplate@euclpts.com",
   "addonRef": "addontemplate",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Zotero Addon Template",
   "main": "src/index.js",
   "scripts": {
