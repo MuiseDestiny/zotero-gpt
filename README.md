@@ -6,7 +6,7 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 
 > 👍You are currently in `bootstrap` extension mode. To use `overlay` mode, plsase switch to `overlay` branch in git.
 
-> ⚠️`overlay` mode will no longer be supported in the coming Zotero 7. Please use the `bootstrap` extension mode instead. See discussion here: https://groups.google.com/g/zotero-dev/c/TT_rcLVpQwg
+> 👁 Watch this repo so that you can be notified whenever there are fixes & updates. 
 
 ## Features
 
