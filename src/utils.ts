@@ -148,9 +148,10 @@ class AddonUtils extends AddonModule {
         Services.wm.addListener(windowListener);
       },
       unregisterPrefPane: () => {
-        this.Compat.prefPaneCache.listeners.forEach((l) =>
-          Services.wm.removeListener(l)
-        );
+        this.Compat.prefPaneCache.listeners.forEach((l) => {
+          Services.wm.removeListener(l);
+          l.onOpenWindow = undefined;
+        });
         const win = this.Compat.prefPaneCache.win;
         if (win && !win.closed) {
           this.Compat.prefPaneCache.ids.forEach((id) =>
