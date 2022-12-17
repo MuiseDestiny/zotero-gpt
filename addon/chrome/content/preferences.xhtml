@@ -7,15 +7,17 @@
     <checkbox
       id="zotero-prefpane-__addonRef__-enable"
       label="&zotero.__addonRef__.pref.enable.label;"
+      preference="extensions.zotero.__addonRef__.enable"
     />
     <hbox>
-      <html:input
-        type="text"
-        id="zotero-prefpane-__addonRef__-input"
-      ></html:input>
       <html:label for="zotero-prefpane-__addonRef__-input"
         >&zotero.__addonRef__.pref.input.label;</html:label
       >
+      <html:input
+        type="text"
+        id="zotero-prefpane-__addonRef__-input"
+        preference="extensions.zotero.__addonRef__.input"
+      ></html:input>
     </hbox>
   </groupbox>
 </vbox>
