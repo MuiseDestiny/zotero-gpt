@@ -1,6 +1,6 @@
 import Addon from "./addon";
 import AddonModule from "./module";
-import { addonName } from "../package.json";
+import { addonName, addonID, addonRef } from "../package.json";
 
 class AddonEvents extends AddonModule {
   private notifierCallback: any;
@@ -28,15 +28,12 @@ class AddonEvents extends AddonModule {
     };
   }
 
-  public async onInit(_Zotero: _ZoteroConstructable, rootURI) {
-    this._Addon.Zotero = _Zotero;
+  public async onInit() {
+    this._Addon.Zotero = Zotero;
+    // @ts-ignore
     this._Addon.rootURI = rootURI;
     // This function is the setup code of the addon
     this._Addon.Utils.Tool.log(`${addonName}: init called`);
-    // alert(112233);
-
-    // Reset prefs
-    this.resetState();
 
     // Register the callback in Zotero as an item observer
     let notifierID = Zotero.Notifier.registerObserver(this.notifierCallback, [
@@ -54,26 +51,41 @@ class AddonEvents extends AddonModule {
       false
     );
 
+    // Initialize preference window
+    this.initPrefs();
     this._Addon.views.initViews();
-    this._Addon.views.initPrefs();
   }
 
-  private resetState(): void {
-    /* 
-      For prefs that could be simply set to a static default value,
-      Please use addon/defaults/preferences/defaults.js
-      Reset other preferrences here.
-      Uncomment to use the example code.
-    */
-    // let testPref = Zotero.Prefs.get("addonTemplate.testPref");
-    // if (typeof testPref === "undefined") {
-    //   Zotero.Prefs.set("addonTemplate.testPref", true);
-    // }
+  public initPrefs() {
+    this._Addon.Utils.Tool.log(this._Addon.rootURI);
+    const prefOptions = {
+      pluginID: addonID,
+      src: this._Addon.rootURI + "chrome/content/preferences.xhtml",
+      label: "Template",
+      image: `chrome://${addonRef}/content/icons/favicon.png`,
+      extraDTD: [`chrome://${addonRef}/locale/overlay.dtd`],
+      defaultXUL: true,
+      onload: (win: Window) => {
+        this._Addon.prefs.initPreferences(win);
+      },
+    };
+    if (this._Addon.Utils.Compat.isZotero7()) {
+      Zotero.PreferencePanes.register(prefOptions);
+    } else {
+      this._Addon.Utils.Compat.registerPrefPane(prefOptions);
+    }
+  }
+
+  private unInitPrefs() {
+    if (!this._Addon.Utils.Compat.isZotero7()) {
+      this._Addon.Utils.Compat.unregisterPrefPane();
+    }
   }
 
   public onUnInit(): void {
     const Zotero = this._Addon.Zotero;
     this._Addon.Utils.Tool.log(`${addonName}: uninit called`);
+    this.unInitPrefs();
     //  Remove elements and do clean up
     this._Addon.views.unInitViews();
     // Remove addon object

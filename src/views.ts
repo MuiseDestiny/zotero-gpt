@@ -1,6 +1,6 @@
 import Addon from "./addon";
 import AddonModule from "./module";
-const { addonRef, addonID } = require("../package.json");
+const { addonRef } = require("../package.json");
 
 class AddonViews extends AddonModule {
   // You can store some element in the object attributes
@@ -16,7 +16,6 @@ class AddonViews extends AddonModule {
   }
 
   public initViews() {
-    const Zotero = this._Addon.Zotero;
     // You can init the UI elements that
     // cannot be initialized with overlay.xul
     this._Addon.Utils.Tool.log("Initializing UI");
@@ -59,34 +58,9 @@ class AddonViews extends AddonModule {
     });
   }
 
-  public initPrefs() {
-    const Zotero = this._Addon.Zotero;
-    this._Addon.Utils.Tool.log(this._Addon.rootURI);
-    const prefOptions = {
-      pluginID: addonID,
-      src: this._Addon.rootURI + "chrome/content/preferences.xhtml",
-      label: "Template",
-      image: `chrome://${addonRef}/content/icons/favicon.png`,
-      extraDTD: [`chrome://${addonRef}/locale/overlay.dtd`],
-      defaultXUL: true,
-      onload: (win: Window) => {
-        this._Addon.prefs.initPreferences(win);
-      },
-    };
-    if (this._Addon.Utils.Compat.isZotero7()) {
-      Zotero.PreferencePanes.register(prefOptions);
-    } else {
-      this._Addon.Utils.Compat.registerPrefPane(prefOptions);
-    }
-  }
-
   public unInitViews() {
-    const Zotero = this._Addon.Zotero;
     this._Addon.Utils.Tool.log("Uninitializing UI");
     this._Addon.Utils.UI.removeAddonElements();
-    if (!this._Addon.Utils.Compat.isZotero7()) {
-      this._Addon.Utils.Compat.unregisterPrefPane();
-    }
   }
 
   public showProgressWindow(

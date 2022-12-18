@@ -18,6 +18,9 @@ class AddonUtils extends AddonModule {
         }
         return Zotero;
       },
+      getWindow: () => {
+        return this.Compat.getZotero().getMainWindow() as Window;
+      },
       // Check if it's running on Zotero 7 (Firefox 102)
       isZotero7: () => Zotero.platformMajorVersion >= 102,
       // Firefox 102 support DOMParser natively
@@ -33,7 +36,12 @@ class AddonUtils extends AddonModule {
           ].createInstance(Components.interfaces.nsIDOMParser);
         }
       },
-
+      isXULElement: (elem: Element) => {
+        return (
+          elem.namespaceURI ===
+          "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        );
+      },
       // create XUL element
       createXULElement: (doc: Document, type: string) => {
         if (this.Compat.isZotero7()) {
@@ -93,6 +101,145 @@ class AddonUtils extends AddonModule {
       },
       prefPaneCache: { win: undefined, listeners: [], ids: [] },
       registerPrefPane: (options: PrefPaneOptions) => {
+        const _initImportedNodesPostInsert = (container) => {
+          const _observerSymbols = new Map();
+          const Zotero = this.Compat.getZotero();
+          const window = container.ownerGlobal;
+          let useChecked = (elem) =>
+            (elem instanceof window.HTMLInputElement &&
+              elem.type == "checkbox") ||
+            elem.tagName == "checkbox";
+
+          let syncFromPref = (elem, preference) => {
+            let value = Zotero.Prefs.get(preference, true);
+            if (useChecked(elem)) {
+              elem.checked = value;
+            } else {
+              elem.value = value;
+            }
+            elem.dispatchEvent(new window.Event("syncfrompreference"));
+          };
+
+          // We use a single listener function shared between all elements so we can easily detach it later
+          let syncToPrefOnModify = (event) => {
+            if (event.currentTarget.getAttribute("preference")) {
+              let value = useChecked(event.currentTarget)
+                ? event.currentTarget.checked
+                : event.currentTarget.value;
+              Zotero.Prefs.set(
+                event.currentTarget.getAttribute("preference"),
+                value,
+                true
+              );
+              event.currentTarget.dispatchEvent(
+                new window.Event("synctopreference")
+              );
+            }
+          };
+
+          let attachToPreference = (elem, preference) => {
+            Zotero.debug(
+              `Attaching <${elem.tagName}> element to ${preference}`
+            );
+            // @ts-ignore
+            let symbol = Zotero.Prefs.registerObserver(
+              preference,
+              () => syncFromPref(elem, preference),
+              true
+            );
+            _observerSymbols.set(elem, symbol);
+          };
+
+          let detachFromPreference = (elem) => {
+            if (_observerSymbols.has(elem)) {
+              Zotero.debug(
+                `Detaching <${elem.tagName}> element from preference`
+              );
+              // @ts-ignore
+              Zotero.Prefs.unregisterObserver(this._observerSymbols.get(elem));
+              _observerSymbols.delete(elem);
+            }
+          };
+
+          // Activate `preference` attributes
+          for (let elem of container.querySelectorAll("[preference]")) {
+            let preference = elem.getAttribute("preference");
+            if (
+              container.querySelector("preferences > preference#" + preference)
+            ) {
+              Zotero.warn(
+                "<preference> is deprecated -- `preference` attribute values " +
+                  "should be full preference keys, not <preference> IDs"
+              );
+              preference = container
+                .querySelector("preferences > preference#" + preference)
+                .getAttribute("name");
+            }
+
+            attachToPreference(elem, preference);
+
+            elem.addEventListener(
+              this.Compat.isXULElement(elem) ? "command" : "input",
+              syncToPrefOnModify
+            );
+
+            // Set timeout before populating the value so the pane can add listeners first
+            window.setTimeout(() => {
+              syncFromPref(elem, preference);
+            });
+          }
+
+          new window.MutationObserver((mutations) => {
+            for (let mutation of mutations) {
+              if (mutation.type == "attributes") {
+                let target = mutation.target as Element;
+                detachFromPreference(target);
+                if (target.hasAttribute("preference")) {
+                  attachToPreference(target, target.getAttribute("preference"));
+                  target.addEventListener(
+                    this.Compat.isXULElement(target) ? "command" : "input",
+                    syncToPrefOnModify
+                  );
+                }
+              } else if (mutation.type == "childList") {
+                for (let node of mutation.removedNodes) {
+                  detachFromPreference(node);
+                }
+                for (let node of mutation.addedNodes) {
+                  if (
+                    node.nodeType == Node.ELEMENT_NODE &&
+                    (node as Element).hasAttribute("preference")
+                  ) {
+                    attachToPreference(
+                      node,
+                      (node as Element).getAttribute("preference")
+                    );
+                    node.addEventListener(
+                      this.Compat.isXULElement(node as Element)
+                        ? "command"
+                        : "input",
+                      syncToPrefOnModify
+                    );
+                  }
+                }
+              }
+            }
+          }).observe(container, {
+            childList: true,
+            subtree: true,
+            attributeFilter: ["preference"],
+          });
+
+          // parseXULToFragment() doesn't convert oncommand attributes into actual
+          // listeners, so we'll do it here
+          for (let elem of container.querySelectorAll("[oncommand]")) {
+            elem.oncommand = elem.getAttribute("oncommand");
+          }
+
+          for (let child of container.children) {
+            child.dispatchEvent(new window.Event("load"));
+          }
+        };
         const windowListener = {
           onOpenWindow: (xulWindow) => {
             const win: Window = xulWindow
@@ -107,7 +254,8 @@ class AddonUtils extends AddonModule {
                 ) {
                   this.Tool.log("registerPrefPane:detected", options);
                   const Zotero = this.Compat.getZotero();
-                  options.id || (options.id = `plugin-${new Date().getTime()}`);
+                  options.id ||
+                    (options.id = `plugin-${Zotero.Utilities.randomString()}-${new Date().getTime()}`);
                   const contenrOrXHR = await Zotero.File.getContentsAsync(
                     options.src
                   );
@@ -115,7 +263,7 @@ class AddonUtils extends AddonModule {
                     typeof contenrOrXHR === "string"
                       ? contenrOrXHR
                       : (contenrOrXHR as any as XMLHttpRequest).response;
-                  const src = `<prefpane id="${
+                  const src = `<prefpane xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" id="${
                     options.id
                   }" insertafter="zotero-prefpane-advanced" label="${
                     options.label || options.pluginID
@@ -136,6 +284,8 @@ class AddonUtils extends AddonModule {
                   this.Compat.prefPaneCache.win = win;
                   this.Compat.prefPaneCache.listeners.push(windowListener);
                   this.Compat.prefPaneCache.ids.push(options.id);
+                  // Binding preferences
+                  _initImportedNodesPostInsert(prefPane);
                   if (options.onload) {
                     options.onload(win);
                   }

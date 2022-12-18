@@ -1,7 +1,9 @@
 declare interface ZoteroCompat {
   getZotero: () => _ZoteroConstructable;
+  getWindow: () => Window;
   isZotero7: () => boolean;
   getDOMParser: () => DOMParser;
+  isXULElement: (elem: Element) => boolean;
   createXULElement: (doc: Document, type: string) => XUL.Element;
   parseXHTMLToFragment: (
     str: string,
@@ -29,7 +31,7 @@ declare interface ZoteroUI {
   createElement: (
     doc: Document,
     tagName: string,
-    namespace: "html" | "svg" | "xul"
+    namespace?: "html" | "svg" | "xul"
   ) => XUL.Element | DocumentFragment | HTMLElement | SVGAElement;
   removeAddonElements: () => void;
   creatElementsFromJSON: (

@@ -69,7 +69,15 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
     rootURI = resourceURI.spec;
   }
 
-  const ctx = { Zotero, rootURI };
+  const window = Zotero.getMainWindow();
+  // Global variables for plugin code
+  const ctx = {
+    Zotero,
+    rootURI,
+    window,
+    document: window.document,
+    ZoteroPane: Zotero.getActiveZoteroPane(),
+  };
 
   Services.scriptloader.loadSubScript(
     `${rootURI}/chrome/content/scripts/index.js`,
@@ -86,13 +94,6 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
       ["locale", "__addonRef__", "en-US", rootURI + "chrome/locale/en-US/"],
       ["locale", "__addonRef__", "zh-CN", rootURI + "chrome/locale/zh-CN/"],
     ]);
-
-    // Zotero.PreferencePanes.register({
-    //   pluginID: "__addonID__",
-    //   src: rootURI + "chrome/content/preferences.xhtml",
-    //   extraDTD: ["chrome://__addonRef__/locale/overlay.dtd"],
-    //   defaultXUL: true,
-    // });
   }
 }
 
@@ -113,8 +114,10 @@ function shutdown({ id, version, resourceURI, rootURI }, reason) {
 
   Cu.unload(`${rootURI}/chrome/content/scripts/index.js`);
 
-  chromeHandle.destruct();
-  chromeHandle = null;
+  if (chromeHandle) {
+    chromeHandle.destruct();
+    chromeHandle = null;
+  }
 }
 
 function uninstall(data, reason) {}
