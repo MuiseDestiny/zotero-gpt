@@ -6,7 +6,7 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 
 > 👍You are currently in `bootstrap` extension mode. To use `overlay` mode, plsase switch to `overlay` branch in git.
 
-> 👁 Watch this repo so that you can be notified whenever there are fixes & updates. 
+> 👁 Watch this repo so that you can be notified whenever there are fixes & updates.
 
 ## Features
 
@@ -41,6 +41,19 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 - Run `npm install` to setup the plugin and install dependencies. If you don't have NodeJS installed, please download it [here](https://nodejs.org/en/);
 - Run `npm run build` to build the plugin. The xpi for installation and the built code is under builds folder.
 
+### Plugin Life Cycle
+
+1. When install/enable/startup triggered from Zotero, `bootstrap.js` > `startup` is called
+   - Wait for Zotero ready
+   - Prepare global variables `ctx`. They are available globally in the plugin scope
+   - Load `index.js` (the main entrance of plugin code, built from `index.ts`)
+   - Register resources if Zotero 7+
+2. In the main entrance `index.js`, the plugin object is injected under `Zotero` and `events.ts` > `onInit` is called.
+   - Initialize anything you want, including notify listeners, preference panes(`initPrefs`), and UI elements(`initViews`).
+3. When uninstall/disabled triggered from Zotero, `bootstrap.js` > `shutdown` is called.
+   - `events.ts` > `onUninit` is called. Remove UI elements(`unInitViews`), preference panes(`uninitPrefs`), or anything created by the plugin.
+   - Remove scripts and release resources.
+
 ### Examples
 
 #### Menu (file, edit, view, ...) & Right-click Menu (item, collection/library)
@@ -59,7 +72,8 @@ https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062d
 
 `Utils.UI.insertMenuItem` resolved the input object and inject the menu items.
 
-Available types `menuFile`, `menuEdit`, ...: 
+Available types `menuFile`, `menuEdit`, ...:
+
 ```ts
 defaultMenuPopupSelectors: {
   menuFile: "#menu_FilePopup",
@@ -73,7 +87,7 @@ defaultMenuPopupSelectors: {
 },
 ```
 
-You can choose an anchor element and insert before/after it using `insertPosition` and `anchorElement`. Default the insert position is the end of menu. 
+You can choose an anchor element and insert before/after it using `insertPosition` and `anchorElement`. Default the insert position is the end of menu.
 
 ```ts
 insertMenuItem: (
@@ -127,9 +141,18 @@ You only need to maintain one `preferences.xhtml` which runs natively on Zotero 
 
 https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062db51cf16e99dda35288/src/views.ts#L63-L82
 
-Call `Utils.Compat.registerPrefPane` when it's on Zotero 6. Please make sure `defaultXUL` is set `true` as Zotero 6 requires that.
+Call `Utils.Compat.registerPrefPane` when it's on Zotero 6.
 
-Remember to call `Utils.Compat.unregisterPrefPane()` on plugin onload.
+Note that `<preferences>` element is deprecated. Please use the full pref-key in elements' `preference` attribute. Like:
+
+```xml
+<checkbox label="&zotero.__addonRef__.pref.enable.label;" preference="extensions.zotero.__addonRef__.enable"
+/>
+```
+
+The elements with `preference` attributes will bind to Zotero preferences.
+
+Remember to call `Utils.Compat.unregisterPrefPane()` on plugin unload.
 
 https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062db51cf16e99dda35288/src/views.ts#L88-L90
 
@@ -150,7 +173,7 @@ function createElement (
 ) => XUL.Element | DocumentFragment | HTMLElement | SVGAElement;
 ```
 
-There are more advanced APIs for creating elements in batch: `Uitls.UI.creatElementsFromJSON`. Input a element tree in JSON and return a fragment/element. These elements are also maintained by plugin template.
+There are more advanced APIs for creating elements in batch: `Utils.UI.creatElementsFromJSON`. Input an element tree in JSON and return a fragment/element. These elements are also maintained by this plugin template.
 
 Definition:
 
