@@ -11,7 +11,7 @@ class AddonEvents extends AddonModule {
         event: string,
         type: string,
         ids: Array<string>,
-        extraData: object
+        extraData: { [key: string]: any }
       ) => {
         // You can add your code to the corresponding notify type
         if (
@@ -33,7 +33,7 @@ class AddonEvents extends AddonModule {
     // @ts-ignore
     this._Addon.rootURI = rootURI;
     // This function is the setup code of the addon
-    this._Addon.Utils.Tool.log(`${addonName}: init called`);
+    this._Addon.toolkit.Tool.log(`${addonName}: init called`);
 
     // Register the callback in Zotero as an item observer
     let notifierID = Zotero.Notifier.registerObserver(this.notifierCallback, [
@@ -45,7 +45,7 @@ class AddonEvents extends AddonModule {
     // Unregister callback when the window closes (important to avoid a memory leak)
     Zotero.getMainWindow().addEventListener(
       "unload",
-      function (e) {
+      function (e: Event) {
         Zotero.Notifier.unregisterObserver(notifierID);
       },
       false
@@ -57,7 +57,7 @@ class AddonEvents extends AddonModule {
   }
 
   public initPrefs() {
-    this._Addon.Utils.Tool.log(this._Addon.rootURI);
+    this._Addon.toolkit.Tool.log(this._Addon.rootURI);
     const prefOptions = {
       pluginID: addonID,
       src: this._Addon.rootURI + "chrome/content/preferences.xhtml",
@@ -69,22 +69,22 @@ class AddonEvents extends AddonModule {
         this._Addon.prefs.initPreferences(win);
       },
     };
-    if (this._Addon.Utils.Compat.isZotero7()) {
+    if (this._Addon.toolkit.Compat.isZotero7()) {
       Zotero.PreferencePanes.register(prefOptions);
     } else {
-      this._Addon.Utils.Compat.registerPrefPane(prefOptions);
+      this._Addon.toolkit.Compat.registerPrefPane(prefOptions);
     }
   }
 
   private unInitPrefs() {
-    if (!this._Addon.Utils.Compat.isZotero7()) {
-      this._Addon.Utils.Compat.unregisterPrefPane();
+    if (!this._Addon.toolkit.Compat.isZotero7()) {
+      this._Addon.toolkit.Compat.unregisterPrefPane();
     }
   }
 
   public onUnInit(): void {
     const Zotero = this._Addon.Zotero;
-    this._Addon.Utils.Tool.log(`${addonName}: uninit called`);
+    this._Addon.toolkit.Tool.log(`${addonName}: uninit called`);
     this.unInitPrefs();
     //  Remove elements and do clean up
     this._Addon.views.unInitViews();

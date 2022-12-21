@@ -16,7 +16,7 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 - Release to GitHub automatically(using [release-it](https://github.com/release-it/release-it));
 - Extensive skeleton;
 - Some sample code of UI and lifecycle.
-- ⭐Compatibilities for Zotero 6 & Zotero 7.
+- ⭐Compatibilities for Zotero 6 & Zotero 7.(using [zotero-plugin-toolkit](https://github.com/windingwind/zotero-plugin-toolkit))
 
 ## Quick Start Guide
 
@@ -26,6 +26,7 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 - Modify the settings in `./package.json`, including:
 
 ```
+  version,
   author,
   description,
   homepage,
@@ -38,7 +39,7 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 
 > Be careful to set the addonID and addonRef to avoid confliction.
 
-- Run `npm install` to setup the plugin and install dependencies. If you don't have NodeJS installed, please download it [here](https://nodejs.org/en/);
+- Run `npm install` to set up the plugin and install dependencies. If you don't have NodeJS installed, please download it [here](https://nodejs.org/en/);
 - Run `npm run build` to build the plugin. The xpi for installation and the built code is under builds folder.
 
 ### Plugin Life Cycle
@@ -56,6 +57,8 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 
 ### Examples
 
+See https://github.com/windingwind/zotero-plugin-toolkit for more detailed API documentations.
+
 #### Menu (file, edit, view, ...) & Right-click Menu (item, collection/library)
 
 **File Menu**
@@ -70,61 +73,15 @@ https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062d
 
 https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062db51cf16e99dda35288/src/views.ts#L23-L51
 
-`Utils.UI.insertMenuItem` resolved the input object and inject the menu items.
+`insertMenuItem` resolved the input object and inject the menu items.
 
-Available types `menuFile`, `menuEdit`, ...:
-
-```ts
-defaultMenuPopupSelectors: {
-  menuFile: "#menu_FilePopup",
-  menuEdit: "#menu_EditPopup",
-  menuView: "#menu_viewPopup",
-  menuGo: "#menu_goPopup",
-  menuTools: "#menu_ToolsPopup",
-  menuHelp: "#menu_HelpPopup",
-  collection: "#zotero-collectionmenu",
-  item: "#zotero-itemmenu",
-},
-```
-
-You can choose an anchor element and insert before/after it using `insertPosition` and `anchorElement`. Default the insert position is the end of menu.
-
-```ts
-insertMenuItem: (
-  menuPopup: XUL.Menupopup | string,
-  options: MenuitemOptions,
-  insertPosition?: "before" | "after",
-  anchorElement?: XUL.Element
-) => boolean;
-```
-
-Full options you can use:
-
-```ts
-declare interface MenuitemOptions {
-  tag: "menuitem" | "menu" | "menuseparator";
-  id?: string;
-  label?: string;
-  // data url (chrome://xxx.png) or base64 url (data:image/png;base64,xxx)
-  icon?: string;
-  class?: string;
-  styles?: { [key: string]: string };
-  hidden?: boolean;
-  disabled?: boolean;
-  oncommand?: string;
-  commandListener?: EventListenerOrEventListenerObject;
-  // Attributes below are used when type === "menu"
-  popupId?: string;
-  onpopupshowing?: string;
-  subElementOptions?: Array<MenuitemOptions>;
-}
-```
+You can choose an anchor element and insert before/after it using `insertPosition` and `anchorElement`. Default the insert position is the end of the menu.
 
 #### Preference, for both Zotero 6 and Zotero 7 (all in bootstrap)
 
 Zotero 6 doesn't support preference pane injection in bootstrap mode, thus I write a register for Zotero 6 or lower.
 
-You only need to maintain one `preferences.xhtml` which runs natively on Zotero 7 and let the plugin template handle when it is running on Zotero 6.
+You only need to maintain one `preferences.xhtml` which runs natively on Zotero 7 and let the plugin template handle it when it is running on Zotero 6.
 
 <table style="margin-left: auto; margin-right: auto;">
     <tr>
@@ -141,9 +98,9 @@ You only need to maintain one `preferences.xhtml` which runs natively on Zotero 
 
 https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062db51cf16e99dda35288/src/views.ts#L63-L82
 
-Call `Utils.Compat.registerPrefPane` when it's on Zotero 6.
+Call `registerPrefPane` when it's on Zotero 6.
 
-Note that `<preferences>` element is deprecated. Please use the full pref-key in elements' `preference` attribute. Like:
+Note that `<preferences>` element is deprecated. Please use the full pref-key in the elements' `preference` attribute. Like:
 
 ```xml
 <checkbox label="&zotero.__addonRef__.pref.enable.label;" preference="extensions.zotero.__addonRef__.enable"
@@ -152,7 +109,7 @@ Note that `<preferences>` element is deprecated. Please use the full pref-key in
 
 The elements with `preference` attributes will bind to Zotero preferences.
 
-Remember to call `Utils.Compat.unregisterPrefPane()` on plugin unload.
+Remember to call `unregisterPrefPane()` on plugin unload.
 
 https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062db51cf16e99dda35288/src/views.ts#L88-L90
 
@@ -160,55 +117,10 @@ https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062d
 
 The plugin template provides new APIs for bootstrap plugins. We have two reasons to use these APIs, instead of the `createElement/createElementNS`:
 
-- In bootstrap mode, plugins have to clean up all UI elements on exit (disable or uninstall), which is very annoying. Using the `Utils.UI.createElement`, the plugin template will maintain these elements. Just `Utils.UI.removeAddonElements` on exit.
-- Zotero 7 requires createElement()/createElementNS() → createXULElement() for remaining XUL elements, while on Zotero 6 doesn't support `createXULElement`. Using `Utils.UI.createElement`, it switches API depending on the current platform automatically.
+- In bootstrap mode, plugins have to clean up all UI elements on exit (disable or uninstall), which is very annoying. Using the `createElement`, the plugin template will maintain these elements. Just `removeAddonElements` on exit.
+- Zotero 7 requires createElement()/createElementNS() → createXULElement() for remaining XUL elements, while Zotero 6 doesn't support `createXULElement`. Using `createElement`, it switches API depending on the current platform automatically.
 
-Definition:
-
-```ts
-function createElement (
-  doc: Document,
-  tagName: string,
-  namespace: "html" | "svg" | "xul"
-) => XUL.Element | DocumentFragment | HTMLElement | SVGAElement;
-```
-
-There are more advanced APIs for creating elements in batch: `Utils.UI.creatElementsFromJSON`. Input an element tree in JSON and return a fragment/element. These elements are also maintained by this plugin template.
-
-Definition:
-
-```ts
-function creatElementsFromJSON (
-  doc: Document,
-  options: ElementOptions
-) => XUL.Element | DocumentFragment | HTMLElement | SVGAElement;
-```
-
-Available options:
-
-```ts
-declare interface ElementOptions {
-  tag: string;
-  id?: string;
-  namespace?: "html" | "svg" | "xul";
-  styles?: { [key: string]: string };
-  directAttributes?: { [key: string]: string | boolean | number };
-  attributes?: { [key: string]: string | boolean | number };
-  listeners?: Array<
-    | [
-        string,
-        EventListenerOrEventListenerObject,
-        boolean | AddEventListenerOptions
-      ]
-    | [string, EventListenerOrEventListenerObject]
-  >;
-  checkExistanceParent?: HTMLElement;
-  ignoreIfExists?: boolean;
-  removeIfExists?: boolean;
-  customCheck?: () => boolean;
-  subElementOptions?: Array<ElementOptions>;
-}
-```
+There are more advanced APIs for creating elements in batch: `creatElementsFromJSON`. Input an element tree in JSON and return a fragment/element. These elements are also maintained by this plugin template.
 
 ### Directory Structure
 
@@ -263,7 +175,6 @@ This section shows the directory structure of a template.
     │  module.ts    # module class
     │  addon.ts     # base class
     │  events.ts    # events class
-    │  utils.ts     # Utils class
     │  views.ts     # UI class
     └─ prefs.ts     # preferences class
 

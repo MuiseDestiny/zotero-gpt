@@ -4,7 +4,7 @@ const { addonRef } = require("../package.json");
 
 class AddonViews extends AddonModule {
   // You can store some element in the object attributes
-  private progressWindowIcon: object;
+  private progressWindowIcon: { [key: string]: string };
 
   constructor(parent: Addon) {
     super(parent);
@@ -18,10 +18,10 @@ class AddonViews extends AddonModule {
   public initViews() {
     // You can init the UI elements that
     // cannot be initialized with overlay.xul
-    this._Addon.Utils.Tool.log("Initializing UI");
+    this._Addon.toolkit.Tool.log("Initializing UI");
     const menuIcon = "chrome://addontemplate/content/icons/favicon@0.5x.png";
     // item menuitem with icon
-    this._Addon.Utils.UI.insertMenuItem("item", {
+    this._Addon.toolkit.UI.insertMenuItem("item", {
       tag: "menuitem",
       id: "zotero-itemmenu-addontemplate-test",
       label: "Addon Template: Menuitem",
@@ -29,7 +29,7 @@ class AddonViews extends AddonModule {
       icon: menuIcon,
     });
     // item menupopup with sub-menuitems
-    this._Addon.Utils.UI.insertMenuItem(
+    this._Addon.toolkit.UI.insertMenuItem(
       "item",
       {
         tag: "menu",
@@ -47,11 +47,11 @@ class AddonViews extends AddonModule {
         "#zotero-itemmenu-addontemplate-test"
       )
     );
-    this._Addon.Utils.UI.insertMenuItem("menuFile", {
+    this._Addon.toolkit.UI.insertMenuItem("menuFile", {
       tag: "menuseparator",
     });
     // menu->File menuitem
-    this._Addon.Utils.UI.insertMenuItem("menuFile", {
+    this._Addon.toolkit.UI.insertMenuItem("menuFile", {
       tag: "menuitem",
       label: "Addon Template: File Menuitem",
       oncommand: "alert('Hello World! File Menuitem.')",
@@ -59,8 +59,8 @@ class AddonViews extends AddonModule {
   }
 
   public unInitViews() {
-    this._Addon.Utils.Tool.log("Uninitializing UI");
-    this._Addon.Utils.UI.removeAddonElements();
+    this._Addon.toolkit.Tool.log("Uninitializing UI");
+    this._Addon.toolkit.UI.removeAddonElements();
   }
 
   public showProgressWindow(
