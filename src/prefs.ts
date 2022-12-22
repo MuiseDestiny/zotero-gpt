@@ -1,6 +1,6 @@
 import Addon from "./addon";
 import AddonModule from "./module";
-import { addonName, addonRef } from "../package.json";
+import { config } from "../package.json";
 
 class AddonPrefs extends AddonModule {
   private _window!: Window;
@@ -11,7 +11,7 @@ class AddonPrefs extends AddonModule {
     // This function is called when the prefs window is opened
     // See addon/chrome/content/preferences.xul onpaneload
     this._window = _window;
-    this._Addon.toolkit.Tool.log(`${addonName}: init preferences`);
+    this._Addon.toolkit.Tool.log(`${config.addonName}: init preferences`);
     this.updatePrefsUI();
     this.bindPrefEvents();
   }
@@ -20,12 +20,12 @@ class AddonPrefs extends AddonModule {
     // You can initialize some UI elements on prefs window
     // with this._window.document
     // Or bind some events to the elements
-    this._Addon.toolkit.Tool.log(`${addonName}: init preferences UI`);
+    this._Addon.toolkit.Tool.log(`${config.addonName}: init preferences UI`);
   }
 
   private bindPrefEvents() {
     this._window.document
-      .querySelector(`#zotero-prefpane-${addonRef}-enable`)
+      .querySelector(`#zotero-prefpane-${config.addonRef}-enable`)
       ?.addEventListener("command", (e) => {
         this._Addon.toolkit.Tool.log(e);
         this._window.alert(
@@ -34,7 +34,7 @@ class AddonPrefs extends AddonModule {
       });
 
     this._window.document
-      .querySelector(`#zotero-prefpane-${addonRef}-input`)
+      .querySelector(`#zotero-prefpane-${config.addonRef}-input`)
       ?.addEventListener("change", (e) => {
         this._Addon.toolkit.Tool.log(e);
         this._window.alert(

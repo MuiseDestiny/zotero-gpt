@@ -1,6 +1,6 @@
 import Addon from "./addon";
 import AddonModule from "./module";
-const { addonRef } = require("../package.json");
+import { config } from "../package.json";
 
 class AddonViews extends AddonModule {
   // You can store some element in the object attributes
@@ -11,7 +11,7 @@ class AddonViews extends AddonModule {
     this.progressWindowIcon = {
       success: "chrome://zotero/skin/tick.png",
       fail: "chrome://zotero/skin/cross.png",
-      default: `chrome://${addonRef}/content/icons/favicon.png`,
+      default: `chrome://${config.addonRef}/content/icons/favicon.png`,
     };
   }
 

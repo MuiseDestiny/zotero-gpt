@@ -30,11 +30,13 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
   author,
   description,
   homepage,
-  releasepage,
-  updaterdf,
-  addonName,
-  addonID,
-  addonRef
+  config {
+    releasepage,
+    updaterdf,
+    addonName,
+    addonID,
+    addonRef
+  }
 ```
 
 > Be careful to set the addonID and addonRef to avoid confliction.

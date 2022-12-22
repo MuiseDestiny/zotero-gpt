@@ -1,6 +1,6 @@
 import Addon from "./addon";
 import AddonModule from "./module";
-import { addonName, addonID, addonRef } from "../package.json";
+import { config } from "../package.json";
 
 class AddonEvents extends AddonModule {
   private notifierCallback: any;
@@ -33,7 +33,7 @@ class AddonEvents extends AddonModule {
     // @ts-ignore
     this._Addon.rootURI = rootURI;
     // This function is the setup code of the addon
-    this._Addon.toolkit.Tool.log(`${addonName}: init called`);
+    this._Addon.toolkit.Tool.log(`${config.addonName}: init called`);
 
     // Register the callback in Zotero as an item observer
     let notifierID = Zotero.Notifier.registerObserver(this.notifierCallback, [
@@ -59,11 +59,11 @@ class AddonEvents extends AddonModule {
   public initPrefs() {
     this._Addon.toolkit.Tool.log(this._Addon.rootURI);
     const prefOptions = {
-      pluginID: addonID,
+      pluginID: config.addonID,
       src: this._Addon.rootURI + "chrome/content/preferences.xhtml",
       label: "Template",
-      image: `chrome://${addonRef}/content/icons/favicon.png`,
-      extraDTD: [`chrome://${addonRef}/locale/overlay.dtd`],
+      image: `chrome://${config.addonRef}/content/icons/favicon.png`,
+      extraDTD: [`chrome://${config.addonRef}/locale/overlay.dtd`],
       defaultXUL: true,
       onload: (win: Window) => {
         this._Addon.prefs.initPreferences(win);
@@ -84,7 +84,7 @@ class AddonEvents extends AddonModule {
 
   public onUnInit(): void {
     const Zotero = this._Addon.Zotero;
-    this._Addon.toolkit.Tool.log(`${addonName}: uninit called`);
+    this._Addon.toolkit.Tool.log(`${config.addonName}: uninit called`);
     this.unInitPrefs();
     //  Remove elements and do clean up
     this._Addon.views.unInitViews();
