@@ -30,14 +30,14 @@
   },
   "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
   "dependencies": {
-    "zotero-plugin-toolkit": "^0.0.2"
+    "zotero-plugin-toolkit": "^0.0.3"
   },
   "devDependencies": {
-    "@types/node": "^18.7.20",
-    "compressing": "^1.5.1",
-    "esbuild": "^0.15.16",
-    "release-it": "^14.14.0",
-    "replace-in-file": "^6.3.2",
-    "zotero-types": "^0.1.1"
+    "@types/node": "^18.11.17",
+    "compressing": "^1.6.3",
+    "esbuild": "^0.15.18",
+    "release-it": "^14.14.3",
+    "replace-in-file": "^6.3.5",
+    "zotero-types": "^0.1.2"
   }
 }
