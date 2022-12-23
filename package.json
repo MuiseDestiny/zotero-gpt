@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
   "dependencies": {
-    "zotero-plugin-toolkit": "^0.0.1"
+    "zotero-plugin-toolkit": "^0.0.2"
   },
   "devDependencies": {
     "@types/node": "^18.7.20",

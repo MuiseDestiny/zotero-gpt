@@ -56,11 +56,16 @@ class AddonViews extends AddonModule {
       label: "Addon Template: File Menuitem",
       oncommand: "alert('Hello World! File Menuitem.')",
     });
+
+    // Initialize extra columns
+    this._Addon.toolkit.ItemTree.registerExample();
   }
 
   public unInitViews() {
     this._Addon.toolkit.Tool.log("Uninitializing UI");
     this._Addon.toolkit.UI.removeAddonElements();
+    // Remove extra columns
+    this._Addon.toolkit.ItemTree.unregister("test");
   }
 
   public showProgressWindow(
