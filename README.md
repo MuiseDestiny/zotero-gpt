@@ -124,6 +124,23 @@ The plugin template provides new APIs for bootstrap plugins. We have two reasons
 
 There are more advanced APIs for creating elements in batch: `creatElementsFromJSON`. Input an element tree in JSON and return a fragment/element. These elements are also maintained by this plugin template.
 
+#### Extra Column in Library
+
+Using [Zotero Plugin Toolkit:ItemTreeTool](https://github.com/windingwind/zotero-plugin-toolkit/blob/HEAD/docs/zotero-plugin-toolkit.itemtreetool.md) to register an extra column in `src/views.ts`.
+
+```ts
+this._Addon.toolkit.ItemTree.registerExample();
+```
+This will register a column with dataKey `test`. Looks like:
+
+![image](https://user-images.githubusercontent.com/33902321/209274492-7aa94912-af38-4154-af46-dc8f59640de3.png)
+
+Remember to unregister it when exiting.
+
+```ts
+this._Addon.toolkit.ItemTree.unregister("test");
+```
+
 ### Directory Structure
 
 This section shows the directory structure of a template.
