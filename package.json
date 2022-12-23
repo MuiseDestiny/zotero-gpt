@@ -36,8 +36,8 @@
     "@types/node": "^18.7.20",
     "compressing": "^1.5.1",
     "esbuild": "^0.15.16",
-    "replace-in-file": "^6.3.2",
     "release-it": "^14.14.0",
-    "zotero-types": "^0.0.8"
+    "replace-in-file": "^6.3.2",
+    "zotero-types": "^0.1.1"
   }
 }
