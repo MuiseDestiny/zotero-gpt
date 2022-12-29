@@ -3,7 +3,7 @@
   onload="Zotero.AddonTemplate.prefs.initPreferences(window)"
 >
   <groupbox>
-    <label><html:h2>Addon Template Example</html:h2></label>
+    <label><html:h2>&zotero.__addonRef__.pref.title;</html:h2></label>
     <checkbox
       id="zotero-prefpane-__addonRef__-enable"
       label="&zotero.__addonRef__.pref.enable.label;"
@@ -20,4 +20,7 @@
       ></html:input>
     </hbox>
   </groupbox>
+</vbox>
+<vbox>
+    <label value="&zotero.__addonRef__.help.version.label;  &zotero.__addonRef__.help.releasetime.label;"></label>
 </vbox>

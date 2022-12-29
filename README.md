@@ -148,7 +148,7 @@ This section shows the directory structure of a template.
 - All `.js/.ts` code files are in `./src`;
 - Addon config files: `./addon/chrome.manifest`, `./addon/install.rdf`;
 - UI files: `./addon/chrome/content/*.xul`. The `overlay.xul` also defines the main entrance;
-- Locale files: `./addon/chrome/locale/*.dtd`;
+- Locale files: `./addon/chrome/locale/[*.dtd, *.properties]`;
 - Resource files: `./addon/chrome/skin/default/__addonRef__/*.dtd`;
 - Preferences file: `./addon/chrome/defaults/preferences/defaults.js`;
   > Don't break the lines in the `defaults.js`
@@ -182,9 +182,11 @@ This section shows the directory structure of a template.
 │      └─locale     # locale
 │         ├─en-US
 │         │      overlay.dtd
+│         │      addontemplate.properties
 │         │
 │         └─zh-CN
-│                overlay.dtd
+│         |      overlay.dtd
+│         │      addontemplate.properties
 │
 ├─builds            # build dir
 │  └─.xpi
@@ -195,6 +197,7 @@ This section shows the directory structure of a template.
     │  addon.ts     # base class
     │  events.ts    # events class
     │  views.ts     # UI class
+    │  locale.ts    # Locale class for properties files
     └─ prefs.ts     # preferences class
 
 ```

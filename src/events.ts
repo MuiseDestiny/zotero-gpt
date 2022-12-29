@@ -61,7 +61,7 @@ class AddonEvents extends AddonModule {
     const prefOptions = {
       pluginID: config.addonID,
       src: this._Addon.rootURI + "chrome/content/preferences.xhtml",
-      label: "Template",
+      label: this._Addon.locale.getString("prefs.title"),
       image: `chrome://${config.addonRef}/content/icons/favicon.png`,
       extraDTD: [`chrome://${config.addonRef}/locale/overlay.dtd`],
       defaultXUL: true,

@@ -24,7 +24,7 @@ class AddonViews extends AddonModule {
     this._Addon.toolkit.UI.insertMenuItem("item", {
       tag: "menuitem",
       id: "zotero-itemmenu-addontemplate-test",
-      label: "Addon Template: Menuitem",
+      label: this._Addon.locale.getString("menuitem.label"),
       oncommand: "alert('Hello World! Default Menuitem.')",
       icon: menuIcon,
     });
@@ -33,11 +33,11 @@ class AddonViews extends AddonModule {
       "item",
       {
         tag: "menu",
-        label: "Addon Template: Menupopup",
+        label: this._Addon.locale.getString("menupopup.label"),
         subElementOptions: [
           {
             tag: "menuitem",
-            label: "Addon Template",
+            label: this._Addon.locale.getString("menuitem.submenulabel"),
             oncommand: "alert('Hello World! Sub Menuitem.')",
           },
         ],
@@ -53,7 +53,7 @@ class AddonViews extends AddonModule {
     // menu->File menuitem
     this._Addon.toolkit.UI.insertMenuItem("menuFile", {
       tag: "menuitem",
-      label: "Addon Template: File Menuitem",
+      label: this._Addon.locale.getString("menuitem.filemenulabel"),
       oncommand: "alert('Hello World! File Menuitem.')",
     });
 

@@ -1,3 +1,4 @@
+<!ENTITY zotero.__addonRef__.pref.title "Addon Template Example">
 <!ENTITY zotero.__addonRef__.itemmenu.test.label "addon template">
 <!ENTITY zotero.__addonRef__.pref.enable.label "Enable">
 <!ENTITY zotero.__addonRef__.pref.input.label "Input">
