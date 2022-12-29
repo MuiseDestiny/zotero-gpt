@@ -7,7 +7,7 @@
     "addonID": "addontemplate@euclpts.com",
     "addonRef": "addontemplate",
     "releasepage": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
-    "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/master/update.json"
+    "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/bootstrap/update.json"
   },
   "main": "src/index.ts",
   "scripts": {
