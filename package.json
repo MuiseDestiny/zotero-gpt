@@ -11,10 +11,11 @@
   },
   "main": "src/index.ts",
   "scripts": {
-    "build": "node build.js",
+    "build-dev": "cross-env NODE_ENV=development node build.js",
+    "build": "cross-env NODE_ENV=production node build.js",
     "start": "node start.js",
     "stop": "node stop.js",
-    "prerestart": "npm run build",
+    "prerestart": "npm run build-dev",
     "restart": "node restart.js",
     "release": "release-it",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -30,11 +31,12 @@
   },
   "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
   "dependencies": {
-    "zotero-plugin-toolkit": "^0.0.9"
+    "zotero-plugin-toolkit": "^0.0.10"
   },
   "devDependencies": {
     "@types/node": "^18.11.17",
     "compressing": "^1.6.3",
+    "cross-env": "^7.0.3",
     "esbuild": "^0.16.10",
     "release-it": "^14.14.3",
     "replace-in-file": "^6.3.5",

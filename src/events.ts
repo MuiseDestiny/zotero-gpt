@@ -3,10 +3,46 @@ import AddonModule from "./module";
 import { config } from "../package.json";
 
 class AddonEvents extends AddonModule {
-  private notifierCallback: any;
   constructor(parent: Addon) {
     super(parent);
-    this.notifierCallback = {
+  }
+
+  // This function is the setup code of the addon
+  public async onInit() {
+    this._Addon.Zotero = Zotero;
+    // @ts-ignore
+    this._Addon.rootURI = rootURI;
+    const development = "development";
+    const production = "production";
+    // The env will be replaced after esbuild
+    // @ts-ignore
+    this._Addon.env = __env__;
+    this._Addon.toolkit.Tool.logOptionsGlobal.prefix = `[${config.addonName}]`;
+    this._Addon.toolkit.Tool.logOptionsGlobal.disableConsole =
+      this._Addon.env === "production";
+    this._Addon.toolkit.Tool.log("init called");
+
+    // Initialize locale provider
+    this._Addon.locale.initLocale();
+    // Initialize preference window
+    this.initPrefs();
+    // Initialize notifier callback
+    this.initNotifier();
+    // Initialize UI elements
+    this._Addon.views.initViews();
+  }
+
+  public onUnInit(): void {
+    this._Addon.toolkit.Tool.log("uninit called");
+    this.unInitPrefs();
+    //  Remove elements and do clean up
+    this._Addon.views.unInitViews();
+    // Remove addon object
+    Zotero.AddonTemplate = undefined;
+  }
+
+  private initNotifier() {
+    const callback = {
       notify: async (
         event: string,
         type: string,
@@ -26,17 +62,9 @@ class AddonEvents extends AddonModule {
         }
       },
     };
-  }
-
-  public async onInit() {
-    this._Addon.Zotero = Zotero;
-    // @ts-ignore
-    this._Addon.rootURI = rootURI;
-    // This function is the setup code of the addon
-    this._Addon.toolkit.Tool.log(`${config.addonName}: init called`);
 
     // Register the callback in Zotero as an item observer
-    let notifierID = Zotero.Notifier.registerObserver(this.notifierCallback, [
+    let notifierID = Zotero.Notifier.registerObserver(callback, [
       "tab",
       "item",
       "file",
@@ -50,14 +78,9 @@ class AddonEvents extends AddonModule {
       },
       false
     );
-
-    // Initialize preference window
-    this.initPrefs();
-    this._Addon.views.initViews();
   }
 
-  public initPrefs() {
-    this._Addon.toolkit.Tool.log(this._Addon.rootURI);
+  private initPrefs() {
     const prefOptions = {
       pluginID: config.addonID,
       src: this._Addon.rootURI + "chrome/content/preferences.xhtml",
@@ -80,16 +103,6 @@ class AddonEvents extends AddonModule {
     if (!this._Addon.toolkit.Compat.isZotero7()) {
       this._Addon.toolkit.Compat.unregisterPrefPane();
     }
-  }
-
-  public onUnInit(): void {
-    const Zotero = this._Addon.Zotero;
-    this._Addon.toolkit.Tool.log(`${config.addonName}: uninit called`);
-    this.unInitPrefs();
-    //  Remove elements and do clean up
-    this._Addon.views.unInitViews();
-    // Remove addon object
-    Zotero.AddonTemplate = undefined;
   }
 }
 

@@ -85,7 +85,9 @@ async function main() {
   const buildDir = "builds";
 
   console.log(
-    `[Build] BUILD_DIR=${buildDir}, VERSION=${version}, BUILD_TIME=${buildTime}`
+    `[Build] BUILD_DIR=${buildDir}, VERSION=${version}, BUILD_TIME=${buildTime}, ENV=${[
+      process.env.NODE_ENV,
+    ]}`
   );
 
   clearFolder(buildDir);
@@ -98,6 +100,9 @@ async function main() {
   await esbuild
     .build({
       entryPoints: ["src/index.ts"],
+      define: {
+        __env__: process.env.NODE_ENV,
+      },
       bundle: true,
       // Entry should be the same as addon/chrome/content/overlay.xul
       outfile: path.join(buildDir, "addon/chrome/content/scripts/index.js"),
@@ -155,6 +160,17 @@ async function main() {
       (f) => `${f.file} : ${f.numReplacements} / ${f.numMatches}`
     )
   );
+
+  // _ = replace.sync({
+  //   files: [path.join(buildDir, "addon/chrome/content/scripts/index.js")],
+  //   from: [/__env__/g]
+  // });
+  // console.log(
+  //   "[Build] Run replace in ",
+  //   _.filter((f) => f.hasChanged).map(
+  //     (f) => `${f.file} : ${f.numReplacements} / ${f.numMatches}`
+  //   )
+  // );
 
   console.log("[Build] Replace OK");
 

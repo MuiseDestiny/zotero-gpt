@@ -13,6 +13,7 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 - TypeScript support;
 - Build addon settings and versions automatically;
 - Build and reload code in Zotero automatically;
+- Development/production build environment;
 - Release to GitHub automatically(using [release-it](https://github.com/release-it/release-it));
 - Extensive skeleton;
 - Some sample code of UI and lifecycle.
@@ -42,9 +43,13 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 > Be careful to set the addonID and addonRef to avoid confliction.
 
 - Run `npm install` to set up the plugin and install dependencies. If you don't have NodeJS installed, please download it [here](https://nodejs.org/en/);
-- Run `npm run build` to build the plugin. The xpi for installation and the built code is under builds folder.
+- Run `npm run build` to build the plugin in production mode. Run `npm run build-dev` to build the plugin in development mode. The xpi for installation and the built code is under builds folder.
 
-### Plugin Life Cycle
+> What the difference between dev & prod?
+> - This environment variable is stored in `Zotero.AddonTemplate.env`. The outputs to console is disabled in prod mode.
+> - You can decide what users cannot see/use based on this variable.
+
+### About Life Cycle
 
 1. When install/enable/startup triggered from Zotero, `bootstrap.js` > `startup` is called
    - Wait for Zotero ready
@@ -182,11 +187,11 @@ This section shows the directory structure of a template.
 │      └─locale     # locale
 │         ├─en-US
 │         │      overlay.dtd
-│         │      addontemplate.properties
+│         │      addon.properties
 │         │
 │         └─zh-CN
 │         |      overlay.dtd
-│         │      addontemplate.properties
+│         │      addon.properties
 │
 ├─builds            # build dir
 │  └─.xpi

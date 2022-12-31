@@ -11,7 +11,7 @@ class AddonPrefs extends AddonModule {
     // This function is called when the prefs window is opened
     // See addon/chrome/content/preferences.xul onpaneload
     this._window = _window;
-    this._Addon.toolkit.Tool.log(`${config.addonName}: init preferences`);
+    this._Addon.toolkit.Tool.log("init preferences");
     this.updatePrefsUI();
     this.bindPrefEvents();
   }
@@ -20,7 +20,7 @@ class AddonPrefs extends AddonModule {
     // You can initialize some UI elements on prefs window
     // with this._window.document
     // Or bind some events to the elements
-    this._Addon.toolkit.Tool.log(`${config.addonName}: init preferences UI`);
+    this._Addon.toolkit.Tool.log("init preferences UI");
   }
 
   private bindPrefEvents() {
