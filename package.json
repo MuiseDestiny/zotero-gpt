@@ -30,9 +30,6 @@
     "url": "https://github.com/windingwind/zotero-addon-template/issues"
   },
   "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
-  "dependencies": {
-    "zotero-plugin-toolkit": "^0.0.10"
-  },
   "devDependencies": {
     "@types/node": "^18.11.17",
     "compressing": "^1.6.3",
@@ -41,5 +38,8 @@
     "release-it": "^14.14.3",
     "replace-in-file": "^6.3.5",
     "zotero-types": "^0.1.2"
+  },
+  "dependencies": {
+    "zotero-plugin-toolkit": "file:../zotero-plugin-toolkit"
   }
 }
