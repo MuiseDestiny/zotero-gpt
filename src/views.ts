@@ -58,14 +58,66 @@ class AddonViews extends AddonModule {
     });
 
     // Initialize extra columns
-    this._Addon.toolkit.ItemTree.registerExample();
+    this._Addon.toolkit.ItemTree.register(
+      "test1",
+      "text column",
+      (
+        field: string,
+        unformatted: boolean,
+        includeBaseMapped: boolean,
+        item: Zotero.Item
+      ) => {
+        return field + String(item.id);
+      },
+      {
+        iconPath: "chrome://zotero/skin/cross.png",
+      }
+    );
+    this._Addon.toolkit.ItemTree.register(
+      "test2",
+      "custom column",
+      (
+        field: string,
+        unformatted: boolean,
+        includeBaseMapped: boolean,
+        item: Zotero.Item
+      ) => {
+        return String(item.id);
+      },
+      {
+        renderCellHook(index, data, column) {
+          const span = document.createElementNS(
+            "http://www.w3.org/1999/xhtml",
+            "span"
+          );
+          span.style.background = "#0dd068";
+          span.innerText = "⭐" + data;
+          return span;
+        },
+      }
+    );
+
+    // Customize cells
+    this._Addon.toolkit.ItemTree.addRenderCellHook(
+      "title",
+      (index: number, data: string, column: any, original: Function) => {
+        const span = original(index, data, column) as HTMLSpanElement;
+        span.style.background = "rgb(30, 30, 30)";
+        span.style.color = "rgb(156, 220, 240)";
+        return span;
+      }
+    );
   }
 
   public unInitViews() {
     this._Addon.toolkit.Tool.log("Uninitializing UI");
     this._Addon.toolkit.UI.removeAddonElements();
     // Remove extra columns
-    this._Addon.toolkit.ItemTree.unregister("test");
+    this._Addon.toolkit.ItemTree.unregister("test1");
+    this._Addon.toolkit.ItemTree.unregister("test2");
+
+    // Remove title cell patch
+    this._Addon.toolkit.ItemTree.removeRenderCellHook("title");
   }
 
   public showProgressWindow(
