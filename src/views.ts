@@ -19,10 +19,22 @@ class AddonViews extends AddonModule {
     // You can init the UI elements that
     // cannot be initialized with overlay.xul
     this._Addon.toolkit.Tool.log("Initializing UI");
-    /**
-     *  Example: menu items starts
-     */
-    const menuIcon = "chrome://addontemplate/content/icons/favicon@0.5x.png";
+
+    // register style sheet
+    const styles = this._Addon.toolkit.UI.creatElementsFromJSON(document, {
+      tag: "link",
+      directAttributes: {
+        type: "text/css",
+        rel: "stylesheet",
+        href: `chrome://${config.addonRef}/content/zoteroPane.css`,
+      },
+    }) as HTMLLinkElement;
+    document.documentElement.appendChild(styles);
+    document
+      .getElementById("zotero-item-pane-content")
+      ?.classList.add("makeItRed");
+
+    const menuIcon = `chrome://${config.addonRef}/content/icons/favicon@0.5x.png`;
     // item menuitem with icon
     this._Addon.toolkit.UI.insertMenuItem("item", {
       tag: "menuitem",
