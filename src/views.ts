@@ -19,6 +19,9 @@ class AddonViews extends AddonModule {
     // You can init the UI elements that
     // cannot be initialized with overlay.xul
     this._Addon.toolkit.Tool.log("Initializing UI");
+    /**
+     *  Example: menu items starts
+     */
     const menuIcon = "chrome://addontemplate/content/icons/favicon@0.5x.png";
     // item menuitem with icon
     this._Addon.toolkit.UI.insertMenuItem("item", {
@@ -56,7 +59,13 @@ class AddonViews extends AddonModule {
       label: this._Addon.locale.getString("menuitem.filemenulabel"),
       oncommand: "alert('Hello World! File Menuitem.')",
     });
+    /**
+     *  Example: menu items ends
+     */
 
+    /**
+     *  Example: extra column starts
+     */
     // Initialize extra columns
     this._Addon.toolkit.ItemTree.register(
       "test1",
@@ -96,7 +105,13 @@ class AddonViews extends AddonModule {
         },
       }
     );
+    /**
+     *  Example: extra column ends
+     */
 
+    /**
+     *  Example: custom cell starts
+     */
     // Customize cells
     this._Addon.toolkit.ItemTree.addRenderCellHook(
       "title",
@@ -107,6 +122,143 @@ class AddonViews extends AddonModule {
         return span;
       }
     );
+    /**
+     *  Example: custom cell ends
+     */
+
+    /**
+     *  Example: extra library tab starts
+     */
+    const libTabId = this._Addon.toolkit.UI.registerLibraryTabPanel(
+      this._Addon.locale.getString("tabpanel.lib.tab.label"),
+      (panel: XUL.Element, win: Window) => {
+        const elem = this._Addon.toolkit.UI.creatElementsFromJSON(
+          win.document,
+          {
+            tag: "vbox",
+            namespace: "xul",
+            subElementOptions: [
+              {
+                tag: "h2",
+                directAttributes: {
+                  innerText: "Hello World!",
+                },
+              },
+              {
+                tag: "div",
+                directAttributes: {
+                  innerText: "This is a library tab.",
+                },
+              },
+              {
+                tag: "button",
+                directAttributes: {
+                  innerText: "Unregister",
+                },
+                listeners: [
+                  {
+                    type: "click",
+                    listener: () => {
+                      this._Addon.toolkit.UI.unregisterLibraryTabPanel(
+                        libTabId
+                      );
+                    },
+                  },
+                ],
+              },
+            ],
+          }
+        );
+        panel.append(elem);
+      },
+      {
+        targetIndex: 1,
+      }
+    );
+    /**
+     *  Example: extra library tab ends
+     */
+
+    /**
+     *  Example: extra reader tab starts
+     */
+    const readerTabId = `${config.addonRef}-extra-reader-tab`;
+    this._Addon.toolkit.UI.registerReaderTabPanel(
+      this._Addon.locale.getString("tabpanel.reader.tab.label"),
+      (
+        panel: XUL.Element,
+        deck: XUL.Deck,
+        win: Window,
+        reader: _ZoteroReaderInstance
+      ) => {
+        if (!panel) {
+          this._Addon.toolkit.Tool.log(
+            "This reader do not have right-side bar. Adding reader tab skipped."
+          );
+          return;
+        }
+        this._Addon.toolkit.Tool.log(reader);
+        const elem = this._Addon.toolkit.UI.creatElementsFromJSON(
+          win.document,
+          {
+            tag: "vbox",
+            id: `${config.addonRef}-${reader._instanceID}-extra-reader-tab-div`,
+            namespace: "xul",
+            // This is important! Don't create content for multiple times
+            ignoreIfExists: true,
+            subElementOptions: [
+              {
+                tag: "h2",
+                directAttributes: {
+                  innerText: "Hello World!",
+                },
+              },
+              {
+                tag: "div",
+                directAttributes: {
+                  innerText: "This is a reader tab.",
+                },
+              },
+              {
+                tag: "div",
+                directAttributes: {
+                  innerText: `Reader: ${reader._title.slice(0, 20)}`,
+                },
+              },
+              {
+                tag: "div",
+                directAttributes: {
+                  innerText: `itemID: ${reader.itemID}.`,
+                },
+              },
+              {
+                tag: "button",
+                directAttributes: {
+                  innerText: "Unregister",
+                },
+                listeners: [
+                  {
+                    type: "click",
+                    listener: () => {
+                      this._Addon.toolkit.UI.unregisterReaderTabPanel(
+                        readerTabId
+                      );
+                    },
+                  },
+                ],
+              },
+            ],
+          }
+        );
+        panel.append(elem);
+      },
+      {
+        tabId: readerTabId,
+      }
+    );
+    /**
+     *  Example: extra reader tab ends
+     */
   }
 
   public unInitViews() {
@@ -118,6 +270,10 @@ class AddonViews extends AddonModule {
 
     // Remove title cell patch
     this._Addon.toolkit.ItemTree.removeRenderCellHook("title");
+
+    this._Addon.toolkit.UI.unregisterReaderTabPanel(
+      `${config.addonRef}-extra-reader-tab`
+    );
   }
 
   public showProgressWindow(
