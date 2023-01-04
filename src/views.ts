@@ -152,18 +152,21 @@ class AddonViews extends AddonModule {
             subElementOptions: [
               {
                 tag: "h2",
+                namespace: "html",
                 directAttributes: {
                   innerText: "Hello World!",
                 },
               },
               {
                 tag: "div",
+                namespace: "html",
                 directAttributes: {
                   innerText: "This is a library tab.",
                 },
               },
               {
                 tag: "button",
+                namespace: "html",
                 directAttributes: {
                   innerText: "Unregister",
                 },
@@ -217,34 +220,40 @@ class AddonViews extends AddonModule {
             id: `${config.addonRef}-${reader._instanceID}-extra-reader-tab-div`,
             namespace: "xul",
             // This is important! Don't create content for multiple times
-            ignoreIfExists: true,
+            // ignoreIfExists: true,
+            removeIfExists: true,
             subElementOptions: [
               {
                 tag: "h2",
+                namespace: "html",
                 directAttributes: {
                   innerText: "Hello World!",
                 },
               },
               {
                 tag: "div",
+                namespace: "html",
                 directAttributes: {
                   innerText: "This is a reader tab.",
                 },
               },
               {
                 tag: "div",
+                namespace: "html",
                 directAttributes: {
                   innerText: `Reader: ${reader._title.slice(0, 20)}`,
                 },
               },
               {
                 tag: "div",
+                namespace: "html",
                 directAttributes: {
                   innerText: `itemID: ${reader.itemID}.`,
                 },
               },
               {
                 tag: "button",
+                namespace: "html",
                 directAttributes: {
                   innerText: "Unregister",
                 },
@@ -266,6 +275,7 @@ class AddonViews extends AddonModule {
       },
       {
         tabId: readerTabId,
+        targetIndex: 1,
       }
     );
     /**
@@ -275,17 +285,18 @@ class AddonViews extends AddonModule {
 
   public unInitViews() {
     this._Addon.toolkit.Tool.log("Uninitializing UI");
-    this._Addon.toolkit.UI.removeAddonElements();
-    // Remove extra columns
-    this._Addon.toolkit.ItemTree.unregister("test1");
-    this._Addon.toolkit.ItemTree.unregister("test2");
+    this._Addon.toolkit.unregisterAll();
+    // this._Addon.toolkit.UI.removeAddonElements();
+    // // Remove extra columns
+    // this._Addon.toolkit.ItemTree.unregister("test1");
+    // this._Addon.toolkit.ItemTree.unregister("test2");
 
-    // Remove title cell patch
-    this._Addon.toolkit.ItemTree.removeRenderCellHook("title");
+    // // Remove title cell patch
+    // this._Addon.toolkit.ItemTree.removeRenderCellHook("title");
 
-    this._Addon.toolkit.UI.unregisterReaderTabPanel(
-      `${config.addonRef}-extra-reader-tab`
-    );
+    // this._Addon.toolkit.UI.unregisterReaderTabPanel(
+    //   `${config.addonRef}-extra-reader-tab`
+    // );
   }
 
   public showProgressWindow(
