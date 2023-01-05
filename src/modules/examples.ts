@@ -1,5 +1,6 @@
 import { config } from "../../package.json";
 import { getString } from "./locale";
+import { showProgressWindow } from "./progressWindow";
 
 function example(
   target: any,
@@ -38,18 +39,7 @@ export class BasicExampleFactory {
           this.unregisterNotifier(notifierID);
           return;
         }
-        ztoolkit.Tool.log("notify", event, type, ids, extraData);
-        // You can add your code to the corresponding notify type
-        if (
-          event == "select" &&
-          type == "tab" &&
-          extraData[ids[0]].type == "reader"
-        ) {
-          // Select a reader tab
-        }
-        if (event == "add" && type == "item") {
-          // Add an item
-        }
+        addon.hooks.onNotify(event, type, ids, extraData);
       },
     };
 
@@ -68,6 +58,11 @@ export class BasicExampleFactory {
       },
       false
     );
+  }
+
+  @example
+  static exampleNotifierCallback() {
+    showProgressWindow(config.addonName, "Open Tab Detected!", "success");
   }
 
   @example
