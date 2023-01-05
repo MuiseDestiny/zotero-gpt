@@ -1,6 +1,7 @@
 import Addon from "./addon";
 import AddonModule from "./module";
 import { config } from "../package.json";
+import ZoteroToolkit from "zotero-plugin-toolkit";
 
 class AddonEvents extends AddonModule {
   constructor(parent: Addon) {
@@ -9,18 +10,16 @@ class AddonEvents extends AddonModule {
 
   // This function is the setup code of the addon
   public async onInit() {
-    this._Addon.Zotero = Zotero;
+    this.initGlobalVariables();
     // @ts-ignore
-    this._Addon.rootURI = rootURI;
     const development = "development";
     const production = "production";
     // The env will be replaced after esbuild
     // @ts-ignore
     this._Addon.env = __env__;
-    this._Addon.toolkit.Tool.logOptionsGlobal.prefix = `[${config.addonName}]`;
-    this._Addon.toolkit.Tool.logOptionsGlobal.disableConsole =
+    ZToolkit.Tool.logOptionsGlobal.disableConsole =
       this._Addon.env === "production";
-    this._Addon.toolkit.Tool.log("init called");
+    ZToolkit.Tool.log("init called");
 
     // Initialize locale provider
     this._Addon.locale.initLocale();
@@ -33,12 +32,23 @@ class AddonEvents extends AddonModule {
   }
 
   public onUnInit(): void {
-    this._Addon.toolkit.Tool.log("uninit called");
+    ZToolkit.Tool.log("uninit called");
     this.unInitPrefs();
     //  Remove elements and do clean up
     this._Addon.views.unInitViews();
     // Remove addon object
     Zotero.AddonTemplate = undefined;
+  }
+
+  private initGlobalVariables() {
+    _globalThis.ZToolkit = new ZoteroToolkit();
+    ZToolkit.Tool.logOptionsGlobal.prefix = `[${config.addonName}]`;
+    _globalThis.Zotero = ZToolkit.Compat.getGlobal("Zotero");
+    _globalThis.ZoteroPane = ZToolkit.Compat.getGlobal("ZoteroPane");
+    _globalThis.Zotero_Tabs = ZToolkit.Compat.getGlobal("Zotero_Tabs");
+    _globalThis.window = ZToolkit.Compat.getGlobal("window");
+    _globalThis.document = ZToolkit.Compat.getGlobal("document");
+    ZToolkit.Tool.log("initializeing global variables");
   }
 
   private initNotifier() {
@@ -83,7 +93,7 @@ class AddonEvents extends AddonModule {
   private initPrefs() {
     const prefOptions = {
       pluginID: config.addonID,
-      src: this._Addon.rootURI + "chrome/content/preferences.xhtml",
+      src: rootURI + "chrome/content/preferences.xhtml",
       label: this._Addon.locale.getString("prefs.title"),
       image: `chrome://${config.addonRef}/content/icons/favicon.png`,
       extraDTD: [`chrome://${config.addonRef}/locale/overlay.dtd`],
@@ -92,16 +102,16 @@ class AddonEvents extends AddonModule {
         this._Addon.prefs.initPreferences(win);
       },
     };
-    if (this._Addon.toolkit.Compat.isZotero7()) {
+    if (ZToolkit.Compat.isZotero7()) {
       Zotero.PreferencePanes.register(prefOptions);
     } else {
-      this._Addon.toolkit.Compat.registerPrefPane(prefOptions);
+      ZToolkit.Compat.registerPrefPane(prefOptions);
     }
   }
 
   private unInitPrefs() {
-    if (!this._Addon.toolkit.Compat.isZotero7()) {
-      this._Addon.toolkit.Compat.unregisterPrefPane();
+    if (!ZToolkit.Compat.isZotero7()) {
+      ZToolkit.Compat.unregisterPrefPane();
     }
   }
 }

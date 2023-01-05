@@ -81,15 +81,11 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
     rootURI = resourceURI.spec;
   }
 
-  const window = Zotero.getMainWindow();
   // Global variables for plugin code
   const ctx = {
-    Zotero,
     rootURI,
-    window,
-    document: window.document,
-    ZoteroPane: Zotero.getActiveZoteroPane(),
   };
+  ctx._globalThis = ctx;
 
   Services.scriptloader.loadSubScript(
     `${rootURI}/chrome/content/scripts/index.js`,

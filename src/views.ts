@@ -18,10 +18,10 @@ class AddonViews extends AddonModule {
   public initViews() {
     // You can init the UI elements that
     // cannot be initialized with overlay.xul
-    this._Addon.toolkit.Tool.log("Initializing UI");
+    ZToolkit.Tool.log("Initializing UI");
 
     // register style sheet
-    const styles = this._Addon.toolkit.UI.creatElementsFromJSON(document, {
+    const styles = ZToolkit.UI.creatElementsFromJSON(document, {
       tag: "link",
       directAttributes: {
         type: "text/css",
@@ -36,7 +36,7 @@ class AddonViews extends AddonModule {
 
     const menuIcon = `chrome://${config.addonRef}/content/icons/favicon@0.5x.png`;
     // item menuitem with icon
-    this._Addon.toolkit.UI.insertMenuItem("item", {
+    ZToolkit.UI.insertMenuItem("item", {
       tag: "menuitem",
       id: "zotero-itemmenu-addontemplate-test",
       label: this._Addon.locale.getString("menuitem.label"),
@@ -44,7 +44,7 @@ class AddonViews extends AddonModule {
       icon: menuIcon,
     });
     // item menupopup with sub-menuitems
-    this._Addon.toolkit.UI.insertMenuItem(
+    ZToolkit.UI.insertMenuItem(
       "item",
       {
         tag: "menu",
@@ -58,15 +58,15 @@ class AddonViews extends AddonModule {
         ],
       },
       "before",
-      this._Addon.Zotero.getMainWindow().document.querySelector(
+      document.querySelector(
         "#zotero-itemmenu-addontemplate-test"
-      )
+      ) as XUL.MenuItem
     );
-    this._Addon.toolkit.UI.insertMenuItem("menuFile", {
+    ZToolkit.UI.insertMenuItem("menuFile", {
       tag: "menuseparator",
     });
     // menu->File menuitem
-    this._Addon.toolkit.UI.insertMenuItem("menuFile", {
+    ZToolkit.UI.insertMenuItem("menuFile", {
       tag: "menuitem",
       label: this._Addon.locale.getString("menuitem.filemenulabel"),
       oncommand: "alert('Hello World! File Menuitem.')",
@@ -79,7 +79,7 @@ class AddonViews extends AddonModule {
      *  Example: extra column starts
      */
     // Initialize extra columns
-    this._Addon.toolkit.ItemTree.register(
+    ZToolkit.ItemTree.register(
       "test1",
       "text column",
       (
@@ -94,7 +94,7 @@ class AddonViews extends AddonModule {
         iconPath: "chrome://zotero/skin/cross.png",
       }
     );
-    this._Addon.toolkit.ItemTree.register(
+    ZToolkit.ItemTree.register(
       "test2",
       "custom column",
       (
@@ -125,7 +125,7 @@ class AddonViews extends AddonModule {
      *  Example: custom cell starts
      */
     // Customize cells
-    this._Addon.toolkit.ItemTree.addRenderCellHook(
+    ZToolkit.ItemTree.addRenderCellHook(
       "title",
       (index: number, data: string, column: any, original: Function) => {
         const span = original(index, data, column) as HTMLSpanElement;
@@ -141,49 +141,44 @@ class AddonViews extends AddonModule {
     /**
      *  Example: extra library tab starts
      */
-    const libTabId = this._Addon.toolkit.UI.registerLibraryTabPanel(
+    const libTabId = ZToolkit.UI.registerLibraryTabPanel(
       this._Addon.locale.getString("tabpanel.lib.tab.label"),
       (panel: XUL.Element, win: Window) => {
-        const elem = this._Addon.toolkit.UI.creatElementsFromJSON(
-          win.document,
-          {
-            tag: "vbox",
-            namespace: "xul",
-            subElementOptions: [
-              {
-                tag: "h2",
-                namespace: "html",
-                directAttributes: {
-                  innerText: "Hello World!",
-                },
+        const elem = ZToolkit.UI.creatElementsFromJSON(win.document, {
+          tag: "vbox",
+          namespace: "xul",
+          subElementOptions: [
+            {
+              tag: "h2",
+              namespace: "html",
+              directAttributes: {
+                innerText: "Hello World!",
               },
-              {
-                tag: "div",
-                namespace: "html",
-                directAttributes: {
-                  innerText: "This is a library tab.",
-                },
+            },
+            {
+              tag: "div",
+              namespace: "html",
+              directAttributes: {
+                innerText: "This is a library tab.",
               },
-              {
-                tag: "button",
-                namespace: "html",
-                directAttributes: {
-                  innerText: "Unregister",
-                },
-                listeners: [
-                  {
-                    type: "click",
-                    listener: () => {
-                      this._Addon.toolkit.UI.unregisterLibraryTabPanel(
-                        libTabId
-                      );
-                    },
+            },
+            {
+              tag: "button",
+              namespace: "html",
+              directAttributes: {
+                innerText: "Unregister",
+              },
+              listeners: [
+                {
+                  type: "click",
+                  listener: () => {
+                    ZToolkit.UI.unregisterLibraryTabPanel(libTabId);
                   },
-                ],
-              },
-            ],
-          }
-        );
+                },
+              ],
+            },
+          ],
+        });
         panel.append(elem);
       },
       {
@@ -198,7 +193,7 @@ class AddonViews extends AddonModule {
      *  Example: extra reader tab starts
      */
     const readerTabId = `${config.addonRef}-extra-reader-tab`;
-    this._Addon.toolkit.UI.registerReaderTabPanel(
+    ZToolkit.UI.registerReaderTabPanel(
       this._Addon.locale.getString("tabpanel.reader.tab.label"),
       (
         panel: XUL.Element,
@@ -207,70 +202,65 @@ class AddonViews extends AddonModule {
         reader: _ZoteroReaderInstance
       ) => {
         if (!panel) {
-          this._Addon.toolkit.Tool.log(
+          ZToolkit.Tool.log(
             "This reader do not have right-side bar. Adding reader tab skipped."
           );
           return;
         }
-        this._Addon.toolkit.Tool.log(reader);
-        const elem = this._Addon.toolkit.UI.creatElementsFromJSON(
-          win.document,
-          {
-            tag: "vbox",
-            id: `${config.addonRef}-${reader._instanceID}-extra-reader-tab-div`,
-            namespace: "xul",
-            // This is important! Don't create content for multiple times
-            // ignoreIfExists: true,
-            removeIfExists: true,
-            subElementOptions: [
-              {
-                tag: "h2",
-                namespace: "html",
-                directAttributes: {
-                  innerText: "Hello World!",
-                },
+        ZToolkit.Tool.log(reader);
+        const elem = ZToolkit.UI.creatElementsFromJSON(win.document, {
+          tag: "vbox",
+          id: `${config.addonRef}-${reader._instanceID}-extra-reader-tab-div`,
+          namespace: "xul",
+          // This is important! Don't create content for multiple times
+          // ignoreIfExists: true,
+          removeIfExists: true,
+          subElementOptions: [
+            {
+              tag: "h2",
+              namespace: "html",
+              directAttributes: {
+                innerText: "Hello World!",
               },
-              {
-                tag: "div",
-                namespace: "html",
-                directAttributes: {
-                  innerText: "This is a reader tab.",
-                },
+            },
+            {
+              tag: "div",
+              namespace: "html",
+              directAttributes: {
+                innerText: "This is a reader tab.",
               },
-              {
-                tag: "div",
-                namespace: "html",
-                directAttributes: {
-                  innerText: `Reader: ${reader._title.slice(0, 20)}`,
-                },
+            },
+            {
+              tag: "div",
+              namespace: "html",
+              directAttributes: {
+                innerText: `Reader: ${reader._title.slice(0, 20)}`,
               },
-              {
-                tag: "div",
-                namespace: "html",
-                directAttributes: {
-                  innerText: `itemID: ${reader.itemID}.`,
-                },
+            },
+            {
+              tag: "div",
+              namespace: "html",
+              directAttributes: {
+                innerText: `itemID: ${reader.itemID}.`,
               },
-              {
-                tag: "button",
-                namespace: "html",
-                directAttributes: {
-                  innerText: "Unregister",
-                },
-                listeners: [
-                  {
-                    type: "click",
-                    listener: () => {
-                      this._Addon.toolkit.UI.unregisterReaderTabPanel(
-                        readerTabId
-                      );
-                    },
+            },
+            {
+              tag: "button",
+              namespace: "html",
+              directAttributes: {
+                innerText: "Unregister",
+              },
+              listeners: [
+                {
+                  type: "click",
+                  listener: () => {
+                    ZToolkit.UI.unregisterReaderTabPanel(readerTabId);
                   },
-                ],
-              },
-            ],
-          }
-        );
+                },
+              ],
+            },
+          ],
+        });
         panel.append(elem);
       },
       {
@@ -284,17 +274,17 @@ class AddonViews extends AddonModule {
   }
 
   public unInitViews() {
-    this._Addon.toolkit.Tool.log("Uninitializing UI");
-    this._Addon.toolkit.unregisterAll();
-    // this._Addon.toolkit.UI.removeAddonElements();
+    ZToolkit.Tool.log("Uninitializing UI");
+    ZToolkit.unregisterAll();
+    // toolkit.UI.removeAddonElements();
     // // Remove extra columns
-    // this._Addon.toolkit.ItemTree.unregister("test1");
-    // this._Addon.toolkit.ItemTree.unregister("test2");
+    // toolkit.ItemTree.unregister("test1");
+    // toolkit.ItemTree.unregister("test2");
 
     // // Remove title cell patch
-    // this._Addon.toolkit.ItemTree.removeRenderCellHook("title");
+    // toolkit.ItemTree.removeRenderCellHook("title");
 
-    // this._Addon.toolkit.UI.unregisterReaderTabPanel(
+    // toolkit.UI.unregisterReaderTabPanel(
     //   `${config.addonRef}-extra-reader-tab`
     // );
   }

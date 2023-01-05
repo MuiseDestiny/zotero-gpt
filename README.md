@@ -62,6 +62,19 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
    - `events.ts` > `onUninit` is called. Remove UI elements(`unInitViews`), preference panes(`uninitPrefs`), or anything created by the plugin.
    - Remove scripts and release resources.
 
+### About Global Variables
+
+The bootstrapped plugin runs in a sandbox, which does not have default global variables like `Zotero` or `window`, which we used to have in the overlay plugins' window environment.
+
+This template registers the following variables to the global scope:
+
+```ts
+Zotero, ZoteroPane, Zotero_Tabs, window, document, rootURI, ZToolkit
+```
+
+See `src/events.ts` > `initGlobalVariables` for more details.
+
+
 ### Examples
 
 See https://github.com/windingwind/zotero-plugin-toolkit for more detailed API documentations.
@@ -134,7 +147,7 @@ There are more advanced APIs for creating elements in batch: `creatElementsFromJ
 Using [Zotero Plugin Toolkit:ItemTreeTool](https://github.com/windingwind/zotero-plugin-toolkit/blob/HEAD/docs/zotero-plugin-toolkit.itemtreetool.md) to register an extra column in `src/views.ts`.
 
 ```ts
-this._Addon.toolkit.ItemTree.registerExample();
+ZToolkit.ItemTree.registerExample();
 ```
 This will register a column with dataKey `test`. Looks like:
 
@@ -143,7 +156,7 @@ This will register a column with dataKey `test`. Looks like:
 Remember to unregister it when exiting.
 
 ```ts
-this._Addon.toolkit.ItemTree.unregister("test");
+ZToolkit.ItemTree.unregister("test");
 ```
 
 ### Directory Structure
