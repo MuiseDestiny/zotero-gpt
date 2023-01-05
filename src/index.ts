@@ -1,15 +1,16 @@
-import ZoteroToolkit from "zotero-plugin-toolkit";
-import { getGlobal } from "zotero-plugin-toolkit/dist/utils";
+import ZoteroToolkit, { ZoteroCompat } from "zotero-plugin-toolkit";
 import Addon from "./addon";
 import { config } from "../package.json";
 
-if (!getGlobal("Zotero").AddonTemplate) {
+const compat = new ZoteroCompat();
+
+if (!compat.getGlobal("Zotero").AddonTemplate) {
   // Set global variables
-  _globalThis.Zotero = getGlobal("Zotero");
-  _globalThis.ZoteroPane = getGlobal("ZoteroPane");
-  _globalThis.Zotero_Tabs = getGlobal("Zotero_Tabs");
-  _globalThis.window = getGlobal("window");
-  _globalThis.document = getGlobal("document");
+  _globalThis.Zotero = compat.getGlobal("Zotero");
+  _globalThis.ZoteroPane = compat.getGlobal("ZoteroPane");
+  _globalThis.Zotero_Tabs = compat.getGlobal("Zotero_Tabs");
+  _globalThis.window = compat.getGlobal("window");
+  _globalThis.document = compat.getGlobal("document");
   _globalThis.ztoolkit = new ZoteroToolkit();
   _globalThis.addon = new Addon();
   ztoolkit.Tool.logOptionsGlobal.prefix = `[${config.addonName}]`;
