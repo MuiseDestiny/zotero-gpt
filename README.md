@@ -69,11 +69,11 @@ Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts
 > Be careful to set the addonID and addonRef to avoid confliction.
 
 - Run `npm install` to set up the plugin and install dependencies. If you don't have NodeJS installed, please download it [here](https://nodejs.org/en/);
-- Run `npm run build` to build the plugin in production mode. Run `npm run build-dev` to build the plugin in development mode. The xpi for installation and the built code is under builds folder.
+- Run `npm run build` to build the plugin in production mode. Run `npm run build-dev` to build the plugin in development mode. The xpi for installation and the built code is under `builds` folder.
 
 > What the difference between dev & prod?
 >
-> - This environment variable is stored in `Zotero.AddonTemplate.env`. The outputs to console is disabled in prod mode.
+> - This environment variable is stored in `Zotero.AddonTemplate.data.env`. The outputs to console is disabled in prod mode.
 > - You can decide what users cannot see/use based on this variable.
 
 ### About Hooks
@@ -234,7 +234,8 @@ Alternatively, build it directly using build.js: `npm run build`
 1. Copy zotero command line config file. Modify the commands.
 
 ```sh
-cp zotero-cmd-default.json zotero-cmd.json
+cp ./scripts/zotero-cmd-default.json ./scripts/zotero-cmd.json
+vim ./scripts/zotero-cmd.json
 ```
 
 2. Setup addon development environment following this [link](https://www.zotero.org/support/dev/client_coding/plugin_development#setting_up_a_plugin_development_environment).

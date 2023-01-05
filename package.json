@@ -11,12 +11,12 @@
   },
   "main": "src/index.ts",
   "scripts": {
-    "build-dev": "cross-env NODE_ENV=development node build.js",
-    "build": "cross-env NODE_ENV=production node build.js",
-    "start": "node start.js",
-    "stop": "node stop.js",
+    "build-dev": "cross-env NODE_ENV=development node scripts/build.js",
+    "build": "cross-env NODE_ENV=production node scripts/build.js",
+    "start": "node scripts/start.js",
+    "stop": "node scripts/stop.js",
     "prerestart": "npm run build-dev",
-    "restart": "node restart.js",
+    "restart": "node scripts/restart.js",
     "release": "release-it",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

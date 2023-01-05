@@ -11,7 +11,7 @@ const {
   homepage,
   version,
   config,
-} = require("./package.json");
+} = require("../package.json");
 
 function copyFileSync(source, target) {
   var targetFile = target;
