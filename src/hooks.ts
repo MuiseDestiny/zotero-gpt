@@ -1,6 +1,7 @@
 import { BasicExampleFactory, UIExampleFactory } from "./modules/examples";
 import {
   changeProgressWindowLine,
+  isProgressWindow,
   showProgressWindow,
 } from "./modules/progressWindow";
 import { config } from "../package.json";
@@ -14,7 +15,9 @@ async function onStartup() {
     config.addonName,
     getString("startup.begin"),
     "default",
-    -1
+    {
+      closeTime: -1,
+    }
   );
   changeProgressWindowLine(progWin, { newProgress: 0 });
 
@@ -51,7 +54,9 @@ async function onStartup() {
     newProgress: 100,
     newText: `[100%] ${getString("startup.finish")}`,
   });
-  progWin.startCloseTimer(5000);
+  if (isProgressWindow(progWin)) {
+    (progWin as _ZoteroProgressWindow).startCloseTimer(5000);
+  }
 }
 
 function onShutdown(): void {
