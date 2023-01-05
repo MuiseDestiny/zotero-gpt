@@ -1,7 +1,6 @@
-import AddonModule from "./module";
 import { config } from "../package.json";
 
-class AddonLocale extends AddonModule {
+class AddonLocale {
   private stringBundle: any;
 
   public initLocale() {

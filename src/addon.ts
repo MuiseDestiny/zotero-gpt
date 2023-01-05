@@ -1,25 +1,24 @@
-import AddonEvents from "./events";
+import AddonHooks from "./hooks";
 import AddonPrefs from "./prefs";
-import AddonViews from "./views";
 import AddonLocale from "./locale";
 
 class Addon {
   // Env type, see build.js
   public env!: "development" | "production";
+  // If addon is disabled/removed, set it false
+  public alive: boolean;
   // Lifecycle events
-  public events: AddonEvents;
-  // UI operations
-  public views: AddonViews;
+  public hooks: AddonHooks;
   // Scripts for prefpane window
   public prefs: AddonPrefs;
   // Runtime locale with .properties
   public locale: AddonLocale;
 
   constructor() {
-    this.events = new AddonEvents(this);
-    this.views = new AddonViews(this);
-    this.prefs = new AddonPrefs(this);
-    this.locale = new AddonLocale(this);
+    this.alive = true;
+    this.hooks = new AddonHooks();
+    this.prefs = new AddonPrefs();
+    this.locale = new AddonLocale();
   }
 }
 

@@ -5,9 +5,14 @@ declare const _globalThis: {
   Zotero_Tabs: typeof Zotero_Tabs;
   window: Window;
   document: Document;
-  ZToolkit: typeof ZToolkit;
+  ztoolkit: typeof ztoolkit;
+  addon: typeof addon;
 };
 
-declare const ZToolkit: import("zotero-plugin-toolkit").ZoteroToolkit;
+declare const ztoolkit: import("zotero-plugin-toolkit").ZoteroToolkit;
 
 declare const rootURI: string;
+
+declare const addon: import("../src/addon").default;
+
+declare const __env__: "production" | "development";

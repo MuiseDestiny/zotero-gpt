@@ -19,6 +19,32 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 - Some sample code of UI and lifecycle.
 - ⭐Compatibilities for Zotero 6 & Zotero 7.(using [zotero-plugin-toolkit](https://github.com/windingwind/zotero-plugin-toolkit))
 
+## Examples
+
+This repo provides examples for [zotero-plugin-toolkit](https://github.com/windingwind/zotero-plugin-toolkit) APIs.
+
+Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts`.
+
+### Basic Examples
+
+- registerNotifier
+- registerPrefs, unregisterPrefs
+
+### UI Examples
+
+![image](https://user-images.githubusercontent.com/33902321/209274492-7aa94912-af38-4154-af46-dc8f59640de3.png)
+
+- registerStyleSheet(the official make-it-red example)
+- registerRightClickMenuItem
+- registerRightClickMenuPopup
+- registerWindowMenuWithSeprator
+- registerExtraColumn
+- registerExtraColumnWithCustomCell
+- registerCustomCellRenderer
+- registerLibraryTabPanel
+- registerReaderTabPanel
+- unregisterUIExamples
+
 ## Quick Start Guide
 
 - Fork this repo;
@@ -46,58 +72,38 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 - Run `npm run build` to build the plugin in production mode. Run `npm run build-dev` to build the plugin in development mode. The xpi for installation and the built code is under builds folder.
 
 > What the difference between dev & prod?
+>
 > - This environment variable is stored in `Zotero.AddonTemplate.env`. The outputs to console is disabled in prod mode.
 > - You can decide what users cannot see/use based on this variable.
 
-### About Life Cycle
+### About Hooks
+
+> See also `src/hooks.ts`
 
 1. When install/enable/startup triggered from Zotero, `bootstrap.js` > `startup` is called
    - Wait for Zotero ready
    - Prepare global variables `ctx`. They are available globally in the plugin scope
    - Load `index.js` (the main entrance of plugin code, built from `index.ts`)
    - Register resources if Zotero 7+
-2. In the main entrance `index.js`, the plugin object is injected under `Zotero` and `events.ts` > `onInit` is called.
-   - Initialize anything you want, including notify listeners, preference panes(`initPrefs`), and UI elements(`initViews`).
+2. In the main entrance `index.js`, the plugin object is injected under `Zotero` and `hooks.ts` > `onStartup` is called.
+   - Initialize anything you want, including notify listeners, preference panes, and UI elements.
 3. When uninstall/disabled triggered from Zotero, `bootstrap.js` > `shutdown` is called.
-   - `events.ts` > `onUninit` is called. Remove UI elements(`unInitViews`), preference panes(`uninitPrefs`), or anything created by the plugin.
+   - `events.ts` > `onShutdown` is called. Remove UI elements, preference panes, or anything created by the plugin.
    - Remove scripts and release resources.
 
 ### About Global Variables
+
+> See also `src/index.ts`
 
 The bootstrapped plugin runs in a sandbox, which does not have default global variables like `Zotero` or `window`, which we used to have in the overlay plugins' window environment.
 
 This template registers the following variables to the global scope:
 
 ```ts
-Zotero, ZoteroPane, Zotero_Tabs, window, document, rootURI, ZToolkit
+Zotero, ZoteroPane, Zotero_Tabs, window, document, rootURI, ztoolkit, addon;
 ```
 
-See `src/events.ts` > `initGlobalVariables` for more details.
-
-
-### Examples
-
-See https://github.com/windingwind/zotero-plugin-toolkit for more detailed API documentations.
-
-#### Menu (file, edit, view, ...) & Right-click Menu (item, collection/library)
-
-**File Menu**
-
-![image](https://user-images.githubusercontent.com/33902321/208077117-e9ae3ca8-f9c7-4549-8835-1de5ea8c665f.png)
-
-https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062db51cf16e99dda35288/src/views.ts#L52-L60
-
-**Item Menu**
-
-![image](https://user-images.githubusercontent.com/33902321/208078502-75d547b7-1cff-4538-802a-3d5127a8b617.png)
-
-https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062db51cf16e99dda35288/src/views.ts#L23-L51
-
-`insertMenuItem` resolved the input object and inject the menu items.
-
-You can choose an anchor element and insert before/after it using `insertPosition` and `anchorElement`. Default the insert position is the end of the menu.
-
-#### Preference, for both Zotero 6 and Zotero 7 (all in bootstrap)
+### About Preference
 
 Zotero 6 doesn't support preference pane injection in bootstrap mode, thus I write a register for Zotero 6 or lower.
 
@@ -133,7 +139,7 @@ Remember to call `unregisterPrefPane()` on plugin unload.
 
 https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062db51cf16e99dda35288/src/views.ts#L88-L90
 
-#### Create Elements API
+### Create Elements API
 
 The plugin template provides new APIs for bootstrap plugins. We have two reasons to use these APIs, instead of the `createElement/createElementNS`:
 
@@ -142,30 +148,13 @@ The plugin template provides new APIs for bootstrap plugins. We have two reasons
 
 There are more advanced APIs for creating elements in batch: `creatElementsFromJSON`. Input an element tree in JSON and return a fragment/element. These elements are also maintained by this plugin template.
 
-#### Extra Column in Library
-
-Using [Zotero Plugin Toolkit:ItemTreeTool](https://github.com/windingwind/zotero-plugin-toolkit/blob/HEAD/docs/zotero-plugin-toolkit.itemtreetool.md) to register an extra column in `src/views.ts`.
-
-```ts
-ZToolkit.ItemTree.registerExample();
-```
-This will register a column with dataKey `test`. Looks like:
-
-![image](https://user-images.githubusercontent.com/33902321/209274492-7aa94912-af38-4154-af46-dc8f59640de3.png)
-
-Remember to unregister it when exiting.
-
-```ts
-ZToolkit.ItemTree.unregister("test");
-```
-
 ### Directory Structure
 
 This section shows the directory structure of a template.
 
 - All `.js/.ts` code files are in `./src`;
-- Addon config files: `./addon/chrome.manifest`, `./addon/install.rdf`;
-- UI files: `./addon/chrome/content/*.xul`. The `overlay.xul` also defines the main entrance;
+- Addon config files: `./addon/chrome.manifest`, `./addon/install.rdf`, and `./addon/manifest.json`;
+- UI files: `./addon/chrome/content/*.xhtml`.
 - Locale files: `./addon/chrome/locale/[*.dtd, *.properties]`;
 - Resource files: `./addon/chrome/skin/default/__addonRef__/*.dtd`;
 - Preferences file: `./addon/chrome/defaults/preferences/defaults.js`;
@@ -184,8 +173,9 @@ This section shows the directory structure of a template.
 ├─.github           # github conf
 │
 ├─addon             # addon dir
-│  │  chrome.manifest  #addon conf
-│  │  install.rdf   # addon install conf
+│  │  chrome.manifest  # for Zotero 6
+│  │  manifest.json # for Zotero 7
+│  │  install.rdf   # addon install conf, for Zotero 6
 │  │  bootstrap.js  # addon load/unload script, like a main.c
 │  │
 │  └─chrome
@@ -211,10 +201,9 @@ This section shows the directory structure of a template.
 │
 └─src               # source code
     │  index.ts     # main entry
-    │  module.ts    # module class
     │  addon.ts     # base class
-    │  events.ts    # events class
-    │  views.ts     # UI class
+    │  hooks.ts     # lifecycle hooks
+    │  examples.ts  # examples factory
     │  locale.ts    # Locale class for properties files
     └─ prefs.ts     # preferences class
 

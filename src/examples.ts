@@ -1,27 +1,100 @@
-import Addon from "./addon";
-import AddonModule from "./module";
+import { log } from "zotero-plugin-toolkit/dist/utils";
 import { config } from "../package.json";
 
-class AddonViews extends AddonModule {
-  // You can store some element in the object attributes
-  private progressWindowIcon: { [key: string]: string };
+export function example(type?: string): MethodDecorator {
+  return function (
+    target: Object,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor
+  ) {
+    log("Calling example", target, type, propertyKey, descriptor);
+    return descriptor;
+  };
+}
 
-  constructor(parent: Addon) {
-    super(parent);
-    this.progressWindowIcon = {
-      success: "chrome://zotero/skin/tick.png",
-      fail: "chrome://zotero/skin/cross.png",
-      default: `chrome://${config.addonRef}/content/icons/favicon.png`,
+export class BasicExampleFactory {
+  @example()
+  static registerNotifier() {
+    const callback = {
+      notify: async (
+        event: string,
+        type: string,
+        ids: Array<string>,
+        extraData: { [key: string]: any }
+      ) => {
+        if (!addon.alive) {
+          this.unregisterNotifier(notifierID);
+          return;
+        }
+        ztoolkit.Tool.log("notify", event, type, ids, extraData);
+        // You can add your code to the corresponding notify type
+        if (
+          event == "select" &&
+          type == "tab" &&
+          extraData[ids[0]].type == "reader"
+        ) {
+          // Select a reader tab
+        }
+        if (event == "add" && type == "item") {
+          // Add an item
+        }
+      },
     };
+
+    // Register the callback in Zotero as an item observer
+    const notifierID = Zotero.Notifier.registerObserver(callback, [
+      "tab",
+      "item",
+      "file",
+    ]);
+
+    // Unregister callback when the window closes (important to avoid a memory leak)
+    window.addEventListener(
+      "unload",
+      (e: Event) => {
+        this.unregisterNotifier(notifierID);
+      },
+      false
+    );
   }
 
-  public initViews() {
-    // You can init the UI elements that
-    // cannot be initialized with overlay.xul
-    ZToolkit.Tool.log("Initializing UI");
+  @example()
+  private static unregisterNotifier(notifierID: string) {
+    Zotero.Notifier.unregisterObserver(notifierID);
+  }
 
-    // register style sheet
-    const styles = ZToolkit.UI.creatElementsFromJSON(document, {
+  @example()
+  static registerPrefs() {
+    const prefOptions = {
+      pluginID: config.addonID,
+      src: rootURI + "chrome/content/preferences.xhtml",
+      label: addon.locale.getString("prefs.title"),
+      image: `chrome://${config.addonRef}/content/icons/favicon.png`,
+      extraDTD: [`chrome://${config.addonRef}/locale/overlay.dtd`],
+      defaultXUL: true,
+      onload: (win: Window) => {
+        addon.prefs.initPreferences(win);
+      },
+    };
+    if (ztoolkit.Compat.isZotero7()) {
+      Zotero.PreferencePanes.register(prefOptions);
+    } else {
+      ztoolkit.Compat.registerPrefPane(prefOptions);
+    }
+  }
+
+  @example()
+  static unregisterPrefs() {
+    if (!ztoolkit.Compat.isZotero7()) {
+      ztoolkit.Compat.unregisterPrefPane();
+    }
+  }
+}
+
+export class UIExampleFactory {
+  @example()
+  static registerStyleSheet() {
+    const styles = ztoolkit.UI.creatElementsFromJSON(document, {
       tag: "link",
       directAttributes: {
         type: "text/css",
@@ -33,26 +106,32 @@ class AddonViews extends AddonModule {
     document
       .getElementById("zotero-item-pane-content")
       ?.classList.add("makeItRed");
+  }
 
+  @example()
+  static registerRightClickMenuItem() {
     const menuIcon = `chrome://${config.addonRef}/content/icons/favicon@0.5x.png`;
     // item menuitem with icon
-    ZToolkit.UI.insertMenuItem("item", {
+    ztoolkit.UI.insertMenuItem("item", {
       tag: "menuitem",
       id: "zotero-itemmenu-addontemplate-test",
-      label: this._Addon.locale.getString("menuitem.label"),
+      label: addon.locale.getString("menuitem.label"),
       oncommand: "alert('Hello World! Default Menuitem.')",
       icon: menuIcon,
     });
-    // item menupopup with sub-menuitems
-    ZToolkit.UI.insertMenuItem(
+  }
+
+  @example()
+  static registerRightClickMenuPopup() {
+    ztoolkit.UI.insertMenuItem(
       "item",
       {
         tag: "menu",
-        label: this._Addon.locale.getString("menupopup.label"),
+        label: addon.locale.getString("menupopup.label"),
         subElementOptions: [
           {
             tag: "menuitem",
-            label: this._Addon.locale.getString("menuitem.submenulabel"),
+            label: addon.locale.getString("menuitem.submenulabel"),
             oncommand: "alert('Hello World! Sub Menuitem.')",
           },
         ],
@@ -62,24 +141,24 @@ class AddonViews extends AddonModule {
         "#zotero-itemmenu-addontemplate-test"
       ) as XUL.MenuItem
     );
-    ZToolkit.UI.insertMenuItem("menuFile", {
+  }
+
+  @example()
+  static registerWindowMenuWithSeprator() {
+    ztoolkit.UI.insertMenuItem("menuFile", {
       tag: "menuseparator",
     });
     // menu->File menuitem
-    ZToolkit.UI.insertMenuItem("menuFile", {
+    ztoolkit.UI.insertMenuItem("menuFile", {
       tag: "menuitem",
-      label: this._Addon.locale.getString("menuitem.filemenulabel"),
+      label: addon.locale.getString("menuitem.filemenulabel"),
       oncommand: "alert('Hello World! File Menuitem.')",
     });
-    /**
-     *  Example: menu items ends
-     */
+  }
 
-    /**
-     *  Example: extra column starts
-     */
-    // Initialize extra columns
-    ZToolkit.ItemTree.register(
+  @example()
+  static async registerExtraColumn() {
+    await ztoolkit.ItemTree.register(
       "test1",
       "text column",
       (
@@ -94,7 +173,11 @@ class AddonViews extends AddonModule {
         iconPath: "chrome://zotero/skin/cross.png",
       }
     );
-    ZToolkit.ItemTree.register(
+  }
+
+  @example()
+  static async registerExtraColumnWithCustomCell() {
+    await ztoolkit.ItemTree.register(
       "test2",
       "custom column",
       (
@@ -117,15 +200,11 @@ class AddonViews extends AddonModule {
         },
       }
     );
-    /**
-     *  Example: extra column ends
-     */
+  }
 
-    /**
-     *  Example: custom cell starts
-     */
-    // Customize cells
-    ZToolkit.ItemTree.addRenderCellHook(
+  @example()
+  static async registerCustomCellRenderer() {
+    await ztoolkit.ItemTree.addRenderCellHook(
       "title",
       (index: number, data: string, column: any, original: Function) => {
         const span = original(index, data, column) as HTMLSpanElement;
@@ -134,17 +213,17 @@ class AddonViews extends AddonModule {
         return span;
       }
     );
-    /**
-     *  Example: custom cell ends
-     */
+    // @ts-ignore
+    // This is a private method. Make it public in toolkit.
+    await ztoolkit.ItemTree.refresh();
+  }
 
-    /**
-     *  Example: extra library tab starts
-     */
-    const libTabId = ZToolkit.UI.registerLibraryTabPanel(
-      this._Addon.locale.getString("tabpanel.lib.tab.label"),
+  @example()
+  static registerLibraryTabPanel() {
+    const tabId = ztoolkit.UI.registerLibraryTabPanel(
+      addon.locale.getString("tabpanel.lib.tab.label"),
       (panel: XUL.Element, win: Window) => {
-        const elem = ZToolkit.UI.creatElementsFromJSON(win.document, {
+        const elem = ztoolkit.UI.creatElementsFromJSON(win.document, {
           tag: "vbox",
           namespace: "xul",
           subElementOptions: [
@@ -172,7 +251,7 @@ class AddonViews extends AddonModule {
                 {
                   type: "click",
                   listener: () => {
-                    ZToolkit.UI.unregisterLibraryTabPanel(libTabId);
+                    ztoolkit.UI.unregisterLibraryTabPanel(tabId);
                   },
                 },
               ],
@@ -185,30 +264,26 @@ class AddonViews extends AddonModule {
         targetIndex: 1,
       }
     );
-    /**
-     *  Example: extra library tab ends
-     */
+  }
 
-    /**
-     *  Example: extra reader tab starts
-     */
-    const readerTabId = `${config.addonRef}-extra-reader-tab`;
-    ZToolkit.UI.registerReaderTabPanel(
-      this._Addon.locale.getString("tabpanel.reader.tab.label"),
+  @example()
+  static async registerReaderTabPanel() {
+    const tabId = await ztoolkit.UI.registerReaderTabPanel(
+      addon.locale.getString("tabpanel.reader.tab.label"),
       (
-        panel: XUL.Element,
+        panel: XUL.TabPanel | undefined,
         deck: XUL.Deck,
         win: Window,
         reader: _ZoteroReaderInstance
       ) => {
         if (!panel) {
-          ZToolkit.Tool.log(
+          ztoolkit.Tool.log(
             "This reader do not have right-side bar. Adding reader tab skipped."
           );
           return;
         }
-        ZToolkit.Tool.log(reader);
-        const elem = ZToolkit.UI.creatElementsFromJSON(win.document, {
+        ztoolkit.Tool.log(reader);
+        const elem = ztoolkit.UI.creatElementsFromJSON(win.document, {
           tag: "vbox",
           id: `${config.addonRef}-${reader._instanceID}-extra-reader-tab-div`,
           namespace: "xul",
@@ -254,7 +329,7 @@ class AddonViews extends AddonModule {
                 {
                   type: "click",
                   listener: () => {
-                    ZToolkit.UI.unregisterReaderTabPanel(readerTabId);
+                    ztoolkit.UI.unregisterReaderTabPanel(tabId);
                   },
                 },
               ],
@@ -264,49 +339,13 @@ class AddonViews extends AddonModule {
         panel.append(elem);
       },
       {
-        tabId: readerTabId,
         targetIndex: 1,
       }
     );
-    /**
-     *  Example: extra reader tab ends
-     */
   }
 
-  public unInitViews() {
-    ZToolkit.Tool.log("Uninitializing UI");
-    ZToolkit.unregisterAll();
-    // toolkit.UI.removeAddonElements();
-    // // Remove extra columns
-    // toolkit.ItemTree.unregister("test1");
-    // toolkit.ItemTree.unregister("test2");
-
-    // // Remove title cell patch
-    // toolkit.ItemTree.removeRenderCellHook("title");
-
-    // toolkit.UI.unregisterReaderTabPanel(
-    //   `${config.addonRef}-extra-reader-tab`
-    // );
-  }
-
-  public showProgressWindow(
-    header: string,
-    context: string,
-    type: string = "default",
-    t: number = 5000
-  ) {
-    // A simple wrapper of the Zotero ProgressWindow
-    let progressWindow = new Zotero.ProgressWindow({ closeOnClick: true });
-    progressWindow.changeHeadline(header);
-    progressWindow.progress = new progressWindow.ItemProgress(
-      this.progressWindowIcon[type],
-      context
-    );
-    progressWindow.show();
-    if (t > 0) {
-      progressWindow.startCloseTimer(t);
-    }
+  @example()
+  static unregisterUIExamples() {
+    ztoolkit.unregisterAll();
   }
 }
-
-export default AddonViews;

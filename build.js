@@ -101,7 +101,7 @@ async function main() {
     .build({
       entryPoints: ["src/index.ts"],
       define: {
-        __env__: process.env.NODE_ENV,
+        __env__: `"${process.env.NODE_ENV}"`,
       },
       bundle: true,
       // Entry should be the same as addon/chrome/content/overlay.xul
