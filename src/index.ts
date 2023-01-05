@@ -12,10 +12,9 @@ if (!getGlobal("Zotero").AddonTemplate) {
   _globalThis.document = getGlobal("document");
   _globalThis.ztoolkit = new ZoteroToolkit();
   _globalThis.addon = new Addon();
-  // The env will be replaced after esbuild
-  addon.env = __env__;
   ztoolkit.Tool.logOptionsGlobal.prefix = `[${config.addonName}]`;
-  ztoolkit.Tool.logOptionsGlobal.disableConsole = addon.env === "production";
+  ztoolkit.Tool.logOptionsGlobal.disableConsole =
+    addon.data.env === "production";
   Zotero.AddonTemplate = addon;
   // Trigger addon hook for initialization
   addon.hooks.onStartup();

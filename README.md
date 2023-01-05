@@ -82,7 +82,6 @@ Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts
 
 1. When install/enable/startup triggered from Zotero, `bootstrap.js` > `startup` is called
    - Wait for Zotero ready
-   - Prepare global variables `ctx`. They are available globally in the plugin scope
    - Load `index.js` (the main entrance of plugin code, built from `index.ts`)
    - Register resources if Zotero 7+
 2. In the main entrance `index.js`, the plugin object is injected under `Zotero` and `hooks.ts` > `onStartup` is called.
@@ -194,7 +193,7 @@ This section shows the directory structure of a template.
 │         │
 │         └─zh-CN
 │         |      overlay.dtd
-│         │      addon.properties
+│         └─     addon.properties
 │
 ├─builds            # build dir
 │  └─.xpi
@@ -203,10 +202,12 @@ This section shows the directory structure of a template.
     │  index.ts     # main entry
     │  addon.ts     # base class
     │  hooks.ts     # lifecycle hooks
-    │  examples.ts  # examples factory
-    │  locale.ts    # Locale class for properties files
-    └─ prefs.ts     # preferences class
-
+    |
+    └─modules       # sub modules
+       │  examples.ts           # examples factory
+       │  locale.ts             # locale .properties
+       │  preferenceScript.ts   # script runs in preferences.xhtml
+       │  progressWindow.ts     # progressWindow tool
 ```
 
 ### Build

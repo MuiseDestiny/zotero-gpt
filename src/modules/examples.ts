@@ -1,19 +1,31 @@
-import { log } from "zotero-plugin-toolkit/dist/utils";
-import { config } from "../package.json";
+import { config } from "../../package.json";
+import { getString } from "./locale";
 
-export function example(type?: string): MethodDecorator {
-  return function (
-    target: Object,
-    propertyKey: string | symbol,
-    descriptor: PropertyDescriptor
-  ) {
-    log("Calling example", target, type, propertyKey, descriptor);
-    return descriptor;
+function example(
+  target: any,
+  propertyKey: string | symbol,
+  descriptor: PropertyDescriptor
+) {
+  const original = descriptor.value;
+  descriptor.value = function (...args: any) {
+    try {
+      ztoolkit.Tool.log(
+        `Calling example ${target.name}.${String(propertyKey)}`
+      );
+      return original.apply(this, args);
+    } catch (e) {
+      ztoolkit.Tool.log(
+        `Error in example ${target.name}.${String(propertyKey)}`,
+        e
+      );
+      throw e;
+    }
   };
+  return descriptor;
 }
 
 export class BasicExampleFactory {
-  @example()
+  @example
   static registerNotifier() {
     const callback = {
       notify: async (
@@ -22,7 +34,7 @@ export class BasicExampleFactory {
         ids: Array<string>,
         extraData: { [key: string]: any }
       ) => {
-        if (!addon.alive) {
+        if (!addon.data.alive) {
           this.unregisterNotifier(notifierID);
           return;
         }
@@ -58,23 +70,20 @@ export class BasicExampleFactory {
     );
   }
 
-  @example()
+  @example
   private static unregisterNotifier(notifierID: string) {
     Zotero.Notifier.unregisterObserver(notifierID);
   }
 
-  @example()
+  @example
   static registerPrefs() {
     const prefOptions = {
       pluginID: config.addonID,
       src: rootURI + "chrome/content/preferences.xhtml",
-      label: addon.locale.getString("prefs.title"),
+      label: getString("prefs.title"),
       image: `chrome://${config.addonRef}/content/icons/favicon.png`,
       extraDTD: [`chrome://${config.addonRef}/locale/overlay.dtd`],
       defaultXUL: true,
-      onload: (win: Window) => {
-        addon.prefs.initPreferences(win);
-      },
     };
     if (ztoolkit.Compat.isZotero7()) {
       Zotero.PreferencePanes.register(prefOptions);
@@ -83,7 +92,7 @@ export class BasicExampleFactory {
     }
   }
 
-  @example()
+  @example
   static unregisterPrefs() {
     if (!ztoolkit.Compat.isZotero7()) {
       ztoolkit.Compat.unregisterPrefPane();
@@ -92,7 +101,7 @@ export class BasicExampleFactory {
 }
 
 export class UIExampleFactory {
-  @example()
+  @example
   static registerStyleSheet() {
     const styles = ztoolkit.UI.creatElementsFromJSON(document, {
       tag: "link",
@@ -108,30 +117,30 @@ export class UIExampleFactory {
       ?.classList.add("makeItRed");
   }
 
-  @example()
+  @example
   static registerRightClickMenuItem() {
     const menuIcon = `chrome://${config.addonRef}/content/icons/favicon@0.5x.png`;
     // item menuitem with icon
     ztoolkit.UI.insertMenuItem("item", {
       tag: "menuitem",
       id: "zotero-itemmenu-addontemplate-test",
-      label: addon.locale.getString("menuitem.label"),
+      label: getString("menuitem.label"),
       oncommand: "alert('Hello World! Default Menuitem.')",
       icon: menuIcon,
     });
   }
 
-  @example()
+  @example
   static registerRightClickMenuPopup() {
     ztoolkit.UI.insertMenuItem(
       "item",
       {
         tag: "menu",
-        label: addon.locale.getString("menupopup.label"),
+        label: getString("menupopup.label"),
         subElementOptions: [
           {
             tag: "menuitem",
-            label: addon.locale.getString("menuitem.submenulabel"),
+            label: getString("menuitem.submenulabel"),
             oncommand: "alert('Hello World! Sub Menuitem.')",
           },
         ],
@@ -143,7 +152,7 @@ export class UIExampleFactory {
     );
   }
 
-  @example()
+  @example
   static registerWindowMenuWithSeprator() {
     ztoolkit.UI.insertMenuItem("menuFile", {
       tag: "menuseparator",
@@ -151,12 +160,12 @@ export class UIExampleFactory {
     // menu->File menuitem
     ztoolkit.UI.insertMenuItem("menuFile", {
       tag: "menuitem",
-      label: addon.locale.getString("menuitem.filemenulabel"),
+      label: getString("menuitem.filemenulabel"),
       oncommand: "alert('Hello World! File Menuitem.')",
     });
   }
 
-  @example()
+  @example
   static async registerExtraColumn() {
     await ztoolkit.ItemTree.register(
       "test1",
@@ -175,7 +184,7 @@ export class UIExampleFactory {
     );
   }
 
-  @example()
+  @example
   static async registerExtraColumnWithCustomCell() {
     await ztoolkit.ItemTree.register(
       "test2",
@@ -202,7 +211,7 @@ export class UIExampleFactory {
     );
   }
 
-  @example()
+  @example
   static async registerCustomCellRenderer() {
     await ztoolkit.ItemTree.addRenderCellHook(
       "title",
@@ -218,10 +227,10 @@ export class UIExampleFactory {
     await ztoolkit.ItemTree.refresh();
   }
 
-  @example()
+  @example
   static registerLibraryTabPanel() {
     const tabId = ztoolkit.UI.registerLibraryTabPanel(
-      addon.locale.getString("tabpanel.lib.tab.label"),
+      getString("tabpanel.lib.tab.label"),
       (panel: XUL.Element, win: Window) => {
         const elem = ztoolkit.UI.creatElementsFromJSON(win.document, {
           tag: "vbox",
@@ -266,10 +275,10 @@ export class UIExampleFactory {
     );
   }
 
-  @example()
+  @example
   static async registerReaderTabPanel() {
     const tabId = await ztoolkit.UI.registerReaderTabPanel(
-      addon.locale.getString("tabpanel.reader.tab.label"),
+      getString("tabpanel.reader.tab.label"),
       (
         panel: XUL.TabPanel | undefined,
         deck: XUL.Deck,
@@ -344,8 +353,11 @@ export class UIExampleFactory {
     );
   }
 
-  @example()
+  @example
   static unregisterUIExamples() {
     ztoolkit.unregisterAll();
   }
+}
+function initPreferences(win: Window) {
+  throw new Error("Function not implemented.");
 }

@@ -1,6 +1,6 @@
 <vbox
   id="zotero-prefpane-__addonRef__"
-  onload="Zotero.AddonTemplate.prefs.initPreferences(window)"
+  onload="Zotero.AddonTemplate.hooks.onCustomEvent('prefLoad', {window})"
 >
   <groupbox>
     <label><html:h2>&zotero.__addonRef__.pref.title;</html:h2></label>
@@ -22,5 +22,7 @@
   </groupbox>
 </vbox>
 <vbox>
-    <label value="&zotero.__addonRef__.help.version.label;  &zotero.__addonRef__.help.releasetime.label;"></label>
+  <label
+    value="&zotero.__addonRef__.help.version.label;  &zotero.__addonRef__.help.releasetime.label;"
+  ></label>
 </vbox>
