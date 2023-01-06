@@ -1,34 +1,36 @@
 import { BasicExampleFactory, UIExampleFactory } from "./modules/examples";
-import {
-  changeProgressWindowLine,
-  isProgressWindow,
-  showProgressWindow,
-} from "./modules/progressWindow";
+import { PopupWindow } from "./modules/popup";
 import { config } from "../package.json";
 import { getString, initLocale } from "./modules/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
 
 async function onStartup() {
+  await Promise.all([
+    Zotero.initializationPromise,
+    Zotero.unlockPromise,
+    Zotero.uiReadyPromise,
+  ]);
   initLocale();
 
-  const progWin = showProgressWindow(
-    config.addonName,
-    getString("startup.begin"),
-    "default",
-    {
-      closeTime: -1,
-    }
-  );
-  changeProgressWindowLine(progWin, { newProgress: 0 });
+  const popupWin = new PopupWindow(config.addonName, {
+    closeOnClick: true,
+    closeTime: -1,
+  })
+    .createLine({
+      text: getString("startup.begin"),
+      type: "default",
+      progress: 0,
+    })
+    .show();
 
   BasicExampleFactory.registerPrefs();
 
   BasicExampleFactory.registerNotifier();
 
   await Zotero.Promise.delay(1000);
-  changeProgressWindowLine(progWin, {
-    newProgress: 30,
-    newText: `[30%] ${getString("startup.begin")}`,
+  popupWin.changeLine({
+    progress: 30,
+    text: `[30%] ${getString("startup.begin")}`,
   });
 
   UIExampleFactory.registerStyleSheet();
@@ -50,13 +52,12 @@ async function onStartup() {
   await UIExampleFactory.registerReaderTabPanel();
 
   await Zotero.Promise.delay(1000);
-  changeProgressWindowLine(progWin, {
-    newProgress: 100,
-    newText: `[100%] ${getString("startup.finish")}`,
+
+  popupWin.changeLine({
+    progress: 100,
+    text: `[100%] ${getString("startup.finish")}`,
   });
-  if (isProgressWindow(progWin)) {
-    (progWin as _ZoteroProgressWindow).startCloseTimer(5000);
-  }
+  popupWin.startCloseTimer(5000);
 }
 
 function onShutdown(): void {

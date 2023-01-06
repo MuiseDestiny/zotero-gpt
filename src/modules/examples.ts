@@ -1,6 +1,6 @@
 import { config } from "../../package.json";
 import { getString } from "./locale";
-import { showProgressWindow } from "./progressWindow";
+import { PopupWindow } from "./popup";
 
 function example(
   target: any,
@@ -35,7 +35,7 @@ export class BasicExampleFactory {
         ids: Array<string>,
         extraData: { [key: string]: any }
       ) => {
-        if (!addon.data.alive) {
+        if (!addon?.data.alive) {
           this.unregisterNotifier(notifierID);
           return;
         }
@@ -62,7 +62,13 @@ export class BasicExampleFactory {
 
   @example
   static exampleNotifierCallback() {
-    showProgressWindow(config.addonName, "Open Tab Detected!", "success");
+    new PopupWindow(config.addonName)
+      .createLine({
+        text: "Open Tab Detected!",
+        type: "success",
+        progress: 100,
+      })
+      .show();
   }
 
   @example
