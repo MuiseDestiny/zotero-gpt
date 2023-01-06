@@ -14,12 +14,12 @@ interface LineOptions {
   idx?: number;
 }
 
-// @ts-ignore
 export class PopupWindow extends Zotero.ProgressWindow {
   private lines: _ZoteroItemProgress[];
   private closeTime: number | undefined;
-  private originalShow: Function;
-  public show: typeof this.showWithTimer;
+  private originalShow: typeof Zotero.ProgressWindow.prototype.show;
+  // @ts-ignore
+  public show!: typeof this.showWithTimer;
 
   constructor(
     header: string,
@@ -36,17 +36,14 @@ export class PopupWindow extends Zotero.ProgressWindow {
     this.lines = [];
     this.closeTime = options.closeTime || 5000;
     this.changeHeadline(header);
-    // @ts-ignore
-    this.originalShow = this.show;
+    this.originalShow = this
+      .show as unknown as typeof Zotero.ProgressWindow.prototype.show;
     this.show = this.showWithTimer;
   }
 
   createLine(options: LineOptions) {
     const icon = this.getIcon(options.type, options.icon);
-    const line = new this.ItemProgress(
-      icon || "",
-      options.text || ""
-    ) as _ZoteroItemProgress;
+    const line = new this.ItemProgress(icon || "", options.text || "");
     if (typeof options.progress === "number") {
       line.setProgress(options.progress);
     }
