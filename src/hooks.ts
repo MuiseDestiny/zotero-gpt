@@ -1,5 +1,4 @@
 import { BasicExampleFactory, UIExampleFactory } from "./modules/examples";
-import { PopupWindow } from "./modules/popup";
 import { config } from "../package.json";
 import { getString, initLocale } from "./modules/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
@@ -11,8 +10,12 @@ async function onStartup() {
     Zotero.uiReadyPromise,
   ]);
   initLocale();
+  ztoolkit.Tool.setIconURI(
+    "default",
+    `chrome://${config.addonRef}/content/icons/favicon.png`
+  );
 
-  const popupWin = new PopupWindow(config.addonName, {
+  const popupWin = ztoolkit.Tool.createProgressWindow(config.addonName, {
     closeOnClick: true,
     closeTime: -1,
   })

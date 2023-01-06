@@ -1,6 +1,5 @@
 import { config } from "../../package.json";
 import { getString } from "./locale";
-import { PopupWindow } from "./popup";
 
 function example(
   target: any,
@@ -62,7 +61,7 @@ export class BasicExampleFactory {
 
   @example
   static exampleNotifierCallback() {
-    new PopupWindow(config.addonName)
+    ztoolkit.Tool.createProgressWindow(config.addonName)
       .createLine({
         text: "Open Tab Detected!",
         type: "success",
