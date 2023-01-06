@@ -1,3 +1,4 @@
+import ZoteroToolkit from "zotero-plugin-toolkit";
 import hooks from "./hooks";
 
 class Addon {
@@ -5,6 +6,7 @@ class Addon {
     alive: boolean;
     // Env type, see build.js
     env: "development" | "production";
+    ztoolkit: ZoteroToolkit;
     locale?: {
       stringBundle: any;
     };
@@ -19,6 +21,7 @@ class Addon {
     this.data = {
       alive: true,
       env: __env__,
+      ztoolkit: new ZoteroToolkit(),
     };
     this.hooks = hooks;
   }

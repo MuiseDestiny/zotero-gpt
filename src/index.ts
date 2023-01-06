@@ -1,4 +1,4 @@
-import ZoteroToolkit, { ZoteroCompat } from "zotero-plugin-toolkit";
+import { ZoteroCompat } from "zotero-plugin-toolkit";
 import Addon from "./addon";
 import { config } from "../package.json";
 
@@ -11,8 +11,8 @@ if (!compat.getGlobal("Zotero").AddonTemplate) {
   _globalThis.Zotero_Tabs = compat.getGlobal("Zotero_Tabs");
   _globalThis.window = compat.getGlobal("window");
   _globalThis.document = compat.getGlobal("document");
-  _globalThis.ztoolkit = new ZoteroToolkit();
   _globalThis.addon = new Addon();
+  _globalThis.ztoolkit = addon.data.ztoolkit;
   ztoolkit.Tool.logOptionsGlobal.prefix = `[${config.addonName}]`;
   ztoolkit.Tool.logOptionsGlobal.disableConsole =
     addon.data.env === "production";
