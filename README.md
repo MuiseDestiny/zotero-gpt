@@ -30,6 +30,13 @@ Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts
 - registerNotifier
 - registerPrefs, unregisterPrefs
 
+### Shortcut Keys Examples
+
+- registerShortcuts
+- exampleShortcutLargerCallback
+- exampleShortcutSmallerCallback
+- exampleShortcutConflictionCallback
+
 ### UI Examples
 
 ![image](https://user-images.githubusercontent.com/33902321/209274492-7aa94912-af38-4154-af46-dc8f59640de3.png)

@@ -100,6 +100,103 @@ export class BasicExampleFactory {
   }
 }
 
+export class KeyExampleFactory {
+  @example
+  static registerShortcuts() {
+    const keysetId = `${config.addonRef}-keyset`;
+    const cmdsetId = `${config.addonRef}-cmdset`;
+    const cmdSmallerId = `${config.addonRef}-cmd-smaller`;
+    // Register an event key for Alt+L
+    ztoolkit.KeyTool.registerKey("event", {
+      id: `${config.addonRef}-key-larger`,
+      key: "L",
+      modifiers: "alt",
+      callback: (keyOptions) => {
+        addon.hooks.onShortcuts("larger");
+      },
+    });
+    // Register an element key using <key> for Alt+S
+    ztoolkit.KeyTool.registerKey("element", {
+      id: `${config.addonRef}-key-smaller`,
+      key: "S",
+      modifiers: "alt",
+      xulData: {
+        document,
+        command: cmdSmallerId,
+        _parentId: keysetId,
+        _commandOptions: {
+          id: cmdSmallerId,
+          document,
+          _parentId: cmdsetId,
+          oncommand: "Zotero.AddonTemplate.hooks.onShortcuts('smaller')",
+        },
+      },
+    });
+    // Here we register an conflict key for Alt+S
+    // just to show how the confliction check works.
+    // This is something you should avoid in your plugin.
+    ztoolkit.KeyTool.registerKey("event", {
+      id: `${config.addonRef}-key-smaller-conflict`,
+      key: "S",
+      modifiers: "alt",
+      callback: (keyOptions) => {
+        ztoolkit.Compat.getGlobal("alert")("Smaller! This is a conflict key.");
+      },
+    });
+    // Register an event key to check confliction
+    ztoolkit.KeyTool.registerKey("event", {
+      id: `${config.addonRef}-key-check-conflict`,
+      key: "C",
+      modifiers: "alt",
+      callback: (keyOptions) => {
+        addon.hooks.onShortcuts("confliction");
+      },
+    });
+    ztoolkit.Tool.createProgressWindow(config.addonName)
+      .createLine({
+        text: "Example Shortcuts: Alt+L/S/C",
+        type: "success",
+      })
+      .show();
+  }
+
+  @example
+  static exampleShortcutLargerCallback() {
+    ztoolkit.Tool.createProgressWindow(config.addonName)
+      .createLine({
+        text: "Larger!",
+        type: "default",
+      })
+      .show();
+  }
+
+  @example
+  static exampleShortcutSmallerCallback() {
+    ztoolkit.Tool.createProgressWindow(config.addonName)
+      .createLine({
+        text: "Smaller!",
+        type: "default",
+      })
+      .show();
+  }
+
+  @example
+  static exampleShortcutConflictionCallback() {
+    const conflictionGroups = ztoolkit.KeyTool.checkAllKeyConfliction();
+    ztoolkit.Tool.createProgressWindow("Check Key Confliction")
+      .createLine({
+        text: `${conflictionGroups.length} groups of confliction keys found. Details are in the debug output/console.`,
+      })
+      .show(-1);
+    ztoolkit.Tool.log(
+      "Conflictions:",
+      conflictionGroups,
+      "All keys:",
+      ztoolkit.KeyTool.getAllKeys()
+    );
+  }
+}
+
 export class UIExampleFactory {
   @example
   static registerStyleSheet() {
