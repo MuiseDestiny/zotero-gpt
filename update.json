@@ -3,7 +3,7 @@
     "addontemplate@euclpts.com": {
       "updates": [
         {
-          "version": "0.0.13",
+          "version": "0.1.0",
           "update_link": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
           "applications": {
             "gecko": {
@@ -12,7 +12,7 @@
           }
         },
         {
-          "version": "0.0.13",
+          "version": "0.1.0",
           "update_link": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
           "applications": {
             "zotero": {
