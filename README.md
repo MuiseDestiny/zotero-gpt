@@ -1,8 +1,26 @@
-# Zotero Addon Template
+# Zotero Plugin Template
 
-This is an addon/plugin template for [Zotero](https://www.zotero.org/).
+![GitHub Repo stars](https://img.shields.io/github/stars/windingwind/zotero-better-notes?label=zotero-better-notes)
+![GitHub Repo stars](https://img.shields.io/github/stars/windingwind/zotero-pdf-preview?label=zotero-pdf-preview)
+![GitHub Repo stars](https://img.shields.io/github/stars/windingwind/zotero-pdf-translate?label=zotero-pdf-translate)
+![GitHub Repo stars](https://img.shields.io/github/stars/windingwind/zotero-tag?label=zotero-tag)
+![GitHub Repo stars](https://img.shields.io/github/stars/iShareStuff/ZoteroTheme?label=zotero-theme)
+![GitHub Repo stars](https://img.shields.io/github/stars/MuiseDestiny/zotero-reference?label=zotero-reference)
+![GitHub Repo stars](https://img.shields.io/github/stars/MuiseDestiny/zotero-style?label=zotero-style)
+![GitHub Repo stars](https://img.shields.io/github/stars/volatile-static/Chartero?label=Chartero)
+![GitHub Repo stars](https://img.shields.io/github/stars/l0o0/tara?label=tara)
 
-[Documentation](https://zotero.yuque.com/books/share/8d230829-6004-4934-b4c6-685a7001bfa0/vec88d)(Chinese, provides English translation)
+This is a plugin template for [Zotero](https://www.zotero.org/). Plugins using this template are shown above.
+
+📖[Plugin Development Documentation](https://zotero.yuque.com/books/share/8d230829-6004-4934-b4c6-685a7001bfa0/vec88d)(Chinese, provides English translation)
+
+🛠️[Zotero Plugin Toolkit](https://github.com/windingwind/zotero-plugin-toolkit) | [API Documentation](https://github.com/windingwind/zotero-plugin-toolkit/blob/master/docs/zotero-plugin-toolkit.md)
+
+ℹ️[Zotero Type Definitions](https://github.com/windingwind/zotero-types)
+
+📜[Zotero Source Code](https://github.com/zotero/zotero)
+
+📌[Zotero Plugin Template](https://github.com/windingwind/zotero-plugin-template)(This repo)
 
 > 👍You are currently in `bootstrap` extension mode. To use `overlay` mode, plsase switch to `overlay` branch in git.
 
@@ -10,14 +28,17 @@ This is an addon/plugin template for [Zotero](https://www.zotero.org/).
 
 ## Features
 
-- TypeScript support;
-- Build addon settings and versions automatically;
-- Build and reload code in Zotero automatically;
-- Development/production build environment;
-- Release to GitHub automatically(using [release-it](https://github.com/release-it/release-it));
-- Extensive skeleton;
-- Some sample code of UI and lifecycle.
-- ⭐Compatibilities for Zotero 6 & Zotero 7.(using [zotero-plugin-toolkit](https://github.com/windingwind/zotero-plugin-toolkit))
+- Event-driven, functional programming, under extensive skeleton;
+- Simple and user-friendly, works out-of-the-box.
+- Abundant examples in `src/modules/examples.ts`, covering most of the commonly used APIs in plugins(using [zotero-plugin-toolkit](https://github.com/windingwind/zotero-plugin-toolkit));
+- TypeScript support:
+  - Full type definition support for the whole Zotero project, which is written in JavaScript(using [zotero-types](https://github.com/windingwind/zotero-types));
+  - Global variables and environment setup;
+- Plugin build/test/release workflow:
+  - Automatically generate/update plugin id/version, update configrations, and set environment variables(`development/production`);
+  - Automatically build and reload code in Zotero;
+  - Automatically release to GitHub(using [release-it](https://github.com/release-it/release-it));
+- ⭐[New!]Compatibilities for Zotero 6 & Zotero 7.(using [zotero-plugin-toolkit](https://github.com/windingwind/zotero-plugin-toolkit))
 
 ## Examples
 
@@ -85,7 +106,7 @@ Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts
 
 ### About Hooks
 
-> See also `src/hooks.ts`
+> See also [`src/hooks.ts`](https://github.com/windingwind/zotero-plugin-template/blob/bootstrap/src/hooks.ts)
 
 1. When install/enable/startup triggered from Zotero, `bootstrap.js` > `startup` is called
    - Wait for Zotero ready
@@ -99,7 +120,7 @@ Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts
 
 ### About Global Variables
 
-> See also `src/index.ts`
+> See also [`src/index.ts`](https://github.com/windingwind/zotero-plugin-template/blob/bootstrap/src/index.ts)
 
 The bootstrapped plugin runs in a sandbox, which does not have default global variables like `Zotero` or `window`, which we used to have in the overlay plugins' window environment.
 
@@ -128,28 +149,23 @@ You only need to maintain one `preferences.xhtml` which runs natively on Zotero 
     </tr>
 </table>
 
-https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062db51cf16e99dda35288/src/views.ts#L63-L82
+https://github.com/windingwind/zotero-plugin-template/blob/08d72a4e2b3bacff574f537bbd06cb33e6b22480/src/modules/examples.ts#L73-L85
 
-Call `registerPrefPane` when it's on Zotero 6.
-
-Note that `<preferences>` element is deprecated. Please use the full pref-key in the elements' `preference` attribute. Like:
+> `<preferences>` element is deprecated. Please use the full pref-key in the elements' `preference` attribute. Like:
 
 ```xml
-<checkbox label="&zotero.__addonRef__.pref.enable.label;" preference="extensions.zotero.__addonRef__.enable"
-/>
+<checkbox label="&zotero.__addonRef__.pref.enable.label;" preference="extensions.zotero.__addonRef__.enable" />
 ```
 
 The elements with `preference` attributes will bind to Zotero preferences.
 
-Remember to call `unregisterPrefPane()` on plugin unload.
-
-https://github.com/windingwind/zotero-addon-template/blob/574ce88b9fd3535a9d062db51cf16e99dda35288/src/views.ts#L88-L90
+Remember to call `unregister()` on plugin unload.
 
 ### Create Elements API
 
 The plugin template provides new APIs for bootstrap plugins. We have two reasons to use these APIs, instead of the `createElement/createElementNS`:
 
-- In bootstrap mode, plugins have to clean up all UI elements on exit (disable or uninstall), which is very annoying. Using the `createElement`, the plugin template will maintain these elements. Just `removeAddonElements` on exit.
+- In bootstrap mode, plugins have to clean up all UI elements on exit (disable or uninstall), which is very annoying. Using the `createElement`, the plugin template will maintain these elements. Just `unregister` on exit.
 - Zotero 7 requires createElement()/createElementNS() → createXULElement() for remaining XUL elements, while Zotero 6 doesn't support `createXULElement`. Using `createElement`, it switches API depending on the current platform automatically.
 
 There are more advanced APIs for creating elements in batch: `creatElementsFromJSON`. Input an element tree in JSON and return a fragment/element. These elements are also maintained by this plugin template.
@@ -198,7 +214,7 @@ This section shows the directory structure of a template.
 │         │      overlay.dtd
 │         │      addon.properties
 │         │
-│         └─zh-CN
+│         ├─zh-CN
 │         |      overlay.dtd
 │         └─     addon.properties
 │
@@ -214,7 +230,7 @@ This section shows the directory structure of a template.
        │  examples.ts           # examples factory
        │  locale.ts             # locale .properties
        │  preferenceScript.ts   # script runs in preferences.xhtml
-       │  progressWindow.ts     # progressWindow tool
+       └─ progressWindow.ts     # progressWindow tool
 ```
 
 ### Build
@@ -245,9 +261,9 @@ cp ./scripts/zotero-cmd-default.json ./scripts/zotero-cmd.json
 vim ./scripts/zotero-cmd.json
 ```
 
-2. Setup addon development environment following this [link](https://www.zotero.org/support/dev/client_coding/plugin_development#setting_up_a_plugin_development_environment).
+2. Setup plugin development environment following this [link](https://www.zotero.org/support/dev/client_coding/plugin_development#setting_up_a_plugin_development_environment).
 
-3. Build addon and restart Zotero with this npm command.
+3. Build plugin and restart Zotero with this npm command.
 
 4. Launch Firefox 60
 5. In Firefox, go to devtools, go to settings, click "enable remote debugging" and the one next to it that's also about debugging(or press `shift+F8`).
@@ -288,11 +304,4 @@ Part of the code of this repo refers to other open-source projects within the al
 
 - zotero-better-bibtex(`d.ts`)
 
-## Zotero Addons Build with the Template
-
-- [zotero-better-notes](https://github.com/windingwind/zotero-better-notes): Everything about note management. All in Zotero.
-- [zotero-pdf-preview](https://github.com/windingwind/zotero-pdf-preview): PDF Preview for Zotero.
-- [zotero-pdf-translate](https://github.com/windingwind/zotero-pdf-translate): PDF Translation for Zotero 6.
-- [zotero-tag](https://github.com/windingwind/zotero-tag): Automatically tag items/Batch tagging
-
-- [zotero-theme](https://github.com/iShareStuff/ZoteroTheme): Customize Zotero theme
+## Zotero Plugins Build with the Template
