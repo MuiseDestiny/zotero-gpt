@@ -22,7 +22,7 @@ function bindPrefEvents() {
       `#zotero-prefpane-${config.addonRef}-enable`
     )
     ?.addEventListener("command", (e) => {
-      ztoolkit.Tool.log(e);
+      ztoolkit.log(e);
       addon.data.prefs!.window.alert(
         `Successfully changed to ${(e.target as XUL.Checkbox).checked}!`
       );
@@ -33,7 +33,7 @@ function bindPrefEvents() {
       `#zotero-prefpane-${config.addonRef}-input`
     )
     ?.addEventListener("change", (e) => {
-      ztoolkit.Tool.log(e);
+      ztoolkit.log(e);
       addon.data.prefs!.window.alert(
         `Successfully changed to ${(e.target as HTMLInputElement).value}!`
       );

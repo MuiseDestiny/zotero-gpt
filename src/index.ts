@@ -1,21 +1,20 @@
-import { ZoteroCompat } from "zotero-plugin-toolkit";
+import { BasicTool } from "zotero-plugin-toolkit/dist/basic";
 import Addon from "./addon";
 import { config } from "../package.json";
 
-const compat = new ZoteroCompat();
+const basicTool = new BasicTool();
 
-if (!compat.getGlobal("Zotero").AddonTemplate) {
+if (!basicTool.getGlobal("Zotero").AddonTemplate) {
   // Set global variables
-  _globalThis.Zotero = compat.getGlobal("Zotero");
-  _globalThis.ZoteroPane = compat.getGlobal("ZoteroPane");
-  _globalThis.Zotero_Tabs = compat.getGlobal("Zotero_Tabs");
-  _globalThis.window = compat.getGlobal("window");
-  _globalThis.document = compat.getGlobal("document");
+  _globalThis.Zotero = basicTool.getGlobal("Zotero");
+  _globalThis.ZoteroPane = basicTool.getGlobal("ZoteroPane");
+  _globalThis.Zotero_Tabs = basicTool.getGlobal("Zotero_Tabs");
+  _globalThis.window = basicTool.getGlobal("window");
+  _globalThis.document = basicTool.getGlobal("document");
   _globalThis.addon = new Addon();
   _globalThis.ztoolkit = addon.data.ztoolkit;
-  ztoolkit.Tool.logOptionsGlobal.prefix = `[${config.addonName}]`;
-  ztoolkit.Tool.logOptionsGlobal.disableConsole =
-    addon.data.env === "production";
+  ztoolkit.basicOptions.log.prefix = `[${config.addonName}]`;
+  ztoolkit.basicOptions.log.disableConsole = addon.data.env === "production";
   Zotero.AddonTemplate = addon;
   // Trigger addon hook for initialization
   addon.hooks.onStartup();

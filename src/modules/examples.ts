@@ -9,15 +9,10 @@ function example(
   const original = descriptor.value;
   descriptor.value = function (...args: any) {
     try {
-      ztoolkit.Tool.log(
-        `Calling example ${target.name}.${String(propertyKey)}`
-      );
+      ztoolkit.log(`Calling example ${target.name}.${String(propertyKey)}`);
       return original.apply(this, args);
     } catch (e) {
-      ztoolkit.Tool.log(
-        `Error in example ${target.name}.${String(propertyKey)}`,
-        e
-      );
+      ztoolkit.log(`Error in example ${target.name}.${String(propertyKey)}`, e);
       throw e;
     }
   };
@@ -61,7 +56,7 @@ export class BasicExampleFactory {
 
   @example
   static exampleNotifierCallback() {
-    ztoolkit.Tool.createProgressWindow(config.addonName)
+    new ztoolkit.ProgressWindow(config.addonName)
       .createLine({
         text: "Open Tab Detected!",
         type: "success",
@@ -85,18 +80,7 @@ export class BasicExampleFactory {
       extraDTD: [`chrome://${config.addonRef}/locale/overlay.dtd`],
       defaultXUL: true,
     };
-    if (ztoolkit.Compat.isZotero7()) {
-      Zotero.PreferencePanes.register(prefOptions);
-    } else {
-      ztoolkit.Compat.registerPrefPane(prefOptions);
-    }
-  }
-
-  @example
-  static unregisterPrefs() {
-    if (!ztoolkit.Compat.isZotero7()) {
-      ztoolkit.Compat.unregisterPrefPane();
-    }
+    ztoolkit.PreferencePane.register(prefOptions);
   }
 }
 
@@ -107,7 +91,7 @@ export class KeyExampleFactory {
     const cmdsetId = `${config.addonRef}-cmdset`;
     const cmdSmallerId = `${config.addonRef}-cmd-smaller`;
     // Register an event key for Alt+L
-    ztoolkit.KeyTool.registerKey("event", {
+    ztoolkit.Shortcut.register("event", {
       id: `${config.addonRef}-key-larger`,
       key: "L",
       modifiers: "alt",
@@ -116,7 +100,7 @@ export class KeyExampleFactory {
       },
     });
     // Register an element key using <key> for Alt+S
-    ztoolkit.KeyTool.registerKey("element", {
+    ztoolkit.Shortcut.register("element", {
       id: `${config.addonRef}-key-smaller`,
       key: "S",
       modifiers: "alt",
@@ -135,16 +119,16 @@ export class KeyExampleFactory {
     // Here we register an conflict key for Alt+S
     // just to show how the confliction check works.
     // This is something you should avoid in your plugin.
-    ztoolkit.KeyTool.registerKey("event", {
+    ztoolkit.Shortcut.register("event", {
       id: `${config.addonRef}-key-smaller-conflict`,
       key: "S",
       modifiers: "alt",
       callback: (keyOptions) => {
-        ztoolkit.Compat.getGlobal("alert")("Smaller! This is a conflict key.");
+        ztoolkit.getGlobal("alert")("Smaller! This is a conflict key.");
       },
     });
     // Register an event key to check confliction
-    ztoolkit.KeyTool.registerKey("event", {
+    ztoolkit.Shortcut.register("event", {
       id: `${config.addonRef}-key-check-conflict`,
       key: "C",
       modifiers: "alt",
@@ -152,7 +136,7 @@ export class KeyExampleFactory {
         addon.hooks.onShortcuts("confliction");
       },
     });
-    ztoolkit.Tool.createProgressWindow(config.addonName)
+    new ztoolkit.ProgressWindow(config.addonName)
       .createLine({
         text: "Example Shortcuts: Alt+L/S/C",
         type: "success",
@@ -162,7 +146,7 @@ export class KeyExampleFactory {
 
   @example
   static exampleShortcutLargerCallback() {
-    ztoolkit.Tool.createProgressWindow(config.addonName)
+    new ztoolkit.ProgressWindow(config.addonName)
       .createLine({
         text: "Larger!",
         type: "default",
@@ -172,7 +156,7 @@ export class KeyExampleFactory {
 
   @example
   static exampleShortcutSmallerCallback() {
-    ztoolkit.Tool.createProgressWindow(config.addonName)
+    new ztoolkit.ProgressWindow(config.addonName)
       .createLine({
         text: "Smaller!",
         type: "default",
@@ -182,17 +166,17 @@ export class KeyExampleFactory {
 
   @example
   static exampleShortcutConflictionCallback() {
-    const conflictionGroups = ztoolkit.KeyTool.checkAllKeyConfliction();
-    ztoolkit.Tool.createProgressWindow("Check Key Confliction")
+    const conflictionGroups = ztoolkit.Shortcut.checkAllKeyConfliction();
+    new ztoolkit.ProgressWindow("Check Key Confliction")
       .createLine({
         text: `${conflictionGroups.length} groups of confliction keys found. Details are in the debug output/console.`,
       })
       .show(-1);
-    ztoolkit.Tool.log(
+    ztoolkit.log(
       "Conflictions:",
       conflictionGroups,
       "All keys:",
-      ztoolkit.KeyTool.getAllKeys()
+      ztoolkit.Shortcut.getAll()
     );
   }
 }
@@ -218,7 +202,7 @@ export class UIExampleFactory {
   static registerRightClickMenuItem() {
     const menuIcon = `chrome://${config.addonRef}/content/icons/favicon@0.5x.png`;
     // item menuitem with icon
-    ztoolkit.UI.insertMenuItem("item", {
+    ztoolkit.Menu.register("item", {
       tag: "menuitem",
       id: "zotero-itemmenu-addontemplate-test",
       label: getString("menuitem.label"),
@@ -229,7 +213,7 @@ export class UIExampleFactory {
 
   @example
   static registerRightClickMenuPopup() {
-    ztoolkit.UI.insertMenuItem(
+    ztoolkit.Menu.register(
       "item",
       {
         tag: "menu",
@@ -251,11 +235,11 @@ export class UIExampleFactory {
 
   @example
   static registerWindowMenuWithSeprator() {
-    ztoolkit.UI.insertMenuItem("menuFile", {
+    ztoolkit.Menu.register("menuFile", {
       tag: "menuseparator",
     });
     // menu->File menuitem
-    ztoolkit.UI.insertMenuItem("menuFile", {
+    ztoolkit.Menu.register("menuFile", {
       tag: "menuitem",
       label: getString("menuitem.filemenulabel"),
       oncommand: "alert('Hello World! File Menuitem.')",
@@ -326,7 +310,7 @@ export class UIExampleFactory {
 
   @example
   static registerLibraryTabPanel() {
-    const tabId = ztoolkit.UI.registerLibraryTabPanel(
+    const tabId = ztoolkit.LibraryTabPanel.register(
       getString("tabpanel.lib.tab.label"),
       (panel: XUL.Element, win: Window) => {
         const elem = ztoolkit.UI.creatElementsFromJSON(win.document, {
@@ -357,7 +341,7 @@ export class UIExampleFactory {
                 {
                   type: "click",
                   listener: () => {
-                    ztoolkit.UI.unregisterLibraryTabPanel(tabId);
+                    ztoolkit.LibraryTabPanel.unregister(tabId);
                   },
                 },
               ],
@@ -374,7 +358,7 @@ export class UIExampleFactory {
 
   @example
   static async registerReaderTabPanel() {
-    const tabId = await ztoolkit.UI.registerReaderTabPanel(
+    const tabId = await ztoolkit.ReaderTabPanel.register(
       getString("tabpanel.reader.tab.label"),
       (
         panel: XUL.TabPanel | undefined,
@@ -383,12 +367,12 @@ export class UIExampleFactory {
         reader: _ZoteroReaderInstance
       ) => {
         if (!panel) {
-          ztoolkit.Tool.log(
+          ztoolkit.log(
             "This reader do not have right-side bar. Adding reader tab skipped."
           );
           return;
         }
-        ztoolkit.Tool.log(reader);
+        ztoolkit.log(reader);
         const elem = ztoolkit.UI.creatElementsFromJSON(win.document, {
           tag: "vbox",
           id: `${config.addonRef}-${reader._instanceID}-extra-reader-tab-div`,
@@ -435,7 +419,7 @@ export class UIExampleFactory {
                 {
                   type: "click",
                   listener: () => {
-                    ztoolkit.UI.unregisterReaderTabPanel(tabId);
+                    ztoolkit.ReaderTabPanel.unregister(tabId);
                   },
                 },
               ],
@@ -449,12 +433,4 @@ export class UIExampleFactory {
       }
     );
   }
-
-  @example
-  static unregisterUIExamples() {
-    ztoolkit.unregisterAll();
-  }
-}
-function initPreferences(win: Window) {
-  throw new Error("Function not implemented.");
 }

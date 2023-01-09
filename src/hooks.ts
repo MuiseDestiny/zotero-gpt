@@ -14,12 +14,12 @@ async function onStartup() {
     Zotero.uiReadyPromise,
   ]);
   initLocale();
-  ztoolkit.Tool.setIconURI(
+  ztoolkit.ProgressWindow.setIconURI(
     "default",
     `chrome://${config.addonRef}/content/icons/favicon.png`
   );
 
-  const popupWin = ztoolkit.Tool.createProgressWindow(config.addonName, {
+  const popupWin = new ztoolkit.ProgressWindow(config.addonName, {
     closeOnClick: true,
     closeTime: -1,
   })
@@ -70,8 +70,7 @@ async function onStartup() {
 }
 
 function onShutdown(): void {
-  BasicExampleFactory.unregisterPrefs();
-  UIExampleFactory.unregisterUIExamples();
+  ztoolkit.unregisterAll();
   // Remove addon object
   addon.data.alive = false;
   delete Zotero.AddonTemplate;
@@ -88,7 +87,7 @@ async function onNotify(
   extraData: { [key: string]: any }
 ) {
   // You can add your code to the corresponding notify type
-  ztoolkit.Tool.log("notify", event, type, ids, extraData);
+  ztoolkit.log("notify", event, type, ids, extraData);
   if (
     event == "select" &&
     type == "tab" &&
