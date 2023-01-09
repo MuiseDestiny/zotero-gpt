@@ -6,7 +6,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/windingwind/zotero-tag?label=zotero-tag)
 ![GitHub Repo stars](https://img.shields.io/github/stars/iShareStuff/ZoteroTheme?label=zotero-theme)
 ![GitHub Repo stars](https://img.shields.io/github/stars/MuiseDestiny/zotero-reference?label=zotero-reference)
-![GitHub Repo stars](https://img.shields.io/github/stars/MuiseDestiny/zotero-style?label=zotero-style)
+![GitHub Repo stars](https://img.shields.io/github/stars/MuiseDestiny/ZoteroStyle?label=zotero-style)
 ![GitHub Repo stars](https://img.shields.io/github/stars/volatile-static/Chartero?label=Chartero)
 ![GitHub Repo stars](https://img.shields.io/github/stars/l0o0/tara?label=tara)
 
@@ -303,5 +303,3 @@ If you want to change the license, please contact me at wyzlshx@foxmail.com
 Part of the code of this repo refers to other open-source projects within the allowed scope.
 
 - zotero-better-bibtex(`d.ts`)
-
-## Zotero Plugins Build with the Template
