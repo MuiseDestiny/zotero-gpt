@@ -47,15 +47,19 @@ async function updatePrefsUI() {
   const tableHelper = new ztoolkit.VirtualizedTabel(addon.data.prefs?.window!)
     .setContainerId(`${config.addonRef}-table-container`)
     // Add locale for table columns
+    // Object.fromEntries is only available on firefox 62+,
     .setLocale(
-      Object.fromEntries(
+      Array.from(
         new Map(
           addon.data.prefs?.columns.map((column) => [
             column.label,
             getString(column.label),
           ])
         )
-      )
+      ).reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {} as { [k: string]: string })
     )
     // id and getRowCount are required, others are optional.
     .setProp({
