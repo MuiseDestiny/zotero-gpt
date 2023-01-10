@@ -1,4 +1,5 @@
 import { config } from "../../package.json";
+import { getString } from "./locale";
 
 export function registerPrefsScripts(_window: Window) {
   // This function is called when the prefs window is opened
@@ -9,13 +10,13 @@ export function registerPrefsScripts(_window: Window) {
       columns: [
         {
           dataKey: "title",
-          label: "Title",
+          label: "prefs.table.title",
           fixedWidth: true,
           width: 100,
         },
         {
           dataKey: "detail",
-          label: "Detail",
+          label: "prefs.table.detail",
         },
       ],
       rows: [
@@ -45,6 +46,18 @@ async function updatePrefsUI() {
   const renderLock = ztoolkit.getGlobal("Zotero").Promise.defer();
   const tableHelper = new ztoolkit.VirtualizedTabel(addon.data.prefs?.window!)
     .setContainerId(`${config.addonRef}-table-container`)
+    // Add locale for table columns
+    .setLocale(
+      Object.fromEntries(
+        new Map(
+          addon.data.prefs?.columns.map((column) => [
+            column.label,
+            getString(column.label),
+          ])
+        )
+      )
+    )
+    // id and getRowCount are required, others are optional.
     .setProp({
       id: `${config.addonRef}-prefs-table`,
       columns: addon.data.prefs?.columns,
@@ -62,6 +75,7 @@ async function updatePrefsUI() {
           detail: "no data",
         }
     )
+    // Show a progress window when selection changes
     .setProp("onSelectionChange", (selection) => {
       new ztoolkit.ProgressWindow(config.addonName)
         .createLine({
@@ -73,6 +87,8 @@ async function updatePrefsUI() {
         })
         .show();
     })
+    // When pressing delete, delete selected line and refresh table.
+    // Returning false to prevent default event.
     .setProp("onKeyDown", (event: KeyboardEvent) => {
       if (event.key == "Delete" || (Zotero.isMac && event.key == "Backspace")) {
         addon.data.prefs!.rows =
@@ -89,6 +105,7 @@ async function updatePrefsUI() {
       "getRowString",
       (index) => addon.data.prefs?.rows[index].title || ""
     )
+    // Render the table.
     .render(-1, () => {
       renderLock.resolve();
     });
