@@ -1,4 +1,5 @@
 import ZoteroToolkit from "zotero-plugin-toolkit/dist/index";
+import { ColumnOptions } from "zotero-plugin-toolkit/dist/helpers/virtualizedTable";
 import hooks from "./hooks";
 
 class Addon {
@@ -12,10 +13,14 @@ class Addon {
     };
     prefs?: {
       window: Window;
+      columns: Array<ColumnOptions>;
+      rows: Array<{ [dataKey: string]: string }>;
     };
   };
   // Lifecycle hooks
   public hooks: typeof hooks;
+  // APIs
+  public api: {};
 
   constructor() {
     this.data = {
@@ -24,6 +29,7 @@ class Addon {
       ztoolkit: new ZoteroToolkit(),
     };
     this.hooks = hooks;
+    this.api = {};
   }
 }
 
