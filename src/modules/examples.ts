@@ -364,7 +364,7 @@ export class UIExampleFactory {
         panel: XUL.TabPanel | undefined,
         deck: XUL.Deck,
         win: Window,
-        reader: _ZoteroReaderInstance
+        reader: _ZoteroTypes.ReaderInstance
       ) => {
         if (!panel) {
           ztoolkit.log(
