@@ -16,9 +16,7 @@
         em:optionsURL="chrome://__addonRef__/content/preferences.xul"
         em:updateURL="__updaterdf__"
         em:multiprocessCompatible="true"
-        em:bootstrap="true">>
-        <em:type>2</em:type>
-        <em:targetApplication RDF:resource="rdf:#$x61SL3"/>
+        em:bootstrap="true">
         <em:targetApplication>
             <Description>
                 <em:id>zotero@chnm.gmu.edu</em:id>
