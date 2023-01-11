@@ -10,6 +10,13 @@
             "name": "Restart",
             "runtimeExecutable": "npm",
             "runtimeArgs": ["run", "restart"],
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Restart in Prod Mode",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "restart-prod"],
         }
     ]
 }

@@ -104,8 +104,8 @@ async function main() {
         __env__: `"${process.env.NODE_ENV}"`,
       },
       bundle: true,
-      // Entry should be the same as addon/chrome/content/overlay.xul
       outfile: path.join(buildDir, "addon/chrome/content/scripts/index.js"),
+      // Don't turn minify on
       // minify: true,
     })
     .catch(() => process.exit(1));
@@ -160,17 +160,6 @@ async function main() {
       (f) => `${f.file} : ${f.numReplacements} / ${f.numMatches}`
     )
   );
-
-  // _ = replace.sync({
-  //   files: [path.join(buildDir, "addon/chrome/content/scripts/index.js")],
-  //   from: [/__env__/g]
-  // });
-  // console.log(
-  //   "[Build] Run replace in ",
-  //   _.filter((f) => f.hasChanged).map(
-  //     (f) => `${f.file} : ${f.numReplacements} / ${f.numMatches}`
-  //   )
-  // );
 
   console.log("[Build] Replace OK");
 
