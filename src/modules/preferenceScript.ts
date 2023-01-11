@@ -34,6 +34,8 @@ export function registerPrefsScripts(_window: Window) {
         },
       ],
     };
+  } else {
+    addon.data.prefs.window = _window;
   }
   updatePrefsUI();
   bindPrefEvents();
@@ -114,7 +116,7 @@ async function updatePrefsUI() {
       renderLock.resolve();
     });
   await renderLock.promise;
-  ztoolkit.log("Preference table rendered!", tableHelper);
+  ztoolkit.log("Preference table rendered!");
 }
 
 function bindPrefEvents() {
