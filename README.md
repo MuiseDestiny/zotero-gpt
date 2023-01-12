@@ -92,7 +92,7 @@ See how the examples work by directly downloading the `xpi` file from GitHub rel
 This is also how your plugin will be released and used by others.
 
 > The release do not promise any real functions. It is probably not up-to-date.
-> 
+>
 > The `xpi` package is a zip file. However, please don't modify it directly. Modify the source code and build it.
 
 ### Build from Source
@@ -129,6 +129,7 @@ This is also how your plugin will be released and used by others.
 ### Release
 
 To build and release, use
+
 ```shell
 # A release-it command: version increase, npm run build, git push, and GitHub release
 # You need to set the environment variable GITHUB_TOKEN https://github.com/settings/tokens
@@ -246,14 +247,18 @@ Remember to call `unregister()` on plugin unload.
 
 The plugin template provides new APIs for bootstrap plugins. We have two reasons to use these APIs, instead of the `createElement/createElementNS`:
 
-- In bootstrap mode, plugins have to clean up all UI elements on exit (disable or uninstall), which is very annoying. Using the `createElement`, the plugin template will maintain these elements. Just `unregister` on exit.
-- Zotero 7 requires createElement()/createElementNS() → createXULElement() for remaining XUL elements, while Zotero 6 doesn't support `createXULElement`. Using `createElement`, it switches API depending on the current platform automatically.
+- In bootstrap mode, plugins have to clean up all UI elements on exit (disable or uninstall), which is very annoying. Using the `createElement`, the plugin template will maintain these elements. Just `unregisterAll` at the exit.
+- Zotero 7 requires createElement()/createElementNS() → createXULElement() for remaining XUL elements, while Zotero 6 doesn't support `createXULElement`. The React.createElement-like API `createElement` detects namespace(xul/html/svg) and creates elements automatically, with the return element in the corresponding TS element type.
 
-There are more advanced APIs for creating elements in batch: `creatElementsFromJSON`. Input an element tree in JSON and return a fragment/element. These elements are also maintained by this plugin template.
+```ts
+createElement(document, "div"); // returns HTMLDivElement
+createElement(document, "hbox"); // returns XUL.Box
+createElement(document, "button", { namespace: "xul" }); // manually set namespace. returns XUL.Button
+```
 
 ### About Build
 
-Use esbuild to build `.ts` source code to `.js`.
+Use Esbuild to build `.ts` source code to `.js`.
 
 Use `replace-in-file` to replace keywords and configurations defined in `package.json` in non-build files (`.xul/xhtml`, `.dtd`, and `.properties`).
 
