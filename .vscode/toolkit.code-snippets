@@ -25,5 +25,21 @@
         "scope": "javascript,typescript",
         "prefix": "appendElement",
         "body": "appendElement({ tag: '$1' }, $2);"
+    },
+    "register Notifier": {
+        "scope": "javascript,typescript",
+        "prefix": "registerObserver",
+        "body": [
+            "registerObserver({",
+            "\t notify: (",
+            "\t\tevent: _ZoteroTypes.Notifier.Event,",
+            "\t\ttype: _ZoteroTypes.Notifier.Type,",
+            "\t\tids: string[],",
+            "\t\textraData: _ZoteroTypes.anyObj",
+            "\t) => {",
+            "\t\t$0",
+            "\t}",
+            "});"
+        ]
     }
 }
