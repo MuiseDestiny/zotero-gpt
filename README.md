@@ -60,7 +60,7 @@ Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts
 
 ### UI Examples
 
-![image](https://user-images.githubusercontent.com/33902321/209274492-7aa94912-af38-4154-af46-dc8f59640de3.png)
+![image](https://user-images.githubusercontent.com/33902321/211739774-cc5c2df8-5fd9-42f0-9cdf-0f2e5946d427.png)
 
 - registerStyleSheet(the official make-it-red example)
 - registerRightClickMenuItem
@@ -71,11 +71,33 @@ Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts
 - registerCustomCellRenderer
 - registerLibraryTabPanel
 - registerReaderTabPanel
-- unregisterUIExamples
+
+### Preference Pane Examples
+
+![image](https://user-images.githubusercontent.com/33902321/211737987-cd7c5c87-9177-4159-b975-dc67690d0490.png)
+
+- Preferences bindings
+- UI Events
+- Tabel
+- Locale
+
+See [`src/modules/preferenceScript.ts`](./src/modules/preferenceScript.ts)
 
 ## Quick Start Guide
 
-- Fork this repo;
+### Install Pre-built `xpi`
+
+See how the examples work by directly downloading the `xpi` file from GitHub release and install it to your Zotero.
+
+This is also how your plugin will be released and used by others.
+
+> The release do not promise any real functions. It is probably not up-to-date.
+>
+> The `xpi` package is a zip file. However, please don't modify it directly. Modify the source code and build it.
+
+### Build from Source
+
+- Fork this repo/Click `Use this template`;
 - Git clone the forked repo;
 - Enter the repo folder;
 - Modify the settings in `./package.json`, including:
@@ -103,6 +125,66 @@ Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts
 >
 > - This environment variable is stored in `Zotero.AddonTemplate.data.env`. The outputs to console is disabled in prod mode.
 > - You can decide what users cannot see/use based on this variable.
+
+### Release
+
+To build and release, use
+
+```shell
+# A release-it command: version increase, npm run build, git push, and GitHub release
+# You need to set the environment variable GITHUB_TOKEN https://github.com/settings/tokens
+# release-it: https://github.com/release-it/release-it
+npm run release
+```
+
+### Setup Development Environment
+
+1. Install a beta version of Zotero: https://www.zotero.org/support/beta_builds (Zotero 7 beta: https://www.zotero.org/support/dev/zotero_7_for_developers)
+
+2. Install Firefox 60(for Zotero 6)/Firefox 102(for Zotero 7)
+
+3. Copy zotero command line config file. Modify the commands that starts your installation of the beta Zotero.
+
+> (Optional) Do this only once: Start the beta Zotero with `/path/to/zotero -p`. Create a new profile and use it as your development profile.
+> Use `/path/to/zotero -p {profile_name}` to specify which profile to run with.
+
+```sh
+cp ./scripts/zotero-cmd-default.json ./scripts/zotero-cmd.json
+vim ./scripts/zotero-cmd.json
+```
+
+4. Setup plugin development environment following this [link](https://www.zotero.org/support/dev/client_coding/plugin_development#setting_up_a_plugin_development_environment).
+
+5. Build plugin and restart Zotero with `npm run restart`.
+
+6. Launch Firefox 60(Zotero 6)/Firefox 102(Zotero 7)
+
+7. In Firefox, go to devtools, go to settings, click "enable remote debugging" and the one next to it that's also about debugging
+
+> Press `shift+F8` in FF 60, or enter `about:debugging#/setup` in FF 102.
+
+8. In Zotero, go to setting, advanced, config editor, look up "debugging" and click on "allow remote debugging".
+
+9. Connect to Zotero in Firefox.
+
+> In FF 60, click the hamburger menu in the top right -> web developer -> Connect..., then enter `localhost:6100`.
+
+> In FF 102, enter `localhost:6100` in the bottom input of remote-debugging page and click `add`.
+
+10. Click `connect` in the leftside-bar of Firefox remote-debugging page.
+
+11. Click "Inspect Main Process"
+
+### Debug in Zotero
+
+You can also:
+
+- Test code snipastes in Tools->Developer->Run Javascript;
+- Debug output with `Zotero.debug()`. Find the outputs in Help->Debug Output Logging->View Output;
+- Debug UI. Zotero is built on the Firefox XUL framework. Debug XUL UI with software like [XUL Explorer](https://udn.realityripple.com/docs/Archive/Mozilla/XUL_Explorer).
+  > XUL Documentation: http://www.devdoc.net/web/developer.mozilla.org/en-US/docs/XUL.html
+
+## Details
 
 ### About Hooks
 
@@ -165,10 +247,38 @@ Remember to call `unregister()` on plugin unload.
 
 The plugin template provides new APIs for bootstrap plugins. We have two reasons to use these APIs, instead of the `createElement/createElementNS`:
 
-- In bootstrap mode, plugins have to clean up all UI elements on exit (disable or uninstall), which is very annoying. Using the `createElement`, the plugin template will maintain these elements. Just `unregister` on exit.
-- Zotero 7 requires createElement()/createElementNS() → createXULElement() for remaining XUL elements, while Zotero 6 doesn't support `createXULElement`. Using `createElement`, it switches API depending on the current platform automatically.
+- In bootstrap mode, plugins have to clean up all UI elements on exit (disable or uninstall), which is very annoying. Using the `createElement`, the plugin template will maintain these elements. Just `unregisterAll` at the exit.
+- Zotero 7 requires createElement()/createElementNS() → createXULElement() for remaining XUL elements, while Zotero 6 doesn't support `createXULElement`. The React.createElement-like API `createElement` detects namespace(xul/html/svg) and creates elements automatically, with the return element in the corresponding TS element type.
 
-There are more advanced APIs for creating elements in batch: `creatElementsFromJSON`. Input an element tree in JSON and return a fragment/element. These elements are also maintained by this plugin template.
+```ts
+createElement(document, "div"); // returns HTMLDivElement
+createElement(document, "hbox"); // returns XUL.Box
+createElement(document, "button", { namespace: "xul" }); // manually set namespace. returns XUL.Button
+```
+
+### About Build
+
+Use Esbuild to build `.ts` source code to `.js`.
+
+Use `replace-in-file` to replace keywords and configurations defined in `package.json` in non-build files (`.xul/xhtml`, `.dtd`, and `.properties`).
+
+Steps in `scripts/build.js`:
+
+1. Clean `./builds`
+2. Copy `./addon` to `./builds`
+3. Esbuild to `./builds/addon/chrome/content/scripts`
+4. Replace `__buildVersion__` and `__buildTime__` in `./builds/addon`
+5. Zip the `./builds/addon` to `./builds/*.xpi`
+
+### About Zotero API
+
+Zotero docs are outdated and incomplete. Clone https://github.com/zotero/zotero and search the keyword globally.
+
+> ⭐The [zotero-types](https://github.com/windingwind/zotero-types) provides most frequently used Zotero APIs. It's included in this template by default. Your IDE would provide hint for most of the APIs.
+
+A trick for finding the API you want:
+
+Search the UI label in `.xul`(`.xhtml`)/`.dtd`/`.properties` files, find the corresponding key in locale file. Then search this keys in `.js`/`.jsx` files.
 
 ### Directory Structure
 
@@ -232,67 +342,6 @@ This section shows the directory structure of a template.
        │  preferenceScript.ts   # script runs in preferences.xhtml
        └─ progressWindow.ts     # progressWindow tool
 ```
-
-### Build
-
-```shell
-# A release-it command: version increase, npm run build, git push, and GitHub release
-# You need to set the environment variable GITHUB_TOKEN https://github.com/settings/tokens
-# release-it: https://github.com/release-it/release-it
-npm run release
-```
-
-Alternatively, build it directly using build.js: `npm run build`
-
-### Build Steps
-
-1. Clean `./builds`
-2. Copy `./addon` to `./builds`
-3. Esbuild to `./builds/addon/chrome/content/scripts`
-4. Replace `__buildVersion__` and `__buildTime__` in `./builds/addon`
-5. Zip the `./builds/addon` to `./builds/*.xpi`
-
-### Debug
-
-1. Copy zotero command line config file. Modify the commands.
-
-```sh
-cp ./scripts/zotero-cmd-default.json ./scripts/zotero-cmd.json
-vim ./scripts/zotero-cmd.json
-```
-
-2. Setup plugin development environment following this [link](https://www.zotero.org/support/dev/client_coding/plugin_development#setting_up_a_plugin_development_environment).
-
-3. Build plugin and restart Zotero with this npm command.
-
-4. Launch Firefox 60
-5. In Firefox, go to devtools, go to settings, click "enable remote debugging" and the one next to it that's also about debugging(or press `shift+F8`).
-6. In Zotero, go to setting, advanced, config editor, look up "debugging" and click on "allow remote debugging"
-7. In Firefox, click the hamburger menu in the top right -> web developer -> Connect...
-8. Enter localhost:6100
-9. Connect
-10. Click "Inspect Main Process"
-
-```sh
-npm run restart
-```
-
-You can also debug code in these ways:
-
-- Test code segments in Tools->Developer->Run Javascript;
-- Debug output with `Zotero.debug()`. Find the outputs in Help->Debug Output Logging->View Output;
-- UI debug. Zotero is built on the Firefox XUL framework. Debug XUL UI with software like [XUL Explorer](https://udn.realityripple.com/docs/Archive/Mozilla/XUL_Explorer).
-  > XUL Documents:  
-  > https://www.xul.fr/tutorial/  
-  > http://www.xulplanet.com/
-
-### Development
-
-**Search for a Zotero API**  
-Zotero docs are outdated or incomplete. Searching the source code of Zotero is unavoidable.  
-Clone https://github.com/zotero/zotero and search the keyword globally. You can search the UI text in `.xul`/`.dtd` files, and then search the keys of the text value in `.js`/`.xul` files.
-
-> ⭐The [zotero-types](https://github.com/windingwind/zotero-types) provides most frequently used Zotero APIs. It's included in this template by default.
 
 ## Disclaimer
 

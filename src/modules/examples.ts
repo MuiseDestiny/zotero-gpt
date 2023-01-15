@@ -184,14 +184,13 @@ export class KeyExampleFactory {
 export class UIExampleFactory {
   @example
   static registerStyleSheet() {
-    const styles = ztoolkit.UI.creatElementsFromJSON(document, {
-      tag: "link",
-      directAttributes: {
+    const styles = ztoolkit.UI.createElement(document, "link", {
+      properties: {
         type: "text/css",
         rel: "stylesheet",
         href: `chrome://${config.addonRef}/content/zoteroPane.css`,
       },
-    }) as HTMLLinkElement;
+    });
     document.documentElement.appendChild(styles);
     document
       .getElementById("zotero-item-pane-content")
@@ -218,7 +217,7 @@ export class UIExampleFactory {
       {
         tag: "menu",
         label: getString("menupopup.label"),
-        subElementOptions: [
+        children: [
           {
             tag: "menuitem",
             label: getString("menuitem.submenulabel"),
@@ -313,28 +312,24 @@ export class UIExampleFactory {
     const tabId = ztoolkit.LibraryTabPanel.register(
       getString("tabpanel.lib.tab.label"),
       (panel: XUL.Element, win: Window) => {
-        const elem = ztoolkit.UI.creatElementsFromJSON(win.document, {
-          tag: "vbox",
-          namespace: "xul",
-          subElementOptions: [
+        const elem = ztoolkit.UI.createElement(win.document, "vbox", {
+          children: [
             {
               tag: "h2",
-              namespace: "html",
-              directAttributes: {
+              properties: {
                 innerText: "Hello World!",
               },
             },
             {
               tag: "div",
-              namespace: "html",
-              directAttributes: {
+              properties: {
                 innerText: "This is a library tab.",
               },
             },
             {
               tag: "button",
               namespace: "html",
-              directAttributes: {
+              properties: {
                 innerText: "Unregister",
               },
               listeners: [
@@ -373,46 +368,40 @@ export class UIExampleFactory {
           return;
         }
         ztoolkit.log(reader);
-        const elem = ztoolkit.UI.creatElementsFromJSON(win.document, {
-          tag: "vbox",
+        const elem = ztoolkit.UI.createElement(win.document, "vbox", {
           id: `${config.addonRef}-${reader._instanceID}-extra-reader-tab-div`,
-          namespace: "xul",
           // This is important! Don't create content for multiple times
           // ignoreIfExists: true,
           removeIfExists: true,
-          subElementOptions: [
+          children: [
             {
               tag: "h2",
-              namespace: "html",
-              directAttributes: {
+              properties: {
                 innerText: "Hello World!",
               },
             },
             {
               tag: "div",
-              namespace: "html",
-              directAttributes: {
+              properties: {
                 innerText: "This is a reader tab.",
               },
             },
             {
               tag: "div",
-              namespace: "html",
-              directAttributes: {
+              properties: {
                 innerText: `Reader: ${reader._title.slice(0, 20)}`,
               },
             },
             {
               tag: "div",
-              namespace: "html",
-              directAttributes: {
+              properties: {
                 innerText: `itemID: ${reader.itemID}.`,
               },
             },
             {
               tag: "button",
               namespace: "html",
-              directAttributes: {
+              properties: {
                 innerText: "Unregister",
               },
               listeners: [

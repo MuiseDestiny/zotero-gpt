@@ -48,25 +48,15 @@ async function updatePrefsUI() {
   const renderLock = ztoolkit.getGlobal("Zotero").Promise.defer();
   const tableHelper = new ztoolkit.VirtualizedTabel(addon.data.prefs?.window!)
     .setContainerId(`${config.addonRef}-table-container`)
-    // Add locale for table columns
-    // Object.fromEntries is only available on firefox 62+,
-    .setLocale(
-      Array.from(
-        new Map(
-          addon.data.prefs?.columns.map((column) => [
-            column.label,
-            getString(column.label),
-          ])
-        )
-      ).reduce((obj, [key, value]) => {
-        obj[key] = value;
-        return obj;
-      }, {} as { [k: string]: string })
-    )
-    // id and getRowCount are required, others are optional.
     .setProp({
       id: `${config.addonRef}-prefs-table`,
-      columns: addon.data.prefs?.columns,
+      // Do not use setLocale, as it modifies the Zotero.Intl.strings
+      // Set locales directly to columns
+      columns: addon.data.prefs?.columns.map((column) =>
+        Object.assign(column, {
+          label: getString(column.label) || column.label,
+        })
+      ),
       showHeader: true,
       multiSelect: true,
       staticColumns: true,
