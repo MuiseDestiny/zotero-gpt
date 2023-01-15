@@ -1,23 +1,4 @@
 {
-    "createElementsFromJSON - full": {
-        "scope": "javascript,typescript",
-        "prefix": [
-            "createElementsFromJSON"
-        ],
-        "body": [
-            "createElementsFromJSON(${0:document}, {",
-            "\ttag: '${1:div}',",
-            "}, ${16:true});"
-        ],
-        "description": "tools/ui/creatElementsFromJSON"
-    },
-    "createElementsFromJSON - minimum": {
-        "scope": "javascript,typescript",
-        "prefix": [
-            "createElementsFromJSON"
-        ],
-        "body": "createElementsFromJSON(document, { tag: '$0' });"
-    },
     "appendElement - full": {
         "scope": "javascript,typescript",
         "prefix": "appendElement",
