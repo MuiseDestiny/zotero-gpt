@@ -1,5 +1,6 @@
 import {
   BasicExampleFactory,
+  HelperExampleFactory,
   KeyExampleFactory,
   UIExampleFactory,
 } from "./modules/examples";
@@ -67,6 +68,8 @@ async function onStartup() {
     text: `[100%] ${getString("startup.finish")}`,
   });
   popupWin.startCloseTimer(5000);
+
+  addon.hooks.onDialogEvents("dialogExample");
 }
 
 function onShutdown(): void {
@@ -131,6 +134,28 @@ function onShortcuts(type: string) {
   }
 }
 
+function onDialogEvents(type: string) {
+  switch (type) {
+    case "dialogExample":
+      HelperExampleFactory.dialogExample();
+      break;
+    case "clipboardExample":
+      HelperExampleFactory.clipboardExample();
+      break;
+    case "filePickerExample":
+      HelperExampleFactory.filePickerExample();
+      break;
+    case "progressWindowExample":
+      HelperExampleFactory.progressWindowExample();
+      break;
+    case "vtableExample":
+      HelperExampleFactory.vtableExample();
+      break;
+    default:
+      break;
+  }
+}
+
 // Add your hooks here. For element click, etc.
 // Keep in mind hooks only do dispatch. Don't add code that does real jobs in hooks.
 // Otherwise the code would be hard to read and maintian.
@@ -141,4 +166,5 @@ export default {
   onNotify,
   onPrefsEvent,
   onShortcuts,
+  onDialogEvents,
 };

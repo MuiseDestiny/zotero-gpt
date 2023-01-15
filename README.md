@@ -83,6 +83,14 @@ Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts
 
 See [`src/modules/preferenceScript.ts`](./src/modules/preferenceScript.ts)
 
+### HelperExamples
+
+- dialogExample
+- clipboardExample
+- filePickerExample
+- progressWindowExample
+- vtableExample(See Preference Pane Examples)
+
 ## Quick Start Guide
 
 ### Install Pre-built `xpi`
