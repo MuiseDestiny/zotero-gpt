@@ -119,7 +119,7 @@ async function main() {
       path.join(buildDir, "**/*.xul"),
       path.join(buildDir, "**/*.xhtml"),
       path.join(buildDir, "**/*.json"),
-      path.join(buildDir, "addon/defaults", "**/*.js"),
+      path.join(buildDir, "addon/prefs.js"),
       path.join(buildDir, "addon/chrome.manifest"),
       path.join(buildDir, "addon/manifest.json"),
       path.join(buildDir, "addon/bootstrap.js"),
@@ -179,7 +179,7 @@ async function main() {
   );
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.log(err);
   process.exit(1);
 });
