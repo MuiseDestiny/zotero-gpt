@@ -6,9 +6,11 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/windingwind/zotero-tag?label=zotero-tag)
 ![GitHub Repo stars](https://img.shields.io/github/stars/iShareStuff/ZoteroTheme?label=zotero-theme)
 ![GitHub Repo stars](https://img.shields.io/github/stars/MuiseDestiny/zotero-reference?label=zotero-reference)
+![GitHub Repo stars](https://img.shields.io/github/stars/MuiseDestiny/zotero-citation?label=zotero-citation)
 ![GitHub Repo stars](https://img.shields.io/github/stars/MuiseDestiny/ZoteroStyle?label=zotero-style)
 ![GitHub Repo stars](https://img.shields.io/github/stars/volatile-static/Chartero?label=Chartero)
 ![GitHub Repo stars](https://img.shields.io/github/stars/l0o0/tara?label=tara)
+![GitHub Repo stars](https://img.shields.io/github/stars/redleafnew/delitemwithatt?label=delitemwithatt)
 
 This is a plugin template for [Zotero](https://www.zotero.org/). Plugins using this template are shown above.
 
@@ -85,11 +87,23 @@ See [`src/modules/preferenceScript.ts`](./src/modules/preferenceScript.ts)
 
 ### HelperExamples
 
+![image](https://user-images.githubusercontent.com/33902321/215119473-e7d0d0ef-6d96-437e-b989-4805ffcde6cf.png)
+
 - dialogExample
 - clipboardExample
 - filePickerExample
 - progressWindowExample
 - vtableExample(See Preference Pane Examples)
+
+### PromptExamples
+
+An Obsidian-style prompt(popup command input) module. It accepts text command to run callback, with optional display in the popup. 
+
+Activate with `Shift+P`.
+
+![image](https://user-images.githubusercontent.com/33902321/215120009-e7c7ed27-33a0-44fe-b021-06c272481a92.png)
+
+- registerAlertPromptExample
 
 ## Quick Start Guide
 
