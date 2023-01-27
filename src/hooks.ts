@@ -2,6 +2,7 @@ import {
   BasicExampleFactory,
   HelperExampleFactory,
   KeyExampleFactory,
+  PromptExampleFactory,
   UIExampleFactory,
 } from "./modules/examples";
 import { config } from "../package.json";
@@ -60,6 +61,8 @@ async function onStartup() {
   UIExampleFactory.registerLibraryTabPanel();
 
   await UIExampleFactory.registerReaderTabPanel();
+
+  PromptExampleFactory.registerAlertPromptExample();
 
   await Zotero.Promise.delay(1000);
 

@@ -424,6 +424,21 @@ export class UIExampleFactory {
   }
 }
 
+export class PromptExampleFactory {
+  @example
+  static registerAlertPromptExample() {
+    ztoolkit.Prompt.register([
+      {
+        name: "Template Test",
+        label: "Plugin Template",
+        callback(prompt) {
+          ztoolkit.getGlobal("alert")("Command triggered!");
+        },
+      },
+    ]);
+  }
+}
+
 export class HelperExampleFactory {
   @example
   static async dialogExample() {
