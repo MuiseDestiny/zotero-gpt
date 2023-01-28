@@ -80,9 +80,7 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
       ["locale", "__addonRef__", "zh-CN", rootURI + "chrome/locale/zh-CN/"],
     ]);
   } else {
-    if (reason == ADDON_INSTALL || reason == ADDON_ENABLE) {
-      setDefaultPrefs(rootURI);
-    }
+    setDefaultPrefs(rootURI);
   }
 
   // Global variables for plugin code
