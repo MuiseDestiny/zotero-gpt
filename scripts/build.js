@@ -112,6 +112,21 @@ async function main() {
 
   console.log("[Build] Run esbuild OK");
 
+  const replaceFrom = [
+    /__author__/g,
+    /__description__/g,
+    /__homepage__/g,
+    /__buildVersion__/g,
+    /__buildTime__/g,
+  ];
+
+  const replaceTo = [author, description, homepage, version, buildTime];
+
+  replaceFrom.push(
+    ...Object.keys(config).map((k) => new RegExp(`__${k}__`, "g"))
+  );
+  replaceTo.push(...Object.values(config));
+
   const optionsAddon = {
     files: [
       path.join(buildDir, "**/*.rdf"),
@@ -126,30 +141,8 @@ async function main() {
       "update.json",
       "update.rdf",
     ],
-    from: [
-      /__author__/g,
-      /__description__/g,
-      /__homepage__/g,
-      /__releasepage__/g,
-      /__updaterdf__/g,
-      /__addonName__/g,
-      /__addonID__/g,
-      /__addonRef__/g,
-      /__buildVersion__/g,
-      /__buildTime__/g,
-    ],
-    to: [
-      author,
-      description,
-      homepage,
-      config.releasepage,
-      config.updaterdf,
-      config.addonName,
-      config.addonID,
-      config.addonRef,
-      version,
-      buildTime,
-    ],
+    from: replaceFrom,
+    to: replaceTo,
     countMatches: true,
   };
 

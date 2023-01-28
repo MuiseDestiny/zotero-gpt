@@ -97,7 +97,7 @@ See [`src/modules/preferenceScript.ts`](./src/modules/preferenceScript.ts)
 
 ### PromptExamples
 
-An Obsidian-style prompt(popup command input) module. It accepts text command to run callback, with optional display in the popup. 
+An Obsidian-style prompt(popup command input) module. It accepts text command to run callback, with optional display in the popup.
 
 Activate with `Shift+P`.
 
@@ -124,18 +124,21 @@ This is also how your plugin will be released and used by others.
 - Enter the repo folder;
 - Modify the settings in `./package.json`, including:
 
-```
+```json
+{
   version,
   author,
   description,
   homepage,
   config {
-    releasepage,
-    updaterdf,
-    addonName,
-    addonID,
-    addonRef
+    releasepage, // URL to releases(`.xpi`)
+    updaterdf, // URL to update.json
+    addonName, // name to be displayed in the plugin manager
+    addonID, // ID to avoid confliction. IMPORTANT!
+    addonRef, // e.g. Element ID prefix
+    addonInstance // the plugin's root instance: Zotero.${addonInstance}
   }
+}
 ```
 
 > Be careful to set the addonID and addonRef to avoid confliction.
@@ -145,7 +148,7 @@ This is also how your plugin will be released and used by others.
 
 > What the difference between dev & prod?
 >
-> - This environment variable is stored in `Zotero.AddonTemplate.data.env`. The outputs to console is disabled in prod mode.
+> - This environment variable is stored in `Zotero.${addonInstance}.data.env`. The outputs to console is disabled in prod mode.
 > - You can decide what users cannot see/use based on this variable.
 
 ### Release

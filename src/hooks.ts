@@ -79,7 +79,7 @@ function onShutdown(): void {
   ztoolkit.unregisterAll();
   // Remove addon object
   addon.data.alive = false;
-  delete Zotero.AddonTemplate;
+  delete Zotero[config.addonInstance];
 }
 
 /**

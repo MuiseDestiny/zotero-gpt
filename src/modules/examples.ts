@@ -112,7 +112,7 @@ export class KeyExampleFactory {
           id: cmdSmallerId,
           document,
           _parentId: cmdsetId,
-          oncommand: "Zotero.AddonTemplate.hooks.onShortcuts('smaller')",
+          oncommand: `Zotero.${config.addonInstance}.hooks.onShortcuts('smaller')`,
         },
       },
     });

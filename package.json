@@ -6,6 +6,7 @@
     "addonName": "Zotero Addon Template",
     "addonID": "addontemplate@euclpts.com",
     "addonRef": "addontemplate",
+    "addonInstance": "AddonTemplate",
     "releasepage": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
     "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/bootstrap/update.json"
   },
