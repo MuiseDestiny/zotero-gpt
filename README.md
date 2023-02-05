@@ -28,6 +28,12 @@ This is a plugin template for [Zotero](https://www.zotero.org/). Plugins using t
 
 > 👁 Watch this repo so that you can be notified whenever there are fixes & updates.
 
+If you are using this repo, I recommended that you put this badge ([![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template)) on your README:
+
+```md
+[![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template)
+```
+
 ## Features
 
 - Event-driven, functional programming, under extensive skeleton;
