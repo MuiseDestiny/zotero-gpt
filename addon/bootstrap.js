@@ -1,7 +1,9 @@
-/* Copyright 2012 Will Shanks.
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+/**
+ * Most of this code is from Zotero team's official Make It Red example[1]
+ * or the Zotero 7 documentation[2].
+ * [1] https://github.com/zotero/make-it-red
+ * [2] https://www.zotero.org/support/dev/zotero_7_for_developers
+ */
 
 if (typeof Zotero == "undefined") {
   var Zotero;
@@ -83,7 +85,12 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
     setDefaultPrefs(rootURI);
   }
 
-  // Global variables for plugin code
+  /**
+   * Global variables for plugin code.
+   * The `_globalThis` is the global root variable of the plugin sandbox environment
+   * and all child variables assigned to it is globally accessible.
+   * See `src/index.ts` for details.
+   */
   const ctx = {
     rootURI,
   };
