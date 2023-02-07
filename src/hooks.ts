@@ -130,7 +130,7 @@ function onShortcuts(type: string) {
       KeyExampleFactory.exampleShortcutSmallerCallback();
       break;
     case "confliction":
-      KeyExampleFactory.exampleShortcutConflictionCallback();
+      KeyExampleFactory.exampleShortcutConflictingCallback();
       break;
     default:
       break;

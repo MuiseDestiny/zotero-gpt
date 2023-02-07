@@ -46,7 +46,7 @@ async function updatePrefsUI() {
   // with addon.data.prefs.window.document
   // Or bind some events to the elements
   const renderLock = ztoolkit.getGlobal("Zotero").Promise.defer();
-  const tableHelper = new ztoolkit.VirtualizedTabel(addon.data.prefs?.window!)
+  const tableHelper = new ztoolkit.VirtualizedTable(addon.data.prefs?.window!)
     .setContainerId(`${config.addonRef}-table-container`)
     .setProp({
       id: `${config.addonRef}-prefs-table`,

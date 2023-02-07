@@ -165,16 +165,16 @@ export class KeyExampleFactory {
   }
 
   @example
-  static exampleShortcutConflictionCallback() {
-    const conflictionGroups = ztoolkit.Shortcut.checkAllKeyConfliction();
-    new ztoolkit.ProgressWindow("Check Key Confliction")
+  static exampleShortcutConflictingCallback() {
+    const conflictingGroups = ztoolkit.Shortcut.checkAllKeyConflicting();
+    new ztoolkit.ProgressWindow("Check Key Conflicting")
       .createLine({
-        text: `${conflictionGroups.length} groups of confliction keys found. Details are in the debug output/console.`,
+        text: `${conflictingGroups.length} groups of conflicting keys found. Details are in the debug output/console.`,
       })
       .show(-1);
     ztoolkit.log(
-      "Conflictions:",
-      conflictionGroups,
+      "Conflicting:",
+      conflictingGroups,
       "All keys:",
       ztoolkit.Shortcut.getAll()
     );
@@ -667,7 +667,7 @@ export class HelperExampleFactory {
 
   @example
   static clipboardExample() {
-    new ztoolkit.Clibpoard()
+    new ztoolkit.Clipboard()
       .addText(
         "![Plugin Template](https://github.com/windingwind/zotero-plugin-template)",
         "text/unicode"
