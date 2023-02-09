@@ -76,6 +76,7 @@ Search `@example` in `src/examples.ts`. The examples are called in `src/hooks.ts
 - registerWindowMenuWithSeprator
 - registerExtraColumn
 - registerExtraColumnWithCustomCell
+- registerCustomItemBoxRow
 - registerCustomCellRenderer
 - registerLibraryTabPanel
 - registerReaderTabPanel

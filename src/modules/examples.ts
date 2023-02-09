@@ -233,7 +233,7 @@ export class UIExampleFactory {
   }
 
   @example
-  static registerWindowMenuWithSeprator() {
+  static registerWindowMenuWithSeparator() {
     ztoolkit.Menu.register("menuFile", {
       tag: "menuseparator",
     });
@@ -302,9 +302,47 @@ export class UIExampleFactory {
         return span;
       }
     );
-    // @ts-ignore
-    // This is a private method. Make it public in toolkit.
     await ztoolkit.ItemTree.refresh();
+  }
+
+  @example
+  static async registerCustomItemBoxRow() {
+    await ztoolkit.ItemBox.register(
+      "itemBoxFieldEditable",
+      "Editable Custom Field",
+      (field, unformatted, includeBaseMapped, item, original) => {
+        return (
+          ztoolkit.ExtraField.getExtraField(item, "itemBoxFieldEditable") || ""
+        );
+      },
+      {
+        editable: true,
+        setFieldHook: (field, value, loadIn, item, original) => {
+          window.alert("Custom itemBox value is changed and saved to extra!");
+          ztoolkit.ExtraField.setExtraField(
+            item,
+            "itemBoxFieldEditable",
+            value
+          );
+          return true;
+        },
+        index: 1,
+      }
+    );
+
+    await ztoolkit.ItemBox.register(
+      "itemBoxFieldNonEditable",
+      "Non-Editable Custom Field",
+      (field, unformatted, includeBaseMapped, item, original) => {
+        return (
+          "[CANNOT EDIT THIS]" + (item.getField("title") as string).slice(0, 10)
+        );
+      },
+      {
+        editable: false,
+        index: 2,
+      }
+    );
   }
 
   @example

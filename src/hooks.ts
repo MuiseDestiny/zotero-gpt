@@ -50,13 +50,15 @@ async function onStartup() {
 
   UIExampleFactory.registerRightClickMenuPopup();
 
-  UIExampleFactory.registerWindowMenuWithSeprator();
+  UIExampleFactory.registerWindowMenuWithSeparator();
 
   await UIExampleFactory.registerExtraColumn();
 
   await UIExampleFactory.registerExtraColumnWithCustomCell();
 
   await UIExampleFactory.registerCustomCellRenderer();
+
+  await UIExampleFactory.registerCustomItemBoxRow();
 
   UIExampleFactory.registerLibraryTabPanel();
 
