@@ -131,7 +131,7 @@ This is also how your plugin will be released and used by others.
 - Enter the repo folder;
 - Modify the settings in `./package.json`, including:
 
-```json
+```json5
 {
   version,
   author,
