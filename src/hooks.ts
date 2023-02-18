@@ -68,7 +68,7 @@ async function onStartup() {
 
   PromptExampleFactory.registerAnonymousCommandExample();
 
-  PromptExampleFactory.registerConditionalComandExample();
+  PromptExampleFactory.registerConditionalCommandExample();
 
   await Zotero.Promise.delay(1000);
 
