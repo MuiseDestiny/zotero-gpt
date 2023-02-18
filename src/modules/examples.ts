@@ -643,7 +643,7 @@ export class PromptExampleFactory {
   }
 
   @example
-  static registerConditionalComandExample() {
+  static registerConditionalCommandExample() {
     ztoolkit.Prompt.register([
       {
         name: "Conditional Command Test",
