@@ -64,7 +64,11 @@ async function onStartup() {
 
   await UIExampleFactory.registerReaderTabPanel();
 
-  PromptExampleFactory.registerAlertPromptExample();
+  PromptExampleFactory.registerNormalCommandExample();
+
+  PromptExampleFactory.registerAnonymousCommandExample();
+
+  PromptExampleFactory.registerConditionalComandExample();
 
   await Zotero.Promise.delay(1000);
 
