@@ -558,10 +558,15 @@ export class PromptExampleFactory {
           const s = new Zotero.Search();
           const operators = ['is', 'isNot', 'true', 'false', 'isInTheLast', 'isBefore', 'isAfter', 'contains', 'doesNotContain', 'beginsWith'];
           let hasValidCondition = false
-          text.split(/\s*&&\s*/g).forEach((conditinString: string) => {
+          let joinMode: string = "all"
+          if (/\s*\|\|\s*/.test(text)) {
+            joinMode = "any"
+          }
+          text.split(/\s*(&&|\|\|)\s*/g).forEach((conditinString: string) => {
             let conditions = conditinString.split(/\s+/g);
             if (conditions.length == 3 && operators.indexOf(conditions[1]) != -1) {
               hasValidCondition = true
+              s.addCondition("joinMode", joinMode);
               s.addCondition(
                 conditions[0] as string,
                 conditions[1] as Zotero.Search.Operator,
