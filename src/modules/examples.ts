@@ -33,7 +33,7 @@ export class BasicExampleFactory {
           this.unregisterNotifier(notifierID);
           return;
         }
-        addon.hooks.onNotify(event, type, ids as string[], extraData);
+        addon.hooks.onNotify(event, type, ids, extraData);
       },
     };
 
