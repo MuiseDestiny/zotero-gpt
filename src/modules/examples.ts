@@ -26,14 +26,14 @@ export class BasicExampleFactory {
       notify: async (
         event: string,
         type: string,
-        ids: Array<string>,
+        ids: number[] | string[],
         extraData: { [key: string]: any }
       ) => {
         if (!addon?.data.alive) {
           this.unregisterNotifier(notifierID);
           return;
         }
-        addon.hooks.onNotify(event, type, ids, extraData);
+        addon.hooks.onNotify(event, type, ids as string[], extraData);
       },
     };
 
