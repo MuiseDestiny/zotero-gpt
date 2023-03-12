@@ -1,6 +1,6 @@
 {
   "name": "zotero-addon-template",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Zotero Addon Template",
   "config": {
     "addonName": "Zotero Addon Template",
