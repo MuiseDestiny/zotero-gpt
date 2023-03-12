@@ -8,6 +8,17 @@ export function initLocale() {
   };
 }
 
-export function getString(localString: string): string {
-  return addon.data.locale?.stringBundle.GetStringFromName(localString);
+export function getString(
+  localString: string,
+  noReload: boolean = false
+): string {
+  try {
+    return addon.data.locale?.stringBundle.GetStringFromName(localString);
+  } catch (e) {
+    if (!noReload) {
+      initLocale();
+      return getString(localString, true);
+    }
+    return localString;
+  }
 }
