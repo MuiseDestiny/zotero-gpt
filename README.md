@@ -31,7 +31,7 @@ color可简写为c，position可简写为pos，值可以加引号，如`#测试[
 
 你可以在安装插件后，逐个长按，查看示例标签的内部语句，相信你很快就可以上手写一个新的标签。
 
-使用效果：
+## 使用效果：
 
 ![image](https://user-images.githubusercontent.com/51939531/228160924-ba1b7cda-f84e-4594-a8d4-c4619ef0cdf0.png)
 
