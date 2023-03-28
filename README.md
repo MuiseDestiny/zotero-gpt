@@ -45,3 +45,16 @@ color可简写为c，position可简写为pos，值可以加引号，如`#测试[
 ![image](https://user-images.githubusercontent.com/51939531/228174701-a836fe66-8c4b-481f-9298-3ba5372f483b.png)
 
 ![image](https://user-images.githubusercontent.com/51939531/228174243-a45dd020-af8e-4cb3-b718-fa8f9714d93a.png)
+
+
+## Sponsor
+
+[Here](https://github.com/MuiseDestiny/zotero-reference#%E8%B5%9E%E5%8A%A9)
+
+
+<details>
+ 
+<summary>Thanks</summary>
+  
+</details>
+
