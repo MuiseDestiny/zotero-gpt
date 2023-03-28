@@ -83,8 +83,9 @@ export default class Views {
     let isDragging: boolean = false
 
     function handleMouseDown(event: MouseEvent) {
+      // 如果是input或textarea元素，跳过拖拽逻辑
       if (event.target instanceof window.HTMLInputElement || event.target instanceof window.HTMLTextAreaElement) {
-        return // 如果是input或textarea元素，跳过拖拽逻辑
+        return
       }
       posX = node.offsetLeft - event.clientX
       posY = node.offsetTop - event.clientY
