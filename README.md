@@ -4,6 +4,8 @@ GPT Meets Zotero.
 
 本插件面向具有一定编程基础的用户。
 
+分享你制作的标签命令，在[这里](https://github.com/MuiseDestiny/zotero-gpt/discussions/3)。
+
 ## 快速使用
 
 使用方法：`Shift + /`唤醒，选中PDF文字后请按`Shift + Tab + /`，`Esc`退出。
