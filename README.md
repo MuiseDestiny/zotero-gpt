@@ -6,7 +6,7 @@ GPT Meets Zotero.
 
 ## 快速使用
 
-使用方法：`Shift + /`，选中PDF文字请按`Shift + Tab + /`
+使用方法：`Shift + /`，选中PDF文字请按`Shift + Tab + /`，`Esc`退出。
 
 使用之前，请先配置密钥，如下图：
 
