@@ -1,0 +1,31 @@
+<vbox
+  id="zotero-prefpane-__addonRef__"
+  onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', {window})"
+>
+  <groupbox>
+    <label><html:h2>&zotero.__addonRef__.pref.title;</html:h2></label>
+    <checkbox
+      id="zotero-prefpane-__addonRef__-enable"
+      label="&zotero.__addonRef__.pref.enable.label;"
+      preference="extensions.zotero.__addonRef__.enable"
+    />
+    <hbox>
+      <html:label for="zotero-prefpane-__addonRef__-input"
+        >&zotero.__addonRef__.pref.input.label;</html:label
+      >
+      <html:input
+        type="text"
+        id="zotero-prefpane-__addonRef__-input"
+        preference="extensions.zotero.__addonRef__.input"
+      ></html:input>
+    </hbox>
+    <hbox class="virtualized-table-container" flex="1" height="300px">
+      <html:div id="__addonRef__-table-container" />
+    </hbox>
+  </groupbox>
+</vbox>
+<vbox>
+  <label
+    value="&zotero.__addonRef__.help.version.label;  &zotero.__addonRef__.help.releasetime.label;"
+  ></label>
+</vbox>

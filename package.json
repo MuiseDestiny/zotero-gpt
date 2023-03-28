@@ -1,0 +1,54 @@
+{
+  "name": "zotero-addon-template",
+  "version": "0.1.6",
+  "description": "Zotero Addon Template",
+  "config": {
+    "addonName": "Zotero Addon Template",
+    "addonID": "addontemplate@euclpts.com",
+    "addonRef": "addontemplate",
+    "addonInstance": "AddonTemplate",
+    "releasepage": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
+    "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/bootstrap/update.json"
+  },
+  "main": "src/index.ts",
+  "scripts": {
+    "build-dev": "cross-env NODE_ENV=development node scripts/build.js",
+    "build-prod": "cross-env NODE_ENV=production node scripts/build.js",
+    "build": "concurrently -c auto npm:build-prod npm:tsc",
+    "tsc": "tsc --noEmit",
+    "start-z6": "node scripts/start.js --z 6",
+    "start-z7": "node scripts/start.js --z 7",
+    "start": "node scripts/start.js",
+    "stop": "node scripts/stop.js",
+    "restart-dev": "npm run build-dev && npm run stop && npm run start",
+    "restart-prod": "npm run build-prod && npm run stop && npm run start",
+    "restart": "npm run restart-dev",
+    "release": "release-it",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/windingwind/zotero-addon-template.git"
+  },
+  "author": "windingwind",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/windingwind/zotero-addon-template/issues"
+  },
+  "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
+  "dependencies": {
+    "zotero-plugin-toolkit": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.17",
+    "compressing": "^1.6.3",
+    "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.17.4",
+    "minimist": "^1.2.7",
+    "release-it": "^15.6.0",
+    "replace-in-file": "^6.3.5",
+    "typescript": "^4.9.4",
+    "zotero-types": "^1.0.12"
+  }
+}

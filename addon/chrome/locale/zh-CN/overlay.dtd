@@ -1,0 +1,7 @@
+<!ENTITY zotero.__addonRef__.pref.title "插件模板设置示例">
+<!ENTITY zotero.__addonRef__.itemmenu.test.label "插件模板">
+<!ENTITY zotero.__addonRef__.pref.enable.label "开启">
+<!ENTITY zotero.__addonRef__.pref.input.label "输入">
+
+<!ENTITY zotero.__addonRef__.help.version.label "__addonName__ 版本 __buildVersion__">
+<!ENTITY zotero.__addonRef__.help.releasetime.label "Build __buildTime__">
