@@ -7,8 +7,8 @@
     "addonID": "zoterogpt@polygon.org",
     "addonRef": "zoterogpt",
     "addonInstance": "ZoteroGPT",
-    "releasepage": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
-    "updaterdf": "https://raw.githubusercontent.com/windingwind/zotero-addon-template/bootstrap/update.json"
+    "releasepage": "https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi",
+    "updaterdf": "https://raw.githubusercontent.com/MuiseDestiny/zotero-gpt/bootstrap/update.json"
   },
   "main": "src/index.ts",
   "scripts": {
@@ -28,14 +28,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/windingwind/zotero-addon-template.git"
+    "url": "git+https://github.com/MuiseDestiny/zotero-gpt.git"
   },
-  "author": "windingwind",
+  "author": "Polygon",
   "license": "AGPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/windingwind/zotero-addon-template/issues"
+    "url": "https://github.com/MuiseDestiny/zotero-gpt/issues"
   },
-  "homepage": "https://github.com/windingwind/zotero-addon-template#readme",
+  "homepage": "https://github.com/MuiseDestiny/zotero-gpt#readme",
   "dependencies": {
     "zotero-plugin-toolkit": "^2.0.1"
   },
