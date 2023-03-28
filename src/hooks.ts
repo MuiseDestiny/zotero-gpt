@@ -8,6 +8,7 @@ import {
 import { config } from "../package.json";
 import { getString, initLocale } from "./modules/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
+import Views from "./modules/views";
 
 async function onStartup() {
   await Promise.all([
@@ -21,64 +22,7 @@ async function onStartup() {
     `chrome://${config.addonRef}/content/icons/favicon.png`
   );
 
-  const popupWin = new ztoolkit.ProgressWindow(config.addonName, {
-    closeOnClick: true,
-    closeTime: -1,
-  })
-    .createLine({
-      text: getString("startup.begin"),
-      type: "default",
-      progress: 0,
-    })
-    .show();
-
-  BasicExampleFactory.registerPrefs();
-
-  BasicExampleFactory.registerNotifier();
-
-  KeyExampleFactory.registerShortcuts();
-
-  await Zotero.Promise.delay(1000);
-  popupWin.changeLine({
-    progress: 30,
-    text: `[30%] ${getString("startup.begin")}`,
-  });
-
-  UIExampleFactory.registerStyleSheet();
-
-  UIExampleFactory.registerRightClickMenuItem();
-
-  UIExampleFactory.registerRightClickMenuPopup();
-
-  UIExampleFactory.registerWindowMenuWithSeparator();
-
-  await UIExampleFactory.registerExtraColumn();
-
-  await UIExampleFactory.registerExtraColumnWithCustomCell();
-
-  await UIExampleFactory.registerCustomCellRenderer();
-
-  await UIExampleFactory.registerCustomItemBoxRow();
-
-  UIExampleFactory.registerLibraryTabPanel();
-
-  await UIExampleFactory.registerReaderTabPanel();
-
-  PromptExampleFactory.registerNormalCommandExample();
-
-  PromptExampleFactory.registerAnonymousCommandExample();
-
-  PromptExampleFactory.registerConditionalCommandExample();
-
-  await Zotero.Promise.delay(1000);
-
-  popupWin.changeLine({
-    progress: 100,
-    text: `[100%] ${getString("startup.finish")}`,
-  });
-  popupWin.startCloseTimer(5000);
-
-  addon.hooks.onDialogEvents("dialogExample");
+  const views = new Views()
 }
 
 function onShutdown(): void {
