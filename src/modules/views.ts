@@ -53,6 +53,7 @@ export default class Views {
 
   private async getGPTResponseText(requestText: string) {
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
+    const outputSpan = this.outputContainer!.querySelector("span")!
     let result = "";
     const xhr = await Zotero.HTTP.request(
       "POST",
@@ -100,7 +101,7 @@ export default class Views {
             preLength = e.target.response.length;
             this.outputContainer!.style.display = ""
             if (result) {
-              this.outputContainer!.querySelector("span")!.innerText = result;
+              outputSpan.innerText = result;
             }
           };
         },
@@ -110,7 +111,6 @@ export default class Views {
       throw `Request error: ${xhr?.status}`;
     }
     return result
-    // return xhr.response.choices[0].message.content.replace(/^\n*/, "")
   }
 
   /**
