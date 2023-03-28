@@ -16,8 +16,8 @@ GPT Meets Zotero.
 
 插件设计理念是，根据不同应用场景配置命令标签，直接点击标签即可完成与GPT的交互。
 
-输入#标签名[color=#eee][position=1]然后回车即可进入标签命令编辑模式，`Ctrl + S`保存，`Ctrl + R`保存并运行。
-color可简写为c，position可简写为pos，值可以加引号，如#测试[c=#eee][pos=9]是合法的。
+输入`#标签名[color=#eee][position=1]`然后回车即可进入标签命令编辑模式，`Ctrl + S`保存，`Ctrl + R`保存并运行。
+color可简写为c，position可简写为pos，值可以加引号，如`#测试[c=#eee][pos=9]`是合法的。当然color和position是可选参数，不输入会有默认值。
 
 在接下来的编辑里你可以像下面这样声明一个当前环境可执行的代码片段
 
