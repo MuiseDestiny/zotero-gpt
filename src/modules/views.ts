@@ -50,8 +50,10 @@ export default class Views {
     });
     document.documentElement.appendChild(styles);
   }
+
   private async getGPTResponseText(requestText: string) {
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
+    let result = "";
     const xhr = await Zotero.HTTP.request(
       "POST",
       "https://api.openai.com/v1/chat/completions",
@@ -62,15 +64,53 @@ export default class Views {
         },
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
-          messages: [{ "role": "user", "content": requestText }],
+          messages: [{
+            "role": "user", "content": requestText
+          }],
+          stream: true,
+          temperature: 1.0
         }),
-        responseType: "json",
+        responseType: "text",
+        requestObserver: (xmlhttp: XMLHttpRequest) => {
+          let preLength = 0;
+          xmlhttp.onprogress = (e: any) => {
+            // Only concatenate the new strings
+            let newResponse = e.target.response.slice(preLength);
+            let dataArray = newResponse.split("data: ");
+
+            for (let data of dataArray) {
+              try {
+                let obj = JSON.parse(data);
+                let choice = obj.choices[0];
+                if (choice.finish_reason) {
+                  break;
+                }
+                result += choice.delta.content || "";
+              } catch {
+                continue;
+              }
+            }
+
+            // Clear timeouts caused by stream transfers
+            if (e.target.timeout) {
+              e.target.timeout = 0;
+            }
+            // Remove \n\n from the beginning of the data
+            result = result.replace(/^\n\n/, "");
+            preLength = e.target.response.length;
+            this.outputContainer!.style.display = ""
+            if (result) {
+              this.outputContainer!.querySelector("span")!.innerText = result;
+            }
+          };
+        },
       }
     );
     if (xhr?.status !== 200) {
       throw `Request error: ${xhr?.status}`;
     }
-    return xhr.response.choices[0].message.content.replace(/^\n*/, "")
+    return result
+    // return xhr.response.choices[0].message.content.replace(/^\n*/, "")
   }
 
   /**
@@ -158,12 +198,13 @@ export default class Views {
         {
           tag: "input",
           styles: {
-            width: "93%",
-            height: "2em",
+            width: "95%",
+            height: "2.5em",
             borderRadius: "10px",
             border: "none",
             outline: "none",
-            fontSize: "18px"
+            fontFamily: "Consolas",
+            fontSize: ".8em",
           }
         },
         {
@@ -171,14 +212,15 @@ export default class Views {
           styles: {
             display: "none",
             width: "93%",
-            maxHeight: "10em",
+            maxHeight: "20em",
             borderRadius: "10px",
             border: "none",
             outline: "none",
-            fontSize: "18px",
             resize: "vertical",
             marginTop: "0.75em",
-            fontFamily: "Consolas"
+            fontFamily: "Consolas",
+            fontSize: ".8em"
+
           }
         }
       ]
@@ -267,8 +309,9 @@ export default class Views {
         // 退出container
         that.container!.remove()
       }
-
-      outputContainer.style.display = "none"
+      if (text.trim().length == 0) {
+        outputContainer.style.display = "none"
+      }
     }
     inputNode.addEventListener("keyup", inputListener)
     textareaNode.addEventListener("keyup", inputListener)
@@ -324,7 +367,7 @@ export default class Views {
         margin: ".25em 0",
         flexWrap: "wrap",
         overflow: "hidden",
-        height: "1.75em"
+        height: "1.7em"
       }
     }, container) as HTMLDivElement
     // 折叠标签按钮
@@ -349,11 +392,11 @@ export default class Views {
               tag: "div",
               classList: ["dot"],
               styles: {
-                width: "5px",
-                height: "5px",
+                width: "6px",
+                height: "6px",
                 margin: "0 .25em",
-                backgroundColor: "black",
-                borderRadius: "5px",
+                backgroundColor: "#ff7675",
+                borderRadius: "6px",
               }
             })
           }
@@ -363,7 +406,7 @@ export default class Views {
         {
           type: "click",
           listener: () => {
-            tagContainer.style.height = tagContainer.style.height == "auto" ? "1.75em" : "auto"
+            tagContainer.style.height = tagContainer.style.height == "auto" ? "1.7em" : "auto"
 
           }
         }
@@ -428,6 +471,7 @@ export default class Views {
                 inputNode.style.display = "none";
                 textareaNode.style.display = ""
                 textareaNode.value = tag.text
+                this.outputContainer!.style!.display = "none"
               } else if (event.buttons == 2) {
                 let tags = this.getTags()
                 tags = tags.filter((_tag: Tag) => _tag.tag != tag.tag)
@@ -465,9 +509,9 @@ export default class Views {
     `))
     console.log(text)
     // 运行替换其中js代码
-    text = await this.getGPTResponseText(text) as string
-    outputSpan.innerText = text;
-    this.outputContainer!.style.display = ""
+    text = await this.getGPTResponseText(text)
+    // outputSpan.innerText = text;
+    // this.outputContainer!.style.display = ""
     // popupWin.changeLine({ type: "success" })
     // popupWin.startCloseTimer(1000)
     this.threeDotsContainer?.classList.remove("loading")
@@ -487,9 +531,10 @@ export default class Views {
     //   .createLine({ text: text, type: "default" })
     //   .show()
     this.threeDotsContainer?.classList.add("loading")
-    text = await this.getGPTResponseText(text) as string
-    outputSpan.innerText = text;
-    this.outputContainer!.style.display = ""
+    await this.getGPTResponseText(text)
+
+    // outputSpan.innerText = text;
+    // this.outputContainer!.style.display = ""
     // popupWin.changeLine({ type: "success" })
     // popupWin.startCloseTimer(1000)
     this.threeDotsContainer?.classList.remove("loading")
@@ -500,7 +545,9 @@ export default class Views {
    * 从Zotero.Prefs获取所有已保存标签
    */
   private getTags() {
-    return JSON.parse(Zotero.Prefs.get(`${config.addonRef}.tags`) as string)
+    let defaultTags = [{"tag":"这篇文献讲了啥","color":"#c4945c","position":0,"text":"#这篇文献讲了啥[c=\"#c4945c\"]\n下面是这篇文献的摘要：\n```js\nZoteroPane.getSelectedItems()[0].getField(\"abstractNote\")\n```\n\n请问它讲了啥呢"},{"tag":"添加摘要标签","color":"#7149C6","position":1,"text":"#添加摘要标签[c=#7149C6][pos=1]\n现在请你从下面的摘要中分析出三个标签：\n```js\ni = ZoteroPane.getSelectedItems()[0];\ni.getField(\"abstractNote\");\n```\n然后给我一段代码用于向Zotero选中条目添加你分析出的标签，示例代码如下：\n\ni = ZoteroPane.getSelectedItems()[0];\ntags = [\"tag1\", \"tag2\"];\ntags.forEach(tag=>i.addTag(tag));\nawait i.saveTx();"},{"tag":"翻译PDF选中","color":"#d35230","position":0,"text":"#翻译PDF选中[pos=0]\n请把下面这段文字翻译成中文：\n```js\nconst ztoolkit = Zotero.ZoteroGPT.data.ztoolkit\nlet getSelection = () => {\n    return ztoolkit.Reader.getSelectedText(\n Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)\n    );\n}\nconsole.log(getSelection())\ngetSelection()\n\n```\n"},{"tag":"根据题目介绍下文献","color":"#59c0bc","position":3,"text":"#根据题目介绍下文献[c=#59c0bc][pos=3]\n下面是这篇文献的标题：\n```js\nZoteroPane.getSelectedItems()[0].getField(\"title\")\n```\n\n你知道它的摘要吗，请问它讲了啥呢"}]
+    let tags = JSON.parse(Zotero.Prefs.get(`${config.addonRef}.tags`) as string)
+    return tags.length > 0 ? tags : defaultTags
   }
 
   private setTags(tags: any[]) {
@@ -521,7 +568,10 @@ export default class Views {
     document.addEventListener(
       "keydown",
       async (event: any) => {
-        if (event.shiftKey && event.key.toLowerCase() == "?") {
+        // if (event.shiftKey && event.key.toLowerCase() == "?") {
+        if (
+          (event.shiftKey && event.key.toLowerCase() == "?") ||
+          (event.key == "/" && Zotero.isMac)) {
           if (
             event.originalTarget.isContentEditable ||
             "value" in event.originalTarget

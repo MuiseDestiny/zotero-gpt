@@ -3,8 +3,8 @@
     "zoterogpt@polygon.org": {
       "updates": [
         {
-          "version": "0.0.1",
-          "update_link": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
+          "version": "0.0.2",
+          "update_link": "https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi",
           "applications": {
             "gecko": {
               "strict_min_version": "60.0"
@@ -12,8 +12,8 @@
           }
         },
         {
-          "version": "0.0.1",
-          "update_link": "https://github.com/windingwind/zotero-addon-template/releases/latest/download/zotero-addon-template.xpi",
+          "version": "0.0.2",
+          "update_link": "https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi",
           "applications": {
             "zotero": {
               "strict_min_version": "6.999"
