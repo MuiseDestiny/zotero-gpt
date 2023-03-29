@@ -110,7 +110,7 @@ export default class Views {
     if (xhr?.status !== 200) {
       throw `Request error: ${xhr?.status}`;
     }
-    return result
+    return responseText
   }
 
   /**
@@ -142,16 +142,16 @@ export default class Views {
         currentY = event.clientY + posY
 
         // Ensure node doesn't move out of bounds
-        const windowWidth = window.innerWidth - node.offsetWidth
-        const windowHeight = window.innerHeight - node.offsetHeight
+        // const windowWidth = window.innerWidth - node.offsetWidth
+        // const windowHeight = window.innerHeight - node.offsetHeight
 
-        if (currentX >= 0 && currentX <= windowWidth) {
-          node.style.left = currentX + "px"
-        }
+        // if (currentX >= 0 && currentX <= windowWidth) {
+        node.style.left = currentX + "px"
+        // }
 
-        if (currentY >= 0 && currentY <= windowHeight) {
-          node.style.top = currentY + "px"
-        }
+        // if (currentY >= 0 && currentY <= windowHeight) {
+        node.style.top = currentY + "px"
+        // }
       }
     }
 
