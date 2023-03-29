@@ -53,6 +53,7 @@ export default class Views {
 
   private async getGPTResponseText(requestText: string) {
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
+    const model = Zotero.Prefs.get(`${config.addonRef}.model`)
     const outputSpan = this.outputContainer!.querySelector("span")!
     let responseText = "";
     const xhr = await Zotero.HTTP.request(
@@ -64,7 +65,7 @@ export default class Views {
           "Authorization": `Bearer ${secretKey}`,
         },
         body: JSON.stringify({
-          model: "gpt-3.5-turbo",
+          model: model,
           messages: [{
             "role": "user", "content": requestText
           }],
