@@ -44,7 +44,7 @@ Of course `color` and `position` are optional parameters and will have default v
 
 In the next step, you can declare an executable code fragment for the current environment like this:
 
-![image](https://user-images.githubusercontent.com/51939531/228172456-6ebf2602-61a3-4b42-8044-d68eb7069839.png)
+![image](prompt.PNG)
 
 It will be executed and the returned result will replace the code snippet here.
 
