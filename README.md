@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="zotero-gpt-background.png" alt="ZoteroGPT" width="50%" />
+  <img src="background.png" alt="ZoteroGPT" width="50%" />
 
 # Zotero GPT
 
