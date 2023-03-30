@@ -58,9 +58,9 @@ You can click and hold on each label after installing the plugin to see the inte
 
 ## Demonstration
 
-![image](https://user-images.githubusercontent.com/51939531/228174701-a836fe66-8c4b-481f-9298-3ba5372f483b.png)
+![image](demo1.png)
 
-![image](https://user-images.githubusercontent.com/51939531/228174243-a45dd020-af8e-4cb3-b718-fa8f9714d93a.png)
+![image](demo2.png)
 
 
 ## Support the project
