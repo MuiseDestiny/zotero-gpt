@@ -15,9 +15,7 @@
 ![Downloads latest release](https://img.shields.io/github/downloads/MuiseDestiny/zotero-gpt/latest/total?color=yellow)
 
 
-  <img src="https://user-images.githubusercontent.com/51939531/228760294-8cc3c8aa-f199-4391-a008-3efa846b3697.png" width="80%" />
- 
-
+  <img src="https://user-images.githubusercontent.com/51939531/228761214-aeaa9788-4c10-44bc-8344-78ca101a24ce.png" width="80%" />
 
 </div>
 
