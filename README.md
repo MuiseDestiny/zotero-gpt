@@ -29,11 +29,11 @@
 
 使用方法：`Shift + /`唤醒，选中PDF文字后请按`Shift + Tab + /`，`Esc`退出。
 
-使用之前，请先配置密钥，如下图：
+配置密钥：
 
 ![image](https://user-images.githubusercontent.com/51939531/228170449-200bd14f-98db-42ee-bebc-cbc11e742ab8.png)
 
-## 增加命令标签
+## 命令标签
 
 插件设计理念是，根据不同应用场景配置命令标签，直接点击标签即可完成与GPT的交互。
 
