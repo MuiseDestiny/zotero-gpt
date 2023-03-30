@@ -3,11 +3,11 @@ import { config } from "../../package.json";
 
 export default class Views {
   private id = "zotero-GPT-container";
+  private messages: { role: "user" | "assistant";  content: string}[] = [];
   private container?: HTMLDivElement;
   private inputContainer?: HTMLDivElement;
   private outputContainer?: HTMLDivElement;
   private threeDotsContainer?: HTMLDivElement;
-
   private tagContainer?: HTMLDivElement;
 
   constructor() {
@@ -56,6 +56,10 @@ export default class Views {
     const model = Zotero.Prefs.get(`${config.addonRef}.model`)
     const outputSpan = this.outputContainer!.querySelector("span")!
     let responseText = "";
+    this.messages.push({
+      role: "user",
+      content: requestText
+    })
     const xhr = await Zotero.HTTP.request(
       "POST",
       "https://api.openai.com/v1/chat/completions",
@@ -66,9 +70,7 @@ export default class Views {
         },
         body: JSON.stringify({
           model: model,
-          messages: [{
-            "role": "user", "content": requestText
-          }],
+          messages: this.messages,
           stream: true,
           temperature: 1.0
         }),
@@ -111,6 +113,36 @@ export default class Views {
     if (xhr?.status !== 200) {
       throw `Request error: ${xhr?.status}`;
     }
+    this.messages.push({
+      role: "assistant",
+      content: responseText
+    })
+    return responseText
+  }
+
+  /**
+   * text-davinci-003
+   */
+  private async _getGPTResponseText(requestText: string) {
+    const outputSpan = this.outputContainer!.querySelector("span")!
+    const xhr = await Zotero.HTTP.request(
+      "POST",
+      "https://api.openai.com/v1/engines/text-davinci-003/completions",
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer sess-JbO42ZXYuMckHABqAab1CV23BbHf1cUCyvcuGxRz`,
+        },
+        body: JSON.stringify({ "prompt": requestText, "temperature": 0, "max_tokens": 1000 }),
+        responseType: "json",
+      }
+    );
+    if (xhr?.status !== 200) {
+      throw `Request error: ${xhr?.status}`;
+    }
+    const responseText = xhr.response.choices[0].text.trim().replace(/^\n*/, "")
+    this.outputContainer!.style.display = ""
+    outputSpan.innerText = responseText
     return responseText
   }
 
@@ -323,7 +355,7 @@ export default class Views {
         width: "calc(100% - 1em)",
         backgroundColor: "rgba(89, 192, 188, .08)",
         color: "#374151",
-        // maxHeight: "10em",
+        maxHeight: document.documentElement.getBoundingClientRect().height * .5 + "px",
         overflowY: "auto",
         overflowX: "hidden",
         padding: "0 .5em",
@@ -589,7 +621,7 @@ export default class Views {
             const div = reader!._iframeWindow?.document.querySelector("#selection-menu")!
             if (div) {
               const rect = div?.getBoundingClientRect()
-              this.show(rect.x, rect.y + rect.height)
+              this.show(rect.x, rect.y)
             } else {
               const rect = document.documentElement.getBoundingClientRect()
               this.show(rect.width / 2, rect.height / 2)
