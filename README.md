@@ -51,10 +51,3 @@ color可简写为c，position可简写为pos，值可以加引号，如`#测试[
 
 [这里](https://github.com/MuiseDestiny/zotero-reference#%E8%B5%9E%E5%8A%A9)
 
-
-<details>
- 
-<summary>赞助者</summary>
-  
-</details>
-
