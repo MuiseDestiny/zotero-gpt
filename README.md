@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="gpt.svg" width="50%" />
+  <img src="background.svg" width="50%" />
 
 
 # Zotero GPT
@@ -15,7 +15,7 @@
 ![Downloads latest release](https://img.shields.io/github/downloads/MuiseDestiny/zotero-gpt/latest/total?color=yellow)
 
 
-  <img src="https://user-images.githubusercontent.com/51939531/228761214-aeaa9788-4c10-44bc-8344-78ca101a24ce.png" width="80%" />
+  <img src="https://user-images.githubusercontent.com/51939531/228763331-90baa9aa-8bef-4b32-9d6f-35538b58b158.png" width="80%" />
 
 </div>
 
