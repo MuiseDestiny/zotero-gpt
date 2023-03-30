@@ -59,7 +59,7 @@ You can click and hold on each label after installing the plugin to see the inte
 ## Demonstration
 
 
-![image](demo1.png)
+![image](demo.png)
 ![image](demo2.png)
 
 
