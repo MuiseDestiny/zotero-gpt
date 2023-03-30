@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://user-images.githubusercontent.com/51939531/228751588-a823f59b-72c4-48ba-a489-88b67d12cdfb.png" alt="ZoteroGPT" width="30%" />
+  <img src="https://user-images.githubusercontent.com/51939531/228751588-a823f59b-72c4-48ba-a489-88b67d12cdfb.png" alt="ZoteroGPT" width="50%" />
   
 
 
