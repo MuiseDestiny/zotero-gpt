@@ -6,7 +6,7 @@
 
 本插件面向具有一定编程基础的用户
 
-分享你制作的标签命令，在[这里](https://github.com/MuiseDestiny/zotero-gpt/discussions/3)
+分享你制作的标签命令，在[这里](https://github.com/MuiseDestiny/zotero-gpt/wiki/%E6%A8%A1%E6%9D%BF)
 
 [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-round&logo=github)](https://github.com/windingwind/zotero-plugin-template)
 [![Latest release](https://img.shields.io/github/v/release/MuiseDestiny/zotero-gpt)](https://github.com/MuiseDestiny/zotero-gpt/releases)
