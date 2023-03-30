@@ -1,3 +1,5 @@
+![background](zotero-gpt.png)
+
 # Zotero GPT
 
 > GPT Meets Zotero.
