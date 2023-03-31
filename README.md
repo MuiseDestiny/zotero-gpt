@@ -4,7 +4,8 @@
 
 # Zotero GPT
 
-**TODO：基于PDF的问答**
+**TODO** 
+基于PDF的问答
 
 本插件面向具有一定编程基础的用户
 
