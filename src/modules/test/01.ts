@@ -1,37 +1,18 @@
-
-
-let his: any = [
-  {
-    author: "AI",
-    msg: "1"
-  },
-  {
-    author: "uplaceholder",
-    msg: "continue"
-  },
-  {
-    author: "AI",
-    msg: "2"
-  },
-  {
-    author: "uplaceholder",
-    msg: "continue"
-  },
-]
-let preResponseText = ""
-let joinPre = (lastIndex: number): any => {
-  if (his[lastIndex].author == "uplaceholder" && his[lastIndex].msg == "continue") {
-    let i = lastIndex - 1
-    for (i; i >= 0; i--) {
-      if (his[i].author == "AI") {
-        preResponseText = his[i].msg + preResponseText
-      } else {
-        joinPre(i)
-        break
-      }
-    }
-  }
+// 检查 requestText 是否超过700个字符，若超过，则进行拆分
+let requestText = "大气气溶胶是悬浮于空气中的各种固态和液态颗粒物所组成的分散系统,是地气系统的重要组成部分。气溶胶颗粒能够吸收和散射太阳短波辐射和地球长波辐射,直接影响地球辐射收支平衡,也可以作为凝结核,改变云的微观物理特性,进而影响太阳辐射能量的时空分布。此外,气溶胶颗粒还能通过吸收和散射过程影响光学遥感探测信号,导致背景噪声增强、目标信号减弱。由于不同类型气溶胶颗粒的辐射物性差异显著且具有高度的时空异变性,因此,快速识别气溶胶颗粒类型并表征其时空分布规律在气溶胶辐射与气候效应研究、太阳能预测与有效利用、资源遥感与目标探测等方面具有重要意义。通过协同地基太阳光度计、VIIRS卫星以及气溶胶颗粒采样等多源观测信息,本文获得了哈尔滨地区气溶胶光学厚度、单次散射反照率、粒子谱分布等物性参数的季节变化特征;利用AERONET全球站点数据,验证了VIIRS深蓝算法气溶胶产品精度,并基于该产品分析了我国东北地区气溶胶光学厚度的空间分布及季节变化;采集并分析了哈尔滨春季气溶胶颗粒的形貌、元素组成等理化特性,并采用因子分析法解析了哈尔滨春季气溶胶颗粒的主要来源。对比了AOD440-AE440-870、AE440-870-SSA440、FMF440-SSA440和SAE440-670-AAE440-670四种气溶胶颗粒类型辨识方法在AERONET典型站点的类型辨识结果,建立了四种辨识方法中不同气溶胶颗粒类型的关联关系;依据2017年春季哈尔滨的地基与卫星观测信息,验证了气溶胶颗粒类型辨识识别方法的可靠性。结果表明:四种辨识方法具有较好的一致性,气溶胶颗粒光学辨识方法能够捕捉较为显著的气溶胶颗粒类型及其变化,但难以准确描述气溶胶颗粒化学组分的变化。建立了一种计算背景气溶胶光学厚度阈值的统计计算方法,获得了全球范围背景气溶胶光学厚度的最佳阈值分布;优化了AOD-AE辨识方法并分析了中国地区2013年-2020年间典型气溶胶颗粒类型的时空分布特性;结合AERONET中国站点数据,总结了中国地区典型气溶胶颗粒的辐射物性。研究发现:沙尘型气溶胶主要出现在我国西北部地区,城市工业/生物质燃烧型气溶胶主要出现在我国东部以及中部地区;西北和东北地区背景气溶胶占比呈现出春夏低、秋冬高的特点,而东南省份背景气溶胶占比呈现出夏秋高、春冬低的特点。最后,发展了一种区分模态的气溶胶复折射率反演方法并获得了我国粗细模态气溶胶粒子复折射率的区域分布特征,该反演方法对细模态和粗模态粒子复折射率实部的反演偏差分别为0.32%±0.64%和0.28%±0.56%,对细模态和粗模态复折射率虚部的反演偏差分别为-2.11%±11.59%和-8.4%±26.42%;提出了一种基于气溶胶颗粒类型辨识的地表PM2.5浓度多元回归计算方法,指出了气溶胶颗粒类型辨识方法能够有效提升地表PM2.5浓度的计算精度。", maxMsgLength = 700, his = [] as any
+while (requestText.length > maxMsgLength) {
+  // 找到最后一个空格的位置，将字符串拆分
+  console.log(requestText.slice(0, maxMsgLength).lastIndexOf(' '))
+  let splitIndex = requestText.slice(0, maxMsgLength).lastIndexOf(' ')
+  splitIndex = splitIndex > 0 ? splitIndex : 700
+  // 将拆分后的字符串添加到历史记录中
+  his.push({ author: 'uplaceholder', msg: requestText.slice(0, splitIndex) });
+  // 更新 requestText
+  requestText = requestText.slice(splitIndex + 1);
+  console.log(requestText.length)
 }
-joinPre(his.length - 1)
-  
-console.log(preResponseText)
+
+// 将最终的 requestText 添加到历史记录中
+his.push({ author: 'uplaceholder', msg: requestText });
+
+console.log(his)

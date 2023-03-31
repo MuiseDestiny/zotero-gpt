@@ -23,6 +23,7 @@ async function onStartup() {
   );
 
   const views = new Views()
+  Zotero[config.addonInstance].utils = new Utils()
 }
 
 function onShutdown(): void {

@@ -159,15 +159,12 @@ export default class Views {
   private async getGPTResponseTextByChatPDF(requestText: string): Promise<string> {
     const maxMsgNumber = 50, maxMsgLength = 700;
     function addToHistory(requestText: string, history: Views["history"]): void {
-      // 检查 history 的长度是否超过50，若超过，则删除最早的一条记录
-      if (history.length >= maxMsgNumber) {
-        history.shift();
-      }
 
       // 检查 requestText 是否超过700个字符，若超过，则进行拆分
       while (requestText.length > maxMsgLength) {
         // 找到最后一个空格的位置，将字符串拆分
-        const splitIndex = requestText.slice(0, maxMsgLength).lastIndexOf(' ');
+        let splitIndex = requestText.slice(0, maxMsgLength).lastIndexOf(' ')
+        splitIndex = splitIndex > 0 ? splitIndex : 700
         // 将拆分后的字符串添加到历史记录中
         history.push({ author: 'uplaceholder', msg: requestText.slice(0, splitIndex) });
         // 更新 requestText
@@ -223,7 +220,7 @@ export default class Views {
               "author": "AI",
               "msg": "好的，我现在是chatGPT。"
             },
-            ...this.history.slice(-40) 
+            ...this.history.slice(-maxMsgNumber+5) 
           ]
         }),
         responseType: "text",

@@ -37,6 +37,10 @@
   },
   "homepage": "https://github.com/MuiseDestiny/zotero-gpt#readme",
   "dependencies": {
+    "cosine-similarity": "^1.0.1",
+    "embeddings-splitter": "^0.2.1",
+    "openai": "^3.2.1",
+    "pdf-parse": "^1.1.1",
     "zotero-plugin-toolkit": "^2.0.1"
   },
   "devDependencies": {
