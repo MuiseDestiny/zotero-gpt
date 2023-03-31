@@ -4,6 +4,8 @@
 
 # Zotero GPT
 
+**TODO：基于PDF的问答**
+
 本插件面向具有一定编程基础的用户
 
 分享你制作的标签命令，在[这里](https://github.com/MuiseDestiny/zotero-gpt/wiki/%E6%A8%A1%E6%9D%BF)
@@ -16,6 +18,7 @@
 
 
   <img src="https://user-images.githubusercontent.com/51939531/228763331-90baa9aa-8bef-4b32-9d6f-35538b58b158.png" width="80%" />
+
 
 </div>
 
