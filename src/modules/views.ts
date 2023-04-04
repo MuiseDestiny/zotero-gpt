@@ -3,6 +3,7 @@ import { config } from "../../package.json";
 
 export default class Views {
   private id = "zotero-GPT-container";
+  private freeAPI: "ChatPDF" | "AIApp" = "ChatPDF"
   private messages: { role: "user" | "assistant"; content: string }[] = [];
   private history: { author: "AI" | "uplaceholder", msg: string}[] = [];
   private container?: HTMLDivElement;
@@ -46,6 +47,11 @@ export default class Views {
           #${this.id} .three-dots.loading .dot {
             animation: loading 1.5s ease-in-out infinite;
           }
+
+          #${this.id} ::-moz-selection {
+            background: #57C5B6; 
+            color: #fff;
+          }
         `
       },
     });
@@ -60,7 +66,7 @@ export default class Views {
   private async getGPTResponseText(requestText: string) {
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
     const model = Zotero.Prefs.get(`${config.addonRef}.model`)
-    if (!secretKey) { return await this.getGPTResponseTextByChatPDF(requestText) }
+    if (!secretKey) { return await this[`getGPTResponseTextBy${this.freeAPI}`](requestText) }
     const outputSpan = this.outputContainer!.querySelector("span")!
     let responseText = "";
     this.messages.push({
@@ -127,31 +133,6 @@ export default class Views {
     return responseText
   }
 
-  /**
-   * text-davinci-003
-   */
-  private async getGPTResponseText0(requestText: string) {
-    const outputSpan = this.outputContainer!.querySelector("span")!
-    const xhr = await Zotero.HTTP.request(
-      "POST",
-      "https://api.openai.com/v1/engines/text-davinci-003/completions",
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer sess-JbO42ZXYuMckHABqAab1CV23BbHf1cUCyvcuGxRz`,
-        },
-        body: JSON.stringify({ "prompt": requestText, "temperature": 0, "max_tokens": 1000 }),
-        responseType: "json",
-      }
-    );
-    if (xhr?.status !== 200) {
-      throw `Request error: ${xhr?.status}`;
-    }
-    const responseText = xhr.response.choices[0].text.trim().replace(/^\n*/, "")
-    this.outputContainer!.style.display = ""
-    outputSpan.innerText = responseText
-    return responseText
-  }
 
   /**
    * chatPDF
@@ -167,7 +148,8 @@ export default class Views {
       // 检查 requestText 是否超过700个字符，若超过，则进行拆分
       while (requestText.length > maxMsgLength) {
         // 找到最后一个空格的位置，将字符串拆分
-        const splitIndex = requestText.slice(0, maxMsgLength).lastIndexOf(' ');
+        let splitIndex = requestText.slice(0, maxMsgLength).lastIndexOf(' ');
+        splitIndex = splitIndex != -1 ? splitIndex : maxMsgLength
         // 将拆分后的字符串添加到历史记录中
         history.push({ author: 'uplaceholder', msg: requestText.slice(0, splitIndex) });
         // 更新 requestText
@@ -211,7 +193,8 @@ export default class Views {
           "chatSession":
           {
             "type": "join",
-            "chatId": "rMxRqci32FyYn44wWU7Nc"
+            "chatId": "JRcqq2KpiVUC1KBv_7yh1",
+            // sourceId: "nZkCqhKnaC6UraI2ac8CA"
           },
           "history": [
             {
@@ -228,7 +211,6 @@ export default class Views {
         }),
         responseType: "text",
         requestObserver: (xmlhttp: XMLHttpRequest) => {
-          let preLength = 0;
           xmlhttp.onprogress = (e: any) => {
             responseText = e.target.response.replace(/^.+?\n/, "");
             this.outputContainer!.style.display = ""
@@ -244,8 +226,36 @@ export default class Views {
       this.history = []
       return await this.getGPTResponseTextByChatPDF(requestText)
     }
+    if (responseText.length == 0) {
+      this.freeAPI = "AIApp"
+    }
     this.history.push({ author: 'AI', msg: responseText });
     return responseText
+  }
+
+  private async getGPTResponseTextByAIApp(requestText: string) {
+    const outputSpan = this.outputContainer!.querySelector("span")!
+    const xhr = await Zotero.HTTP.request(
+      "GET",
+      `http://d.qiner520.com/app/info?msg=${encodeURIComponent(requestText)}&role=0&stream=true`,
+      {
+        responseType: "text",
+        requestObserver: (xmlhttp: XMLHttpRequest) => {
+          xmlhttp.onprogress = (e: any) => {
+            this.outputContainer!.style.display = ""
+            outputSpan.innerHTML = e.target.responseText
+              .match(/"msg":"([\s\S]+?)"/g)
+              .map((s: string) => s.match(/"msg":"([\s\S]+?)"/)![1])
+              .join("")
+              .replace(/\\./g, (s: string) => window.eval(`'${s}'`))
+            console.log(
+              e.target
+            )
+          };
+        },
+      },
+
+    );
   }
 
   /**
@@ -259,7 +269,11 @@ export default class Views {
 
     function handleMouseDown(event: MouseEvent) {
       // 如果是input或textarea元素，跳过拖拽逻辑
-      if (event.target instanceof window.HTMLInputElement || event.target instanceof window.HTMLTextAreaElement) {
+      if (
+        event.target instanceof window.HTMLInputElement ||
+        event.target instanceof window.HTMLTextAreaElement
+        // event.target instanceof window.HTMLSpanElement
+      ) {
         return
       }
       posX = node.offsetLeft - event.clientX
@@ -370,13 +384,20 @@ export default class Views {
       if(this.style.display == "none") { return }
       // @ts-ignore
       let text = this.value
-      
       if (event.ctrlKey && ["s", "r"].indexOf(event.key) >= 0 && textareaNode.style.display != "none") {
         const tagString = text.match(/^#(.+)\n/)
+        function randomColor() {
+          var letters = '0123456789ABCDEF';
+          var color = '#';
+          for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+          }
+          return color;
+        }
         let tag = {
           tag: Zotero.randomString(),
-          color: "#d35230",
-          position: 0,
+          color: randomColor(),
+          position: 999,
           text
         }
         if (tagString) {
@@ -444,15 +465,16 @@ export default class Views {
         // 退出container
         that.container!.remove()
       }
-      if (text.trim().length == 0) {
-        outputContainer.style.display = "none"
-      }
+      // if (text.trim().length == 0) {
+      //   outputContainer.style.display = "none"
+      // }
     }
     inputNode.addEventListener("keyup", inputListener)
     textareaNode.addEventListener("keyup", inputListener)
     // 输出
     const outputContainer = this.outputContainer = ztoolkit.UI.appendElement({
       tag: "div",
+      id: "output-container",
       styles: {
         width: "calc(100% - 1em)",
         backgroundColor: "rgba(89, 192, 188, .08)",
@@ -470,6 +492,8 @@ export default class Views {
           styles: {
             fontSize: "0.8em",
             lineHeight: "2em",
+            // @ts-ignore
+            // "-moz-user-select": "text"
           },
           properties: {
             innerText: ""
@@ -692,13 +716,49 @@ export default class Views {
   /**
    * 让container出现在鼠标为左上角的地方
    */
-  private show(x: number, y: number) {
+  private _show(x: number, y: number) {
     this.container?.remove()
     this.container = this.buildContainer()
     this.container.style.left = `${x}px`
     this.container.style.top = `${y}px`
     this.container.style.display = "flex"
   }
+
+  /**
+   * 下面代码是GPT写的
+   * @param x 
+   * @param y 
+   */
+  private show(x: number, y: number) {
+    this.container?.remove()
+    this.container = this.buildContainer()
+    this.container.style.display = "flex"
+
+    // ensure container doesn't go off the right side of the screen
+    if (x + this.container.offsetWidth > window.innerWidth) {
+      x = window.innerWidth - this.container.offsetWidth
+    }
+
+    // ensure container doesn't go off the bottom of the screen
+    if (y + this.container.offsetHeight > window.innerHeight) {
+      y = window.innerHeight - this.container.offsetHeight
+    }
+
+    // ensure container doesn't go off the left side of the screen
+    if (x < 0) {
+      x = 0
+    }
+
+    // ensure container doesn't go off the top of the screen
+    if (y < 0) {
+      y = 0
+    }
+
+    this.container.style.left = `${x}px`
+    this.container.style.top = `${y}px`
+    this.container.style.display = "flex"
+  }
+
 
   private registerKey() {
     document.addEventListener(
