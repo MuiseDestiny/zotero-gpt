@@ -5,7 +5,8 @@ export default class Views {
   private id = "zotero-GPT-container";
   private freeAPI: "ChatPDF" | "AIApp" = "ChatPDF"
   private messages: { role: "user" | "assistant"; content: string }[] = [];
-  private history: { author: "AI" | "uplaceholder", msg: string}[] = [];
+  private history: { author: "AI" | "uplaceholder", msg: string }[] = [];
+  private _history: string[] = []
   private container?: HTMLDivElement;
   private inputContainer?: HTMLDivElement;
   private outputContainer?: HTMLDivElement;
@@ -15,8 +16,43 @@ export default class Views {
   constructor() {
     this.registerKey()
     this.addStyle()
+    this.init()
   }
 
+  private init() {
+    if (Zotero.Prefs.get(`${config.addonRef}.autoShow`)) {
+      this.show()
+      this.outputContainer!.style.display = ""
+      this.outputContainer!.querySelector("span")!.innerText = `Hi ~
+      很高兴在这里见到你，我是基于GPT开发的Zotero插件。
+  
+      我，集美貌才华与一身。
+      
+      当你看到这段话，代表你的插件已成功安装。
+      初次使用，你不需要做任何配置。
+  
+      看到我头顶的输入框了吗，你可以在这里与我聊天，输入完问题回车即可。
+  
+      看到我脚下的标签了吗，这是开发者为你预设的一些命令标签。
+      你可以选中一个Zotero条目后，然后点击任意一个标签，标签内的问答逻辑就会被执行。
+      如果你不喜欢它们，你可以鼠标右键长按1s删除它们，如果你想进一步改造它们，你可以鼠标左键长按完善它。
+      你也可以在我头顶输入框输入以#开头的文字，然后回车创建一个你自己的标签，你可以通过#Tag[pos=1][color=#eee]来指定颜色和位置。
+  
+      你可以点击我头顶的输入框，按 ESC（一般位于你键盘的最左上角）关闭我。然后用 Shift + / 传唤我。
+      总之，以后的时间，我会伴你左右。
+  
+      作为一个轻盈的插件，我是可以自由拖动位置的，你可以用鼠标按住我的任何一个零件，拖动到不影响你正常工作的位置。
+  
+      当然，配置密钥后，我会更强大，具体参考Github的Readme。
+
+      最后，跟着我学习一些快捷配置命令吧（在我头顶输入）:
+      1. 关闭自动弹窗提示：/autoShow false;
+      2. 配置密钥：/secretKey sk-XXXXXXXXXXXXXXXXXXXXXXXXXXX
+      3. 配置模型：/model gpt-3.5-turbo
+      `
+    }
+  }
+  
   private addStyle() {
     const styles = ztoolkit.UI.createElement(document, "style", {
       id: `${config.addonRef}-style`,
@@ -49,7 +85,7 @@ export default class Views {
           }
 
           #${this.id} ::-moz-selection {
-            background: #57C5B6; 
+            background: rgba(89, 192, 188, 1); 
             color: #fff;
           }
         `
@@ -228,6 +264,9 @@ export default class Views {
     }
     if (responseText.length == 0) {
       this.freeAPI = "AIApp"
+      new ztoolkit.ProgressWindow("Change API")
+        .createLine({ text: this.freeAPI, type: "default" })
+        .show()
     }
     this.history.push({ author: 'AI', msg: responseText });
     return responseText
@@ -259,7 +298,7 @@ export default class Views {
   }
 
   /**
-   * 下面的代码是chatGPT写的
+   * GPT写的
    * @param node 
    */
   private addDragEvent(node: HTMLDivElement) {
@@ -308,6 +347,33 @@ export default class Views {
     node.addEventListener("mousedown", handleMouseDown)
     node.addEventListener("mouseup", handleMouseUp)
     node.addEventListener("mousemove", handleMouseMove)
+  }
+
+  /**
+   * GPT写的
+   * @param inputNode 
+   */
+  private bindUpDownKeys(inputNode: HTMLInputElement) {
+    // let currentIdx = this._history.length;
+    inputNode.addEventListener("keydown", (e) => {
+      let currentIdx = this._history.indexOf(this.inputContainer!.querySelector("input")!.value)
+      currentIdx = currentIdx == -1 ? this._history.length : currentIdx
+      if (e.key === "ArrowUp") {
+        currentIdx--;
+        if (currentIdx < 0) {
+          currentIdx = 0;
+        }
+        inputNode.value = this._history[currentIdx];
+      } else if (e.key === "ArrowDown") {
+        currentIdx++;
+        if (currentIdx >= this._history.length) {
+          currentIdx = this._history.length;
+          inputNode.value = "";
+        } else {
+          inputNode.value = this._history[currentIdx];
+        }
+      }
+    });
   }
 
   private buildContainer() {
@@ -376,7 +442,7 @@ export default class Views {
 
     }, container) as HTMLDivElement
     const inputNode = inputContainer.querySelector("input")!
-    
+    this.bindUpDownKeys(inputNode)
     const textareaNode = inputContainer.querySelector("textarea")!
     const that = this;
     let inputListener = function (event: KeyboardEvent) {
@@ -429,8 +495,7 @@ export default class Views {
           return
         }
       }
-      if (event.key == "Enter") {
-        console.log(text, text.startsWith("#"), inputNode.style.display != "none")
+      if (event.key == "Enter") { 
         if (text.startsWith("#")) {
           if (inputNode.style.display != "none") {
             inputNode.style.display = "none"
@@ -445,8 +510,31 @@ export default class Views {
               textareaNode.value = text + "\n"
             }
           }
+        } else if (text.startsWith("/")) {
+          that._history.push(text)
+          text = text.slice(1)
+          let [key, value] = text.split(" ")
+          if (["secretKey", "model", "autoShow"].indexOf(key) != -1) {  
+            if (value?.length > 0) {
+              if (key == "autoShow") {
+                if (value == "true") {
+                  value = true
+                } else if (value == "false") {
+                  value = false
+                } else return
+              }
+              Zotero.Prefs.set(`${config.addonRef}.${key}`, value)
+            } else {
+              value = Zotero.Prefs.get(`${config.addonRef}.${key}`)
+            }
+            outputContainer.style.display = ""
+            outputContainer.querySelector("span")!.innerText = `${key} = ${value}`
+            // @ts-ignore
+            this.value = ""
+          }
         } else {
           that.execText(text)
+          that._history.push(text)
         }
       } else if (event.key == "Escape") {
         outputContainer.style.display = "none"
@@ -668,7 +756,7 @@ export default class Views {
     `))
     console.log(text)
     // 运行替换其中js代码
-    text = await this.getGPTResponseText(text)
+    text = await this.getGPTResponseText(text) as string
     // outputSpan.innerText = text;
     // this.outputContainer!.style.display = ""
     // popupWin.changeLine({ type: "success" })
@@ -686,19 +774,10 @@ export default class Views {
     const outputSpan = this.outputContainer!.querySelector("span")!
     outputSpan.innerText = ""
     if (text.trim().length == 0) { return }
-    // const popupWin = new ztoolkit.ProgressWindow("Run Tag", {closeTime: -1})
-    //   .createLine({ text: text, type: "default" })
-    //   .show()
     this.threeDotsContainer?.classList.add("loading")
     await this.getGPTResponseText(text)
 
-    // outputSpan.innerText = text;
-    // this.outputContainer!.style.display = ""
-    // popupWin.changeLine({ type: "success" })
-    // popupWin.startCloseTimer(1000)
     this.threeDotsContainer?.classList.remove("loading")
-
-
   }
 
   /**
@@ -713,23 +792,17 @@ export default class Views {
   private setTags(tags: any[]) {
     Zotero.Prefs.set(`${config.addonRef}.tags`, JSON.stringify(tags))
   }
-  /**
-   * 让container出现在鼠标为左上角的地方
-   */
-  private _show(x: number, y: number) {
-    this.container?.remove()
-    this.container = this.buildContainer()
-    this.container.style.left = `${x}px`
-    this.container.style.top = `${y}px`
-    this.container.style.display = "flex"
-  }
 
   /**
    * 下面代码是GPT写的
    * @param x 
    * @param y 
    */
-  private show(x: number, y: number) {
+  private show(x: number = -1, y?: number = -1) {
+    if (x + y < 0) {
+      const rect = document.documentElement.getBoundingClientRect()
+      x = rect.width / 2 - rect.width * .16, y = rect.height / 2 - rect.height * .16
+    }
     this.container?.remove()
     this.container = this.buildContainer()
     this.container.style.display = "flex"
@@ -756,7 +829,6 @@ export default class Views {
 
     this.container.style.left = `${x}px`
     this.container.style.top = `${y}px`
-    this.container.style.display = "flex"
   }
 
 
@@ -776,8 +848,12 @@ export default class Views {
           }
           if (Zotero_Tabs.selectedIndex == 0) {
             const div = document.querySelector("#item-tree-main-default .row.selected")!
-            const rect = div?.getBoundingClientRect()
-            this.show(rect.x, rect.y+rect.height)
+            if (div) {
+              const rect = div.getBoundingClientRect()
+              this.show(rect.x, rect.y+rect.height)
+            } else {
+              this.show()
+            }
           } else {
             const reader = await ztoolkit.Reader.getReader()
             const div = reader!._iframeWindow?.document.querySelector("#selection-menu")!
@@ -785,8 +861,7 @@ export default class Views {
               const rect = div?.getBoundingClientRect()
               this.show(rect.x, rect.y)
             } else {
-              const rect = document.documentElement.getBoundingClientRect()
-              this.show(rect.width / 2, rect.height / 2)
+              this.show()
             }
           }
         }
