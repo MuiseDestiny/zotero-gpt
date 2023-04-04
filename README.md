@@ -4,11 +4,9 @@
 
 # Zotero GPT
 
-**TODO**  基于PDF的问答
+This plugin is for users with some basic programming skills
 
-本插件面向具有一定编程基础的用户
-
-分享你制作的标签命令，在[这里](https://github.com/MuiseDestiny/zotero-gpt/wiki/%E6%A8%A1%E6%9D%BF)
+Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-gpt/discussions/3)
 
 [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-round&logo=github)](https://github.com/windingwind/zotero-plugin-template)
 [![Latest release](https://img.shields.io/github/v/release/MuiseDestiny/zotero-gpt)](https://github.com/MuiseDestiny/zotero-gpt/releases)
@@ -19,7 +17,6 @@
 
   <img src="https://user-images.githubusercontent.com/51939531/228763331-90baa9aa-8bef-4b32-9d6f-35538b58b158.png" width="80%" />
 
-
 </div>
 
 
@@ -28,41 +25,50 @@
 ---
 
 
-## 快速使用
+## Quick Start
 
-使用方法：`Shift + /`唤醒，选中PDF文字后请按`Shift + Tab + /`，`Esc`退出。
+Use `Shift + /` to call this plug-in，select the text in a PDF file and then press`Shift + Tab + /` to enter the prompt input. Use `Esc` to exit.
 
-配置密钥：
+API-key：
 
-![image](https://user-images.githubusercontent.com/51939531/228170449-200bd14f-98db-42ee-bebc-cbc11e742ab8.png)
+![image](apikey.PNG)
 
-## 命令标签
+## Command labels
 
-插件设计理念是，根据不同应用场景配置命令标签，直接点击标签即可完成与GPT的交互。
+The plug-in design concept is to configure command tabs according to different application scenarios, and directly click on the tabs to complete the interaction with GPT.
 
-输入`#标签名[color=#eee][position=1]`然后回车即可进入标签命令编辑模式，`Ctrl + S`保存，`Ctrl + R`保存并运行。
-color可简写为c，position可简写为pos，值可以加引号，如`#测试[c=#eee][pos=9]`是合法的。当然color和position是可选参数，不输入会有默认值。
+Type `#label_name[color=#eee][position=1]` and Enter to edit a lable. Save with `Ctrl + S`. Save and Run with `Ctrl + R`.
 
-在接下来的编辑里你可以像下面这样声明一个当前环境可执行的代码片段
+`color` can be abbreviated to `c`, `position` can be reviated to `pos` and the values can be quoted.
 
-![image](https://user-images.githubusercontent.com/51939531/228172456-6ebf2602-61a3-4b42-8044-d68eb7069839.png)
+For example, `#test[c=#eee][pos=9]` is a legit input.
 
-它会被真正执行，返回结果会替换这里的代码片段。
+Of course `color` and `position` are optional parameters and will have default values if not entered.
 
-你可以命令GPT输出一个代码片段，插件可以执行它。
+In the next step, you can declare an executable code fragment for the current environment like this:
 
-你可以鼠标左键长按一个标签，进入它的编辑模式，**鼠标右键长按是删除**，单击是执行。
+![image](prompt.PNG)
 
-你可以在安装插件后，逐个长按，查看示例标签的内部语句，相信你很快就可以上手写一个新的标签。
+It will be executed and the returned result will replace the code snippet here.
 
-## 效果展示
+You can command GPT to output a code fragment and the plugin can execute it.
 
-![image](https://user-images.githubusercontent.com/51939531/228174701-a836fe66-8c4b-481f-9298-3ba5372f483b.png)
+Click the left mouse button and hold to enter the edit mode of a label.
 
-![image](https://user-images.githubusercontent.com/51939531/228174243-a45dd020-af8e-4cb3-b718-fa8f9714d93a.png)
+**Hold with the right mouse button is to delete the label**.
+
+Single click on a label is to execute it.
+
+You can click and hold on each label after installing the plugin to see the internal statements of the sample tags, and I'm sure you'll be up and running writing a new one in no time.
+
+## Demonstration
+
+![image](demo.png)
 
 
-## 赞助
+![image](demo2.png)
 
-[这里](https://github.com/MuiseDestiny/zotero-reference#%E8%B5%9E%E5%8A%A9)
+## Support the project
+
+[Here](https://github.com/MuiseDestiny/zotero-reference#%E8%B5%9E%E5%8A%A9)
 
