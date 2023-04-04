@@ -31,7 +31,7 @@ Use `Shift + /` to call this plug-in，select the text in a PDF file and then pr
 
 API-key：
 
-![image](apikey.PNG)
+![image](apikey.png)
 
 ## Command labels
 
