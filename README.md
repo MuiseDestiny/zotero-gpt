@@ -47,7 +47,7 @@ Of course `color` and `position` are optional parameters and will have default v
 
 In the next step, you can declare an executable code fragment for the current environment like this:
 
-![image](prompt.PNG)
+![image](prompt.png)
 
 It will be executed and the returned result will replace the code snippet here.
 
