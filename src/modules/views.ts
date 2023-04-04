@@ -38,8 +38,9 @@ export default class Views {
       如果你不喜欢它们，你可以鼠标右键长按1s删除它们，如果你想进一步改造它们，你可以鼠标左键长按完善它。
       你也可以在我头顶输入框输入以#开头的文字，然后回车创建一个你自己的标签，你可以通过#Tag[pos=1][color=#eee]来指定颜色和位置。
   
-      你可以点击我头顶的输入框，按 ESC（一般位于你键盘的最左上角）关闭我。然后用 Shift + / 传唤我。
-      总之，以后的时间，我会伴你左右。鼠标上下键用于查找历史。
+      你可以点击我头顶的输入框，按 ESC（一般位于你键盘的最左上角）关闭我。然后用 Shift + / 传唤我。鼠标上下键用于查找历史。
+      
+      总之，以后的时间，我会伴你左右。
   
       作为一个轻盈的插件，我是可以自由拖动位置的，你可以用鼠标按住我的任何一个零件，拖动到不影响你正常工作的位置。
   
@@ -106,7 +107,7 @@ export default class Views {
     const outputSpan = this.outputContainer!.querySelector("span")!
     let responseText = "";
     this.messages.push({
-      role: "user",
+      role: "user", 
       content: requestText
     })
     const xhr = await Zotero.HTTP.request(
