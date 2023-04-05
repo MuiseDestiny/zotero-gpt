@@ -24,6 +24,12 @@ Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-
 
 ---
 
+## Development preview
+
+Chat with PDF you are reading.
+
+![image](https://user-images.githubusercontent.com/51939531/229971118-440f6763-0201-4d99-844c-8874d4bc238b.png)
+
 
 ## Quick Start
 
