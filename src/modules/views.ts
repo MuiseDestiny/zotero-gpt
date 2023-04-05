@@ -309,9 +309,11 @@ export default class Views {
 
     function handleMouseDown(event: MouseEvent) {
       // 如果是input或textarea元素，跳过拖拽逻辑
+      console.log(event.target)
       if (
         event.target instanceof window.HTMLInputElement ||
-        event.target instanceof window.HTMLTextAreaElement
+        event.target instanceof window.HTMLTextAreaElement ||
+        (event.target as HTMLDivElement).classList.contains("tag")
         // event.target instanceof window.HTMLSpanElement
       ) {
         return
@@ -469,14 +471,13 @@ export default class Views {
         }
         if (tagString) {
           tag.tag = tagString[0].match(/^#([^\[\n]+)/)[1]
-          let color = tagString[0].match(/\[c[olor]?="?(#.+?)"?\]/)
+          let color = tagString[0].match(/\[c(?:olor)?="?(#.+?)"?\]/)
           tag.color = color?.[1] || tag.color
-          let position = tagString[0].match(/\[pos[ition]?="?(\d+?)"?\]/)
+          let position = tagString[0].match(/\[pos(?:ition)?="?(\d+?)"?\]/)
           tag.position = Number(position?.[1] || tag.position)
         }
         let tags = that.getTags()
         // 如果tags存在，可能是更新，先从tags里将其移除
-        console.log(tag, tags)
         tags = tags.filter((_tag: Tag) => {
           console.log(_tag.tag, tag.tag)
           return _tag.tag != tag.tag
@@ -691,6 +692,7 @@ export default class Views {
     let timer: undefined | number;
     ztoolkit.UI.appendElement({
       tag: "div",
+      classList: ["tag"],
       styles: {
         fontSize: "0.8em",
         height: "1.5em",
@@ -752,9 +754,13 @@ export default class Views {
     const outputSpan = this.outputContainer!.querySelector("span")!
     outputSpan.innerText = ""
     let text = tag.text.replace(/^#.+\n/, "")
-    text = text.replace(/```js\n([\s\S]+?)\n```/, (_, codeString) => window.eval(`
-      ${codeString}
-    `))
+    for (let rawString of text.match(/```j(?:ava)?s(?:cript)?\n([\s\S]+?)\n```/g)!) {
+      let codeString = rawString.match(/```j(?:ava)?s(?:cript)?\n([\s\S]+?)\n```/)![1]
+      text = text.replace(rawString, await window.eval(`${codeString}`))
+    }
+    // text = text.replace(/```j[ava]?s[cript]?\n([\s\S]+?)\n```/, (_, codeString) => window.eval(`
+    //   ${codeString}
+    // `))
     console.log(text)
     // 运行替换其中js代码
     text = await this.getGPTResponseText(text) as string
@@ -799,7 +805,7 @@ export default class Views {
    * @param x 
    * @param y 
    */
-  private show(x: number = -1, y?: number = -1) {
+  private show(x: number = -1, y: number = -1) {
     if (x + y < 0) {
       const rect = document.documentElement.getBoundingClientRect()
       x = rect.width / 2 - rect.width * .16, y = rect.height / 2 - rect.height * .16

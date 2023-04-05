@@ -23,7 +23,7 @@ async function onStartup() {
     `chrome://${config.addonRef}/content/icons/favicon.png`
   );
 
-  const views = new Views()
+  Zotero[config.addonInstance].views = new Views()
 
   Zotero[config.addonInstance].utils = new Utils()
 }

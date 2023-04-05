@@ -107,6 +107,7 @@ async function main() {
       outfile: path.join(buildDir, "addon/chrome/content/scripts/index.js"),
       // Don't turn minify on
       // minify: true,
+      target: "firefox60"
     })
     .catch(() => process.exit(1));
 
