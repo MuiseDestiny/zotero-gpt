@@ -24,6 +24,12 @@ Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-
 
 ---
 
+## Development preview
+
+Chat with PDF you are reading.
+
+![image](https://user-images.githubusercontent.com/51939531/229971118-440f6763-0201-4d99-844c-8874d4bc238b.png)
+
 
 ## Quick Start
 
@@ -31,7 +37,7 @@ Use `Shift + /` to call this plug-in，select the text in a PDF file and then pr
 
 API-key：
 
-![image](apikey.PNG)
+![image](apikey.png)
 
 ## Command labels
 
@@ -47,7 +53,7 @@ Of course `color` and `position` are optional parameters and will have default v
 
 In the next step, you can declare an executable code fragment for the current environment like this:
 
-![image](prompt.PNG)
+![image](prompt.png)
 
 It will be executed and the returned result will replace the code snippet here.
 
