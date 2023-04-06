@@ -28,7 +28,7 @@ Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-
 
 Chat with PDF you are reading.
 
-![image](https://user-images.githubusercontent.com/51939531/230097340-bd5acd64-5eac-4228-9d81-ddb5061469e2.png)
+![image](https://user-images.githubusercontent.com/51939531/230261985-764bcf7f-bed2-440b-beb4-69b8397a1364.png)
 
 
 ## Quick Start
