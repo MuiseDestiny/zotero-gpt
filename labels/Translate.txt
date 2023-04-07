@@ -1,0 +1,6 @@
+#🎈Tranlate[pos=1][c=#21a2f1]
+
+translate these from english to 简体中文:
+```js
+Zotero.ZoteroGPT.utils.getPDFSelection()
+```

@@ -1,0 +1,21 @@
+#🔭AddTags[position=9][color=#B7A7DB]
+下面是我在Zotero里创建的一些嵌套标签，它们以#开头，中间用/连接：
+```js
+Zotero.ZoteroGPT.views.messages = [];
+JSON.stringify(Zotero.ZoteroStyle.data.views.tagsUI.plainTags.slice(0, 20))
+```
+---
+这是一篇文献的摘要：
+```js
+ZoteroPane.getSelectedItems()[0].getField("abstractNote")
+```
+--
+请你帮我根据我已有的嵌套标签，分析出我该给这篇文献添加什么嵌套标签，请你推荐三个，并给我一段代码，这段代码将在Zotero里执行，下面是示例代码：
+const tags = ["#tag1/tag2/tag3", "#tag1/tag2/tag3", "#tag1/tag2/tag3"]
+item = ZoteroPane.getSelectedItems()[0]
+tags.forEach(tag=>{
+  item.addTag(tag)
+})
+await item.saveTx()
+---
+你只需要回答我代码，除了代码你不需要进行任何文字描述，你给出代码是：

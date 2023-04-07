@@ -30,35 +30,37 @@ export default class Utils {
     return ZoteroPane.getSelectedItems()[0].getField(fieldName)
   }
 
-  public async uploadPDF() {    
-    let attachmentPath = Zotero.Items.get(
-      Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)!.itemID as number
-    ).attachmentPath
-    const formData = new window.FormData();
-    formData.append("files", new window.File([attachmentPath], "test.pdf", { type: "application/pdf"})); // 假设file是一个File对象，表示要上传的文件
-
-    window.fetch("http://127.0.0.1:7860/upload", {
-      method: "POST",
-      body: formData
-    })
-      .then(response => {
-        if (response.ok) {
-          console.log("上传成功！");
-        } else {
-          console.error("上传失败，状态码为：" + response.status);
-        }
-      })
-      .catch(error => console.error("上传失败，错误信息为：" + error));
-  }
-
   public async getRelatedText(host: string, queryText: string) {
+    function findMostOverlap(text: string, textArr: string[]): number {
+      let maxOverlapIndex = -1;
+      let maxOverlap = 0;
+
+      const textSentences = text.split(/[.!?]/).filter(Boolean);
+
+      for (let i = 0; i < textArr.length; i++) {
+        const textArrSentences = textArr[i].split(/[.!?]/).filter(Boolean);
+
+        let overlapCount = 0;
+        for (let j = 0; j < textSentences.length; j++) {
+          if (textArrSentences.map(i => i.replace(/\s+/g, "")).includes(textSentences[j].replace(/\s+/g, ""))) {
+            overlapCount++;
+          }
+        }
+
+        if (overlapCount > maxOverlap) {
+          maxOverlap = overlapCount;
+          maxOverlapIndex = i;
+        }
+      }
+
+      return maxOverlapIndex;
+    }
+
+
     let pdfItem = Zotero.Items.get(
       Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)!.itemID as number
     )
-    // let attachmentPath = pdfItem.attachmentPath
-    // if (attachmentPath.startsWith("storage:")) {
-    //   attachmentPath = attachmentPath.replace(/^storage:/, `E:/Zotero/storage/${pdfItem.key}/`)
-    // }
+
     const xhr = await Zotero.HTTP.request(
       "POST",
       `http://${host}/getRelatedText`,
@@ -69,23 +71,82 @@ export default class Utils {
         body: JSON.stringify({
           queryText,
           id: pdfItem.key,
-          fullText: await this.readPDFFullText(pdfItem.key, true)
+          fullText: await this.readPDFFullText(pdfItem.key, pdfItem.key in this.cache == false)
         }),
         responseType: "json"
       }
     );
     let text = ""
+    let references: any[] = []
     for (let i = 0; i < xhr.response.length; i++) {
       let refText = xhr.response[i]
       // 寻找坐标
-      // const box = this.cache[pdfItem.key].find((i: any)=>i.text.indexOf(refText) != -1).box
-      // text += `[${i + 1}] ${JSON.stringify(box)}\n${refText}`
+      // const mainText = refText.split(/\n+/).sort((a: string, b: string) => b.length - a.length)[0]
+      let index = findMostOverlap(refText.replace(/\s+/g, " "), this.cache[pdfItem.key].map((i: any) => i.text.replace(/\s+/g, " ")))
+      if (index >= 0) {
+        const box = this.cache[pdfItem.key][index].box
+        references.push({
+          number: i + 1,
+          box,
+          text: refText
+        })
+      }
       text += `[${i + 1}] ${refText}`
       if (i < xhr.response.length - 1) {
         text += "\n\n"
-      }
+      }  
     }
-    return text.slice(0, 3000)
+    const reader = await ztoolkit.Reader.getReader()
+    let win = (reader!._iframeWindow as any).wrappedJSObject
+    const outputContainer = Zotero[config.addonInstance].views.outputContainer
+    outputContainer.querySelector(".reference")?.remove()
+    const refDiv = ztoolkit.UI.appendElement({
+      namespace: "html",
+      classList: ["reference"],
+      tag: "div",
+      styles: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }
+    }, outputContainer)
+    console.log(references)
+    references.forEach((reference: { number: number; box: any, text: string }) => {
+      if (!reference.box) { return }
+      ztoolkit.UI.appendElement({
+        namespace: "html",
+        tag: "a",
+        styles: {
+          margin: ".3em",
+          fontSize: "0.8em",
+          color: "rgba(89, 192, 188, 1)",
+          cursor: "pointer"
+        },
+        properties: {
+          innerText: `[${reference.number}]`
+        },
+        listeners: [
+          {
+            type: "click",
+            listener: () => {
+              // const breakLength = 100
+              // new ztoolkit.ProgressWindow(`[${reference.number}]`)
+              //   .createLine({ text: reference.text.slice(0, breakLength) + (reference.text.length > breakLength ? "...":"" ), type: "default" })
+              //   .show()
+              win.eval(`
+                PDFViewerApplication.pdfViewer.scrollPageIntoView({
+                  pageNumber: ${reference.box.page + 1},
+                  destArray: ${JSON.stringify([null, { name: "XYZ" }, reference.box.left, reference.box.top, 3.5])},
+                  allowNegativeOffset: false,
+                  ignoreDestinationZoom: false
+                })
+              `)
+            }
+          }
+        ]
+      }, refDiv)
+    })
+    return text
   }
 
   /**
@@ -113,12 +174,16 @@ export default class Utils {
     const pageLines: any = {}
     for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
       let pdfPage = pages[pageNum].pdfPage
-
       let textContent = await pdfPage.getTextContent()
       let items: PDFItem[] = textContent.items.filter((item: PDFItem) => item.str.trim().length)
-      let index = items.findIndex(item => /(r?eferences?|acknowledgements)$/i.test(item.str))
-      items = items.slice(0, index)
-      pageLines[pageNum] = PDFInstance.mergeSameLine(items)
+      let lines = PDFInstance.mergeSameLine(items)
+      console.log("\n\n\n", pageNum + 1, lines)
+
+      let index = lines.findIndex(line => /(r?eferences?|acknowledgements)$/i.test(line.text.trim()))
+      if (index != -1) {
+        lines = lines.slice(0, index)
+      }
+      pageLines[pageNum] = lines
       popupWin.changeLine({ text: `[${pageNum+1}/${totalPageNum}] Reading`, progress: (pageNum+1) / totalPageNum * 100 })
       if (index != -1) {
         break
@@ -127,8 +192,9 @@ export default class Utils {
     console.log(pageLines)
     popupWin.changeHeadline("[Pending] PDF");
     popupWin.changeLine({ progress: 100 });
-    const pageParagraphs: any = {}
+    let pdfText = ""
     totalPageNum = Object.keys(pageLines).length
+    let _paragraphs: any[] | undefined
     for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
       let pdfPage = pages[pageNum].pdfPage
       const maxWidth = pdfPage._pageInfo.view[2];
@@ -215,18 +281,19 @@ export default class Utils {
         }  
       }
       lines = lines.filter((e: any) => !(e.forward || e.backward || (e.repeat && e.repeat > 3)));
-      // 合并同段落
+      // 段落聚类
       // 原则：字体从大到小，合并；从小变大，断开
       let abs = (x: number) => x > 0 ? x: -x
       const paragraphs = [[lines[0]]]
       for (let i = 1; i < lines.length; i++) {
         let lastLine = paragraphs.slice(-1)[0].slice(-1)[0]
         let currentLine = lines[i]
+        let nextLine = lines[i+1]
         const isNewParagraph =
           currentLine._height.every((h2: number) => lastLine._height.every((h1: number) => h2 > h1)) ||
           /abstract/i.test(currentLine.text) ||
           abs(lastLine.y - currentLine.y) > currentLine.height * 2 ||
-          currentLine.x > lastLine.x
+          (currentLine.x > lastLine.x && nextLine && nextLine.x < currentLine.x)
 
         // 开新段落
         if (isNewParagraph) {
@@ -238,12 +305,19 @@ export default class Utils {
         }
       }
       // 段落合并
-      let ptextArr = []
+      let pageText = ""
       for (let i = 0; i < paragraphs.length; i++) {
         let box: { page: number, left: number; top: number; right: number; bottom: number }
-        let ltextArr = []
-        for (let line of paragraphs[i]) {
-          ltextArr.push(line.text)
+        /**
+         * 所有line是属于一个段落的
+         * 合并同时计算它的边界
+         */
+        let _pageText = ""
+        let line, nextLine
+        for (let j = 0; j < paragraphs[i].length;j++) {
+          line = paragraphs[i][j]
+          nextLine = paragraphs[i]?.[j+1]
+          // 更新边界
           box ??= { page: pageNum, left: line.x, right: line.x + line.width, top: line.y + line.height, bottom: line.y }
           if (line.x < box.left) {
             box.left = line.x
@@ -257,21 +331,49 @@ export default class Utils {
           if (line.y + line.height > box.top) {
             box.top = line.y + line.height
           }
+          _pageText += line.text
+          if (
+            nextLine &&
+            line.height > nextLine.height
+          ) {
+            _pageText = "\n"
+          } else if (j < paragraphs[i].length - 1) {
+            if (!line.text.endsWith("-")) {
+              _pageText += " "
+            }
+          }
         }
-        // 储存用于确定位置
-        this.cache[itemkey] ??= []
-        const ptext = ltextArr.join(" ")
-        this.cache[itemkey].push({
+        _pageText = _pageText.replace(/\s+/g, " ");
+        (this.cache[itemkey] ??= []).push({
           box: box!,
-          text: ptext
+          text: _pageText
         })
-        ptextArr.push(ptext)
+        pageText += _pageText
+        if (i < paragraphs.length - 1) {
+          pageText += "\n\n"
+        }
       }
-      pageParagraphs[pageNum] = ptextArr.join("\n\n")
+      /**
+       * _paragraphs为上一页的paragraphs
+       */
+      if (_paragraphs && !(
+        // 两页首尾字体大小一致
+        _paragraphs.slice(-1)[0].slice(-1)[0].height == paragraphs[0][0].height &&
+        // 开头页没有首行缩进
+        paragraphs[0][0].x == paragraphs[0][1]?.x
+      )) {
+        pdfText += "\n\n"
+      } else {
+        pdfText += " "
+      }
+      pdfText += pageText
+      _paragraphs = paragraphs
     }
+    popupWin.changeHeadline("[Done] PDF")
     popupWin.startCloseTimer(1000)
-    const fullText = Object.values(pageParagraphs).join("\n\n")
+    const fullText = pdfText.replace(/\s+/g, " ")
     await Zotero.File.putContentsAsync(filename, fullText);
+    console.log(fullText)
     return fullText
   }
 }
