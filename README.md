@@ -63,20 +63,18 @@ You can click and hold on each label after installing the plugin to see the inte
 
 ## Development preview
 
-Chat with PDF you are reading.
-
-![image](https://user-images.githubusercontent.com/51939531/230276586-66c50440-4686-4555-9033-6096bd6cddd2.png)
+![image](https://user-images.githubusercontent.com/51939531/230595730-54c984f1-d2c1-45a0-adbd-8792a5afa175.png)
 
 Implementation method:
 
-1. Realize [zotero-gpt-helper](https://github.com/MuiseDestiny/zotero-gpt-helper) service (http://127.0.0.1:5000) opening.
+Make sure the plugin version is up-to-date.
+
+1. Realize [zotero-gpt-helper](https://github.com/MuiseDestiny/zotero-gpt-helper) service (http://127.0.0.1:5000) opening according its README.
 2. Open a Zotero PDF.
 3. Press `Shift + /` to activate plugin UI.
 3. Enter your question about this PDF. 
 4. Click `AskPDF` label.
 5. You can click on the serial number below the GPT answer to locate the reference paragraph of the GPT answer.
-
-![image](https://user-images.githubusercontent.com/51939531/230595730-54c984f1-d2c1-45a0-adbd-8792a5afa175.png)
 
 ## Demonstration
 
