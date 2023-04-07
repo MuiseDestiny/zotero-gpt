@@ -61,7 +61,7 @@ Single click on a label is to execute it.
 You can click and hold on each label after installing the plugin to see the internal statements of the sample tags, and I'm sure you'll be up and running writing a new one in no time.
 
 
-## Development preview
+## Ask PDF
 
 ![image](https://user-images.githubusercontent.com/51939531/230595730-54c984f1-d2c1-45a0-adbd-8792a5afa175.png)
 
