@@ -4,36 +4,42 @@ const markdown = require("markdown-it")();
 const mathjax3 = require('markdown-it-mathjax3');
 markdown.use(mathjax3);
 
+
+const fontFamily = `Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji`
+const help = `
+### Quick Commands
+**/help** - Show all commands.
+**/clear** - Clear history conversation.
+**/secretKey sk-xxx** - Set GPT secret key.
+**/api http://xxx** - Set API.
+**/model gpt-x** - Set GPT model.
+**/temperature 1.0** - Set GPT temperature.
+**/autoShow true/false** - Automatically showed when Zotero is opened.
+
+### About Tag
+You can long click on the tag below to see its internal pseudo-code.
+You can type #xxx and enter to create a tag and save it with Ctrl + S, during which you can execute it with Ctrl + R.
+You can right-click and long-click a tag to delete it.
+
+### About Output Text
+You can double click on this text to copy GPT's answer.
+You can long press me without releasing, then move me to a suitable position before releasing.
+
+### About Input Text
+You can type the question in my header, enter and ask me a question.
+You can exit me by pressing Esc above my head and wake me up by pressing Shift + / in the Zotero window.
+`
 export default class Views {
   private id = "zotero-GPT-container";
   private freeAPI: "ChatPDF" | "AIApp" = "ChatPDF"
   private messages: { role: "user" | "assistant"; content: string }[] = [];
   private history: { author: "AI" | "uplaceholder", msg: string }[] = [];
   private _history: string[] = []
-  private container?: HTMLDivElement;
-  private inputContainer?: HTMLDivElement;
-  private outputContainer?: HTMLDivElement;
-  private threeDotsContainer?: HTMLDivElement;
-  private tagContainer?: HTMLDivElement;
-  private help = `
-    /help - Show all commands.
-    /clear - Clear history conversation.
-    /secretKey sk-xxx - Set GPT secret key.
-    /api http://xxx - Set API.
-    /model gpt-x - Set GPT model.
-    /temperature 1.0 - Set GPT temperature.
-    /autoShow true/false - Automatically showed when Zotero is opened.
-
-    You can long click on the tag below to see its internal pseudo-code.
-    You can type #xxx and enter to create a tag and save it with Ctrl + S, during which you can execute it with Ctrl + R.
-    You can right-click and long-click a tag to delete it.
-
-    You can double click on this text to copy GPT's answer.
-    You can long press me without releasing, then move me to a suitable position before releasing.
-
-    You can type the question in my header, enter and ask me a question.
-    You can exit me by pressing Esc above my head and wake me up by pressing Shift + / in the Zotero window.
-  `.trim()
+  private container!: HTMLDivElement;
+  private inputContainer!: HTMLDivElement;
+  private outputContainer!: HTMLDivElement;
+  private threeDotsContainer!: HTMLDivElement;
+  private tagContainer!: HTMLDivElement;
   constructor() {
     this.registerKey()
     this.addStyle()
@@ -44,12 +50,13 @@ export default class Views {
     if (Zotero.Prefs.get(`${config.addonRef}.autoShow`)) {
       this.show()
       this.inputContainer!.querySelector("input")!.value = "/help"
-      this.setText(this.help, true)
+      this.setText(help, true)
     }
   }
   
   private addStyle() {
-    const styles = ztoolkit.UI.createElement(document, "style", {
+    const styles = ztoolkit.UI.appendElement({
+      tag: "style",
       id: `${config.addonRef}-style`,
       namespace: "html",
       properties: {
@@ -89,61 +96,114 @@ export default class Views {
                   visibility: hidden
               }
           }
-          #output-container span.streaming:after {
+          #output-container div.streaming span:after {
             animation: blink 1s steps(5,start) infinite;
             content: "▋";
             margin-left: .25rem;
             vertical-align: baseline
           }
+          #output-container * {
+            font-family: ${fontFamily} !important;
+          }
+          #output-container div p, #output-container div span {
+            padding: 0;
+            margin: 0;
+            text-align: justify;
+          }
+          .markdown-body {
+            --color-prettylights-syntax-comment: #6e7781;
+            --color-prettylights-syntax-constant: #0550ae;
+            --color-prettylights-syntax-entity: #8250df;
+            --color-prettylights-syntax-storage-modifier-import: #24292f;
+            --color-prettylights-syntax-entity-tag: #116329;
+            --color-prettylights-syntax-keyword: #cf222e;
+            --color-prettylights-syntax-string: #0a3069;
+            --color-prettylights-syntax-variable: #953800;
+            --color-prettylights-syntax-brackethighlighter-unmatched: #82071e;
+            --color-prettylights-syntax-invalid-illegal-text: #f6f8fa;
+            --color-prettylights-syntax-invalid-illegal-bg: #82071e;
+            --color-prettylights-syntax-carriage-return-text: #f6f8fa;
+            --color-prettylights-syntax-carriage-return-bg: #cf222e;
+            --color-prettylights-syntax-string-regexp: #116329;
+            --color-prettylights-syntax-markup-list: #3b2300;
+            --color-prettylights-syntax-markup-heading: #0550ae;
+            --color-prettylights-syntax-markup-italic: #24292f;
+            --color-prettylights-syntax-markup-bold: #24292f;
+            --color-prettylights-syntax-markup-deleted-text: #82071e;
+            --color-prettylights-syntax-markup-deleted-bg: #ffebe9;
+            --color-prettylights-syntax-markup-inserted-text: #116329;
+            --color-prettylights-syntax-markup-inserted-bg: #dafbe1;
+            --color-prettylights-syntax-markup-changed-text: #953800;
+            --color-prettylights-syntax-markup-changed-bg: #ffd8b5;
+            --color-prettylights-syntax-markup-ignored-text: #eaeef2;
+            --color-prettylights-syntax-markup-ignored-bg: #0550ae;
+            --color-prettylights-syntax-meta-diff-range: #8250df;
+            --color-prettylights-syntax-brackethighlighter-angle: #57606a;
+            --color-prettylights-syntax-sublimelinter-gutter-mark: #8c959f;
+            --color-prettylights-syntax-constant-other-reference-link: #0a3069;
+            --color-fg-default: #24292f;
+            --color-fg-muted: #57606a;
+            --color-fg-subtle: #6e7781;
+            --color-canvas-default: transparent;
+            --color-canvas-subtle: #f6f8fa;
+            --color-border-default: #d0d7de;
+            --color-border-muted: hsla(210,18%,87%,1);
+            --color-neutral-muted: rgba(175,184,193,0.2);
+            --color-accent-fg: #0969da;
+            --color-accent-emphasis: #0969da;
+            --color-attention-subtle: #fff8c5;
+            --color-danger-fg: #cf222e
+        }
         `
       },
-    });
-    document.documentElement.appendChild(styles);
+    }, document.documentElement);
+
+    ztoolkit.UI.appendElement({
+      tag: "link",
+      id: `${config.addonRef}-link`,
+      properties: {
+        type: "text/css",
+        rel: "stylesheet",
+        href: "https://sindresorhus.com/github-markdown-css/github-markdown.css"
+      }
+    }, document.documentElement)
   }
 
+  /**
+   * 设置GPT回答区域文字
+   * @param text 
+   * @param isDone 
+   */
   private setText(text: string, isDone: boolean = false) {
-    this.outputContainer!.style.display = ""
-    const outputDiv = this.outputContainer!.querySelector("div")!
+    this.outputContainer.style.display = ""
+    const outputDiv = this.outputContainer.querySelector("div")!
     outputDiv.classList.add("streaming");
-    outputDiv.innerHTML = `<span>${text}</span>`;
+    let textSpan
+    if (!(textSpan = outputDiv.querySelector(".text") as HTMLSpanElement)) {
+      ztoolkit.UI.appendElement({
+        tag: "span",
+        classList: ["text"],
+        properties: {
+          innerText: text
+        }
+      }, outputDiv)
+    } else {
+      textSpan.innerText = text
+    }
     if (isDone) {
       outputDiv.classList.remove("streaming")
-      let md = markdown.render(text.replace(/\n/g, "  \n"))
+      let result = markdown.render(text.replace(/\n/g, "  \n"))
       // 删除 assistive-mml 以避免 MathJax 重复渲染，应该有更好的方法
-      md = md.replace(/<mjx-assistive-mml[^>]*>.*?<\/mjx-assistive-mml>/g, "")
+      result = result.replace(/<mjx-assistive-mml[^>]*>.*?<\/mjx-assistive-mml>/g, "")
         .replace(/<br>/g, "<br />")
-      outputDiv.innerHTML = md;
+      // 纯文本本身不需要MD渲染，防止样式不一致出现变形
+      const tags = result.match(/<(.+)>[\s\S]+?<\/\1>/g)
+      if (!(tags.length == 1 && tags[0].startsWith("<p>"))) {
+        outputDiv.innerHTML = result;
+      }
       outputDiv.setAttribute("pureText", text);
+      // if (mdHTML.body.childNodes.length == 0 && mdHTML.body.childNodes[0].)
     }
-    // let cursor = this.outputContainer!.querySelector(".cursor") as HTMLDivElement
-    // if (!cursor) {
-    //   console.log("create")
-    //   cursor = ztoolkit.UI.appendElement({
-    //     tag: "div",
-    //     classList: ["cursor"],
-    //     properties: {
-    //       innerText: "▋"
-    //     },
-    //     styles: {
-    //       display: "inline-block",
-    //       marginLeft: "0.25rem",
-    //       verticalAlign: "baseline"
-    //     }
-    //   }, this.outputContainer!) as HTMLDivElement
-    //   let showCursor = true;
-    //   window.setInterval(() => {
-    //     if (showCursor) {
-    //       cursor.style.visibility = "hidden";
-    //       showCursor = false;
-    //     } else {
-    //       cursor.style.visibility = "";
-    //       showCursor = true;
-    //     }
-    //   }, 300);
-    // }
-    // if (isDone) {
-    //   cursor.remove()
-    // }
   }
 
   /**
@@ -154,40 +214,42 @@ export default class Views {
   private async getGPTResponseText(requestText: string) {
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
     const temperature = Zotero.Prefs.get(`${config.addonRef}.temperature`)
+    const api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
     const model = Zotero.Prefs.get(`${config.addonRef}.model`)
     if (!secretKey) { return await this[`getGPTResponseTextBy${this.freeAPI}`](requestText) }
-    const outputDiv = this.outputContainer!.querySelector("div")!
-    let responseText = "";
+    const outputDiv = this.outputContainer.querySelector("div")!
     this.messages.push({
       role: "user", 
       content: requestText
     })
     // outputSpan.innerText = responseText;
     const deltaTime = 100
-    let preText = ""
-    this.setText(preText)
+    // 储存上一次的结果
+    let _textArr: string[] = []
+    // 随着请求返回实时变化
+    let textArr: string[] = []
+    // 激活输出
+    this.setText("")
     let isDone = false
     const id = window.setInterval(() => {
       if (outputDiv.getAttribute("stream-id") != String(id)) {
+        // 可能用户打断输入
         return window.clearInterval(id)
       }
-      if (preText.length == responseText.length) {
-        if (isDone) {
-          window.clearInterval(id)
-          window.setTimeout(() => {
-            this.setText(preText, true)
-          }, deltaTime * 5)
-        }
+      if (_textArr.length == textArr.length && isDone) {
+        window.clearInterval(id)
+        window.setTimeout(() => {
+          this.setText(textArr.join(""), true)
+        }, deltaTime * 5)
         return
       }
-      preText = responseText.slice(0, preText.length + 1)
-      this.setText(preText)
-      // outputSpan.innerText = responseText.slice(0, preText.length + 1)
+      _textArr = textArr.slice(0, _textArr.length+1)
+      this.setText(_textArr.join(""))
     }, deltaTime)
     outputDiv.setAttribute("stream-id", String(id))
     const xhr = await Zotero.HTTP.request(
       "POST",
-      Zotero.Prefs.get(`${config.addonRef}.api`) as string,
+      api,
       {
         headers: {
           "Content-Type": "application/json",
@@ -203,18 +265,17 @@ export default class Views {
         requestObserver: (xmlhttp: XMLHttpRequest) => {
           xmlhttp.onprogress = (e: any) => {
             try {
-              let _responseText = ""
-              e.target.response.match(/"content":"(.+?)"/g).forEach((s: string) => {
-                _responseText += s.match(/"content":"(.+?)"/)![1]
-              })
-              _responseText = _responseText
-                .replace(/\\./g, (s: string) => window.eval(`'${s}'`))
-                .replace(/\n+/g, "\n")
-              responseText = _responseText
+              textArr = e.target.response.match(/data: (.+)/g).filter((s: string) => s.indexOf("content")>=0).map((s: string) => {
+                try {
+                  return JSON.parse(s.replace("data: ", "")).choices[0].delta.content.replace(/\n+/g, "\n")
+                } catch {
+                  return false
+                }
+              }).filter(Boolean)
             } catch {
+              // 出错一般是token超出限制
               this.setText(e.target.response + "\n\n" + requestText, true)
             }
-            // this.outputContainer!.style.display = ""
             if (e.target.timeout) {
               e.target.timeout = 0;
             }
@@ -223,6 +284,7 @@ export default class Views {
       }
     );
     isDone = true
+    const responseText = textArr.join("")
     this.messages.push({
       role: "assistant",
       content: responseText
@@ -275,7 +337,7 @@ export default class Views {
     joinPre(this.history.length - 1)
     console.log(this.history)
     // 文本突破限制
-    const outputDiv = this.outputContainer!.querySelector("div")!
+    const outputDiv = this.outputContainer.querySelector("div")!
     const errorMsg = "<Service Error 331>"
     const xhr = await Zotero.HTTP.request(
       "POST",
@@ -289,8 +351,8 @@ export default class Views {
           "chatSession":
           {
             "type": "join",
-            "chatId": "JRcqq2KpiVUC1KBv_7yh1",
-            // sourceId: "nZkCqhKnaC6UraI2ac8CA"
+            // 这个id对应我上传的一个空白PDF，里面只有文字 `Zotero GPT`，为了防止回答跑偏
+            "chatId": "JRcqq2KpiVUC1KBv_7yh1",  
           },
           "history": [
             {
@@ -309,7 +371,7 @@ export default class Views {
         requestObserver: (xmlhttp: XMLHttpRequest) => {
           xmlhttp.onprogress = (e: any) => {
             responseText = e.target.response.replace(/^.+?\n/, "");
-            this.outputContainer!.style.display = ""
+            this.outputContainer.style.display = ""
             if (errorMsg != responseText) {
               this.setText(preResponseText + responseText);
             }
@@ -333,23 +395,21 @@ export default class Views {
   }
 
   private async getGPTResponseTextByAIApp(requestText: string) {
-    const outputDiv = this.outputContainer!.querySelector("div")!
+    const outputDiv = this.outputContainer.querySelector("div")!
     const xhr = await Zotero.HTTP.request(
       "GET",
+      // 从AI app里抓的，其实是GPT-3，但被开发者伪装成了GPT-4，他有严格的字符限制
       `http://d.qiner520.com/app/info?msg=${encodeURIComponent(requestText)}&role=0&stream=true`,
       {
         responseType: "text",
         requestObserver: (xmlhttp: XMLHttpRequest) => {
           xmlhttp.onprogress = (e: any) => {
-            this.outputContainer!.style.display = ""
+            this.outputContainer.style.display = ""
             const text = e.target.responseText.match(/"msg":"([\s\S]+?)"/g)
               .map((s: string) => s.match(/"msg":"([\s\S]+?)"/)![1])
               .join("")
               .replace(/\\./g, (s: string) => window.eval(`'${s}'`))
             this.setText(text);
-            console.log(
-              e.target
-            )
           };
         },
       },
@@ -388,18 +448,8 @@ export default class Views {
       if (isDragging) {
         currentX = event.clientX + posX
         currentY = event.clientY + posY
-
-        // Ensure node doesn't move out of bounds
-        // const windowWidth = window.innerWidth - node.offsetWidth
-        // const windowHeight = window.innerHeight - node.offsetHeight
-
-        // if (currentX >= 0 && currentX <= windowWidth) {
         node.style.left = currentX + "px"
-        // }
-
-        // if (currentY >= 0 && currentY <= windowHeight) {
         node.style.top = currentY + "px"
-        // }
       }
     }
 
@@ -454,7 +504,7 @@ export default class Views {
         boxShadow: `0px 1.8px 7.3px rgba(0, 0, 0, 0.071),
                     0px 6.3px 24.7px rgba(0, 0, 0, 0.112),
                     0px 30px 90px rgba(0, 0, 0, 0.2)`,
-        fontFamily: `Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji`,
+        fontFamily: fontFamily,
       }
     })
     this.addDragEvent(container)
@@ -583,7 +633,7 @@ export default class Views {
             outputContainer.style.display = ""
             outputContainer.querySelector("div")!.innerHTML = `success`
           } else if (key == "help"){ 
-            that.setText(that.help, true)
+            that.setText(help, true)
           } else if (["secretKey", "model", "autoShow", "api", "temperature"].indexOf(key) != -1) {  
             if (value?.length > 0) {
               if (key == "autoShow") {
@@ -644,10 +694,12 @@ export default class Views {
       children: [
         {
           tag: "div", // Change this to 'div'
+          classList: ["markdown-body"],
           styles: {
             fontSize: "0.8em",
-            fontFamily: '"STIX Two Text", Symbola, "Times New Roman", serif', // Add this line
-            lineHeight: "1.2em",
+            lineHeight: "2em",
+            // fontFamily: '"STIX Two Text", Symbola, "Times New Roman", serif', // Add this line
+            // lineHeight: "1.2em",
           },
           properties: {
             // 用于复制
@@ -660,10 +712,10 @@ export default class Views {
           type: "dblclick",
           listener: () => {
             new ztoolkit.Clipboard()
-              .addText(outputContainer!.querySelector("div")!.getAttribute("pureText") || "", "text/unicode")
+              .addText(outputContainer.querySelector("div")!.getAttribute("pureText") || "", "text/unicode")
               .copy()
             new ztoolkit.ProgressWindow("Copy Text")
-              .createLine({ text: outputContainer!.querySelector("div")!.getAttribute("pureText") || "", type: "success" })
+              .createLine({ text: outputContainer.querySelector("div")!.getAttribute("pureText") || "", type: "success" })
               .show()
           }
         }
@@ -785,7 +837,7 @@ export default class Views {
                 inputNode.style.display = "none";
                 textareaNode.style.display = ""
                 textareaNode.value = tag.text
-                this.outputContainer!.style!.display = "none"
+                this.outputContainer.style!.display = "none"
               } else if (event.buttons == 2) {
                 let tags = this.getTags()
                 tags = tags.filter((_tag: Tag) => _tag.tag != tag.tag)
@@ -801,7 +853,7 @@ export default class Views {
             if (timer) {
               window.clearTimeout(timer)
               timer = undefined
-              this.outputContainer!.querySelector(".reference")?.remove()
+              this.outputContainer.querySelector(".reference")?.remove()
               await this.execTag(tag)
             }
           }
@@ -820,8 +872,8 @@ export default class Views {
     popunWin
       .createLine({ text: "Plugin is generating content...", type: "default" })
     this.threeDotsContainer?.classList.add("loading")
-    this.outputContainer!.style.display = "none"
-    const outputDiv = this.outputContainer!.querySelector("div")!
+    this.outputContainer.style.display = "none"
+    const outputDiv = this.outputContainer.querySelector("div")!
     outputDiv.innerHTML = ""
     outputDiv.setAttribute("pureText", "");
     let text = tag.text.replace(/^#.+\n/, "")
@@ -838,7 +890,7 @@ export default class Views {
     // 运行替换其中js代码
     text = await this.getGPTResponseText(text) as string
     // outputDiv.innerHTML = text;
-    // this.outputContainer!.style.display = ""
+    // this.outputContainer.style.display = ""
     // popupWin.changeLine({ type: "success" })
     // popupWin.startCloseTimer(1000)
     this.threeDotsContainer?.classList.remove("loading")
@@ -855,8 +907,8 @@ export default class Views {
   }
 
   private async execText(text: string) {
-    this.outputContainer!.style.display = "none"
-    const outputDiv = this.outputContainer!.querySelector("div")!
+    this.outputContainer.style.display = "none"
+    const outputDiv = this.outputContainer.querySelector("div")!
     outputDiv.innerHTML = ""
     outputDiv.setAttribute("pureText", "");
     if (text.trim().length == 0) { return }
@@ -874,7 +926,13 @@ export default class Views {
       { "tag": "🪐AskPDF", "color": "#009FBD", "position": 0, "text": "#🪐AskPDF[pos=0][color=#009FBD]\n\nYou are a helpful assistant. Context information is below.\n\n---\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\n\"127.0.0.1:5000\", window.gptInputString \n)\n\n```\n---\n\nCurrent date: ```js\nString(new Date())\n```\nUsing the provided context information, write a comprehensive reply to the given query. Make sure to cite results using [number] notation after the reference. If the provided context information refer to multiple subjects with the same name, write separate answers for each subject. Use prior knowledge only if the given context didn't provide enough information. \n\nAnswer the question:\n```js\nwindow.gptInputString \n```\n\nReply in 简体中文\n" },
       { "tag": "🎈Tranlate", "color": "#21a2f1", "position": 1, "text": "#🎈Tranlate[pos=1][c=#21a2f1]\n\ntranslate these from english to 简体中文:\n```js\nZotero.ZoteroGPT.utils.getPDFSelection()\n```" },
       { "tag": "✍️Abs2Sum", "color": "#E11299", "position": 2, "text": "#✍️Abs2Sum[pos=2][color=#E11299]\n下面是一篇论文的摘要：\n```js\n// 确保你选择的是PDF的摘要部分\nZotero.ZoteroGPT.utils.getPDFSelection()\n```\n\n---\n\n请问它的主要工作是什么，在什么地区，时间范围是什么，使用的数据是什么，创新点在哪？\n\n请你用下列示例格式回答我：\n主要工作：反演AOD；\n地区：四川盆地；\n时间：2017~2021；\n数据：Sentinel-2卫星数据；\n创新：考虑了BRDF效应。\n\n" }]
-    let tags = JSON.parse(Zotero.Prefs.get(`${config.addonRef}.tags`) as string)
+    // 进行一个简单的处理，应该是中文/表情写入prefs.js导致的bug
+    let tagString = Zotero.Prefs.get(`${config.addonRef}.tags`) as string
+    if (!tagString) {
+      tagString = "[]"
+      Zotero.Prefs.set(`${config.addonRef}.tags`, tagString)
+    }
+    let tags = JSON.parse(tagString)
     return tags.length > 0 ? tags : defaultTags
   }
 

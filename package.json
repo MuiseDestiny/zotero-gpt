@@ -1,6 +1,6 @@
 {
   "name": "zotero-gpt",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "GPT Meets Zotero",
   "config": {
     "addonName": "Zotero GPT",
@@ -37,8 +37,12 @@
   },
   "homepage": "https://github.com/MuiseDestiny/zotero-gpt#readme",
   "dependencies": {
+    "@iktakahiro/markdown-it-katex": "^4.0.1",
+    "highlight": "^0.2.4",
     "markdown-it": "^13.0.1",
     "markdown-it-mathjax3": "^4.3.2",
+    "react-markdown": "^8.0.6",
+    "showdown": "^2.1.0",
     "zotero-plugin-toolkit": "^2.0.1"
   },
   "devDependencies": {
