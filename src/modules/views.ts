@@ -1,5 +1,8 @@
 import { config } from "../../package.json";
 
+const markdown = require("markdown-it")();
+const mathjax3 = require('markdown-it-mathjax3');
+markdown.use(mathjax3);
 
 export default class Views {
   private id = "zotero-GPT-container";
@@ -41,8 +44,7 @@ export default class Views {
     if (Zotero.Prefs.get(`${config.addonRef}.autoShow`)) {
       this.show()
       this.inputContainer!.querySelector("input")!.value = "/help"
-      this.outputContainer!.style.display = ""
-      this.outputContainer!.querySelector("span")!.innerText = this.help
+      this.setText(this.help, true)
     }
   }
   
@@ -101,11 +103,17 @@ export default class Views {
 
   private setText(text: string, isDone: boolean = false) {
     this.outputContainer!.style.display = ""
-    const outputSpan = this.outputContainer!.querySelector("span")!
-    outputSpan.innerText = text;
-    outputSpan.classList.add("streaming");
+    const outputDiv = this.outputContainer!.querySelector("div")!
+    outputDiv.classList.add("streaming");
+    outputDiv.innerHTML = `<span>${text}</span>`;
     if (isDone) {
-      outputSpan.classList.remove("streaming")
+      outputDiv.classList.remove("streaming")
+      let md = markdown.render(text.replace(/\n/g, "  \n"))
+      // 删除 assistive-mml 以避免 MathJax 重复渲染，应该有更好的方法
+      md = md.replace(/<mjx-assistive-mml[^>]*>.*?<\/mjx-assistive-mml>/g, "")
+        .replace(/<br>/g, "<br />")
+      outputDiv.innerHTML = md;
+      outputDiv.setAttribute("pureText", text);
     }
     // let cursor = this.outputContainer!.querySelector(".cursor") as HTMLDivElement
     // if (!cursor) {
@@ -148,7 +156,7 @@ export default class Views {
     const temperature = Zotero.Prefs.get(`${config.addonRef}.temperature`)
     const model = Zotero.Prefs.get(`${config.addonRef}.model`)
     if (!secretKey) { return await this[`getGPTResponseTextBy${this.freeAPI}`](requestText) }
-    const outputSpan = this.outputContainer!.querySelector("span")!
+    const outputDiv = this.outputContainer!.querySelector("div")!
     let responseText = "";
     this.messages.push({
       role: "user", 
@@ -160,7 +168,7 @@ export default class Views {
     this.setText(preText)
     let isDone = false
     const id = window.setInterval(() => {
-      if (outputSpan.getAttribute("stream-id") != String(id)) {
+      if (outputDiv.getAttribute("stream-id") != String(id)) {
         return window.clearInterval(id)
       }
       if (preText.length == responseText.length) {
@@ -176,7 +184,7 @@ export default class Views {
       this.setText(preText)
       // outputSpan.innerText = responseText.slice(0, preText.length + 1)
     }, deltaTime)
-    outputSpan.setAttribute("stream-id", String(id))
+    outputDiv.setAttribute("stream-id", String(id))
     const xhr = await Zotero.HTTP.request(
       "POST",
       Zotero.Prefs.get(`${config.addonRef}.api`) as string,
@@ -263,7 +271,7 @@ export default class Views {
     joinPre(this.history.length - 1)
     console.log(this.history)
     // 文本突破限制
-    const outputSpan = this.outputContainer!.querySelector("span")!
+    const outputDiv = this.outputContainer!.querySelector("div")!
     const errorMsg = "<Service Error 331>"
     const xhr = await Zotero.HTTP.request(
       "POST",
@@ -299,7 +307,7 @@ export default class Views {
             responseText = e.target.response.replace(/^.+?\n/, "");
             this.outputContainer!.style.display = ""
             if (errorMsg != responseText) {
-              outputSpan.innerText = preResponseText + responseText
+              this.setText(preResponseText + responseText);
             }
           };
         },
@@ -321,7 +329,7 @@ export default class Views {
   }
 
   private async getGPTResponseTextByAIApp(requestText: string) {
-    const outputSpan = this.outputContainer!.querySelector("span")!
+    const outputDiv = this.outputContainer!.querySelector("div")!
     const xhr = await Zotero.HTTP.request(
       "GET",
       `http://d.qiner520.com/app/info?msg=${encodeURIComponent(requestText)}&role=0&stream=true`,
@@ -330,11 +338,11 @@ export default class Views {
         requestObserver: (xmlhttp: XMLHttpRequest) => {
           xmlhttp.onprogress = (e: any) => {
             this.outputContainer!.style.display = ""
-            outputSpan.innerHTML = e.target.responseText
-              .match(/"msg":"([\s\S]+?)"/g)
+            const text = e.target.responseText.match(/"msg":"([\s\S]+?)"/g)
               .map((s: string) => s.match(/"msg":"([\s\S]+?)"/)![1])
               .join("")
               .replace(/\\./g, (s: string) => window.eval(`'${s}'`))
+            this.setText(text);
             console.log(
               e.target
             )
@@ -569,10 +577,9 @@ export default class Views {
             // @ts-ignore
             this.value = ""
             outputContainer.style.display = ""
-            outputContainer.querySelector("span")!.innerText = `success`
+            outputContainer.querySelector("div")!.innerHTML = `success`
           } else if (key == "help"){ 
-            outputContainer.style.display = ""
-            outputContainer.querySelector("span")!.innerText = that.help
+            that.setText(that.help, true)
           } else if (["secretKey", "model", "autoShow", "api", "temperature"].indexOf(key) != -1) {  
             if (value?.length > 0) {
               if (key == "autoShow") {
@@ -587,7 +594,7 @@ export default class Views {
               value = Zotero.Prefs.get(`${config.addonRef}.${key}`)
             }
             outputContainer.style.display = ""
-            outputContainer.querySelector("span")!.innerText = `${key} = ${value}`
+            outputContainer.querySelector("div")!.innerHTML = `${key} = ${value}`
             // @ts-ignore
             this.value = ""
           }
@@ -627,20 +634,20 @@ export default class Views {
         overflowY: "auto",
         overflowX: "hidden",
         padding: "0 .5em",
-        display: "none",
+        display: "block",
         // resize: "vertical"
       },
       children: [
         {
-          tag: "span",
+          tag: "div", // Change this to 'div'
           styles: {
             fontSize: "0.8em",
-            lineHeight: "2em",
-            // @ts-ignore
-            // "-moz-user-select": "text"
+            fontFamily: '"STIX Two Text", Symbola, "Times New Roman", serif', // Add this line
+            lineHeight: "1.2em",
           },
           properties: {
-            innerText: ""
+            // 用于复制
+            pureText: ""
           }
         }
       ],
@@ -649,10 +656,10 @@ export default class Views {
           type: "dblclick",
           listener: () => {
             new ztoolkit.Clipboard()
-              .addText(outputContainer.innerText, "text/unicode")
+              .addText(outputContainer!.querySelector("div")!.getAttribute("pureText") || "", "text/unicode")
               .copy()
             new ztoolkit.ProgressWindow("Copy Text")
-              .createLine({ text: outputContainer.innerText, type: "success" })
+              .createLine({ text: outputContainer!.querySelector("div")!.getAttribute("pureText") || "", type: "success" })
               .show()
           }
         }
@@ -811,8 +818,9 @@ export default class Views {
       .createLine({ text: "Plugin is generating content...", type: "default" })
     this.threeDotsContainer?.classList.add("loading")
     this.outputContainer!.style.display = "none"
-    const outputSpan = this.outputContainer!.querySelector("span")!
-    outputSpan.innerText = ""
+    const outputDiv = this.outputContainer!.querySelector("div")!
+    outputDiv.innerHTML = ""
+    outputDiv.setAttribute("pureText", "");
     let text = tag.text.replace(/^#.+\n/, "")
     for (let rawString of text.match(/```j(?:ava)?s(?:cript)?\n([\s\S]+?)\n```/g)!) {
       let codeString = rawString.match(/```j(?:ava)?s(?:cript)?\n([\s\S]+?)\n```/)![1]
@@ -826,7 +834,7 @@ export default class Views {
     popunWin.createLine({ text: "GPT is answering...", type: "default" })
     // 运行替换其中js代码
     text = await this.getGPTResponseText(text) as string
-    // outputSpan.innerText = text;
+    // outputDiv.innerHTML = text;
     // this.outputContainer!.style.display = ""
     // popupWin.changeLine({ type: "success" })
     // popupWin.startCloseTimer(1000)
@@ -845,8 +853,9 @@ export default class Views {
 
   private async execText(text: string) {
     this.outputContainer!.style.display = "none"
-    const outputSpan = this.outputContainer!.querySelector("span")!
-    outputSpan.innerText = ""
+    const outputDiv = this.outputContainer!.querySelector("div")!
+    outputDiv.innerHTML = ""
+    outputDiv.setAttribute("pureText", "");
     if (text.trim().length == 0) { return }
     this.threeDotsContainer?.classList.add("loading")
     await this.getGPTResponseText(text)
