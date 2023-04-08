@@ -125,7 +125,7 @@ export default class Utils {
         properties: {
           innerText: `[${reference.number}]`
         },
-        listeners: [
+        listeners: [ 
           {
             type: "click",
             listener: () => {

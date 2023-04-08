@@ -12,7 +12,25 @@ export default class Views {
   private outputContainer?: HTMLDivElement;
   private threeDotsContainer?: HTMLDivElement;
   private tagContainer?: HTMLDivElement;
+  private help = `
+    /help - Show all commands.
+    /clear - Clear history conversation.
+    /secretKey sk-xxx - Set GPT secret key.
+    /api http://xxx - Set API.
+    /model gpt-x - Set GPT model.
+    /temperature 1.0 - Set GPT temperature.
+    /autoShow true/false - Automatically showed when Zotero is opened.
 
+    You can long click on the tag below to see its internal pseudo-code.
+    You can type #xxx and enter to create a tag and save it with Ctrl + S, during which you can execute it with Ctrl + R.
+    You can right-click and long-click a tag to delete it.
+
+    You can double click on this text to copy GPT's answer.
+    You can long press me without releasing, then move me to a suitable position before releasing.
+
+    You can type the question in my header, enter and ask me a question.
+    You can exit me by pressing Esc above my head and wake me up by pressing Shift + / in the Zotero window.
+  `.trim()
   constructor() {
     this.registerKey()
     this.addStyle()
@@ -22,36 +40,9 @@ export default class Views {
   private init() {
     if (Zotero.Prefs.get(`${config.addonRef}.autoShow`)) {
       this.show()
+      this.inputContainer!.querySelector("input")!.value = "/help"
       this.outputContainer!.style.display = ""
-      this.outputContainer!.querySelector("span")!.innerText = `Hi ~
-      很高兴在这里见到你，我是基于GPT开发的Zotero插件。
-  
-      我，集美貌才华与一身。
-      
-      当你看到这段话，代表你的插件已成功安装。
-      初次使用，你不需要做任何配置。
-  
-      看到我头顶的输入框了吗，你可以在这里与我聊天，输入完问题回车即可。
-  
-      看到我脚下的标签了吗，这是开发者为你预设的一些命令标签。
-      你可以选中一个Zotero条目后，然后点击任意一个标签，标签内的问答逻辑就会被执行。
-      如果你不喜欢它们，你可以鼠标右键长按1s删除它们，如果你想进一步改造它们，你可以鼠标左键长按完善它。
-      你也可以在我头顶输入框输入以#开头的文字，然后回车创建一个你自己的标签，你可以通过#Tag[pos=1][color=#eee]来指定颜色和位置。
-  
-      你可以点击我头顶的输入框，按 ESC（一般位于你键盘的最左上角）关闭我。然后用 Shift + / 传唤我。鼠标上下键用于查找历史。
-      
-      总之，以后的时间，我会伴你左右。
-  
-      作为一个轻盈的插件，我是可以自由拖动位置的，你可以用鼠标按住我的任何一个零件，拖动到不影响你正常工作的位置。
-  
-      当然，配置密钥后，我会更强大，具体参考GitHub的README。
-
-      最后，跟着我学习一些快捷配置命令吧（在我头顶输入）:
-      1. 关闭自动弹窗提示：/autoShow false;
-      2. 配置密钥：/secretKey sk-XXXXXXXXXXXXXXXXXXXXXXXXXXX
-      3. 配置模型：/model gpt-3.5-turbo
-      4. 配置接口：/api https://api.openai.com/v1/chat/completions
-      `
+      this.outputContainer!.querySelector("span")!.innerText = this.help
     }
   }
   
@@ -86,10 +77,21 @@ export default class Views {
           #${this.id} .three-dots.loading .dot {
             animation: loading 1.5s ease-in-out infinite;
           }
-
           #${this.id} ::-moz-selection {
             background: rgba(89, 192, 188, .8); 
             color: #fff;
+          }
+
+          @keyframes blink {
+              to {
+                  visibility: hidden
+              }
+          }
+          #output-container span.streaming:after {
+            animation: blink 1s steps(5,start) infinite;
+            content: "▋";
+            margin-left: .25rem;
+            vertical-align: baseline
           }
         `
       },
@@ -97,13 +99,53 @@ export default class Views {
     document.documentElement.appendChild(styles);
   }
 
+  private setText(text: string, isDone: boolean = false) {
+    this.outputContainer!.style.display = ""
+    const outputSpan = this.outputContainer!.querySelector("span")!
+    outputSpan.innerText = text;
+    outputSpan.classList.add("streaming");
+    if (isDone) {
+      outputSpan.classList.remove("streaming")
+    }
+    // let cursor = this.outputContainer!.querySelector(".cursor") as HTMLDivElement
+    // if (!cursor) {
+    //   console.log("create")
+    //   cursor = ztoolkit.UI.appendElement({
+    //     tag: "div",
+    //     classList: ["cursor"],
+    //     properties: {
+    //       innerText: "▋"
+    //     },
+    //     styles: {
+    //       display: "inline-block",
+    //       marginLeft: "0.25rem",
+    //       verticalAlign: "baseline"
+    //     }
+    //   }, this.outputContainer!) as HTMLDivElement
+    //   let showCursor = true;
+    //   window.setInterval(() => {
+    //     if (showCursor) {
+    //       cursor.style.visibility = "hidden";
+    //       showCursor = false;
+    //     } else {
+    //       cursor.style.visibility = "";
+    //       showCursor = true;
+    //     }
+    //   }, 300);
+    // }
+    // if (isDone) {
+    //   cursor.remove()
+    // }
+  }
+
   /**
-   * gpt-3.5-turbo
+   * gpt-3.5-turbo / gpt-4
    * @param requestText 
    * @returns 
    */
   private async getGPTResponseText(requestText: string) {
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
+    const temperature = Zotero.Prefs.get(`${config.addonRef}.temperature`)
     const model = Zotero.Prefs.get(`${config.addonRef}.model`)
     if (!secretKey) { return await this[`getGPTResponseTextBy${this.freeAPI}`](requestText) }
     const outputSpan = this.outputContainer!.querySelector("span")!
@@ -112,6 +154,29 @@ export default class Views {
       role: "user", 
       content: requestText
     })
+    // outputSpan.innerText = responseText;
+    const deltaTime = 100
+    let preText = ""
+    this.setText(preText)
+    let isDone = false
+    const id = window.setInterval(() => {
+      if (outputSpan.getAttribute("stream-id") != String(id)) {
+        return window.clearInterval(id)
+      }
+      if (preText.length == responseText.length) {
+        if (isDone) {
+          window.clearInterval(id)
+          window.setTimeout(() => {
+            this.setText(preText, true)
+          }, deltaTime * 5)
+        }
+        return
+      }
+      preText = responseText.slice(0, preText.length + 1)
+      this.setText(preText)
+      // outputSpan.innerText = responseText.slice(0, preText.length + 1)
+    }, deltaTime)
+    outputSpan.setAttribute("stream-id", String(id))
     const xhr = await Zotero.HTTP.request(
       "POST",
       Zotero.Prefs.get(`${config.addonRef}.api`) as string,
@@ -124,54 +189,34 @@ export default class Views {
           model: model,
           messages: this.messages,
           stream: true,
-          temperature: 1.0
+          temperature: Number(temperature)
         }),
         responseType: "text",
         requestObserver: (xmlhttp: XMLHttpRequest) => {
-          let preLength = 0;
           xmlhttp.onprogress = (e: any) => {
-            // Only concatenate the new strings
-            let newResponse = e.target.response.slice(preLength);
-            let dataArray = newResponse.split("data: ");
-
-            for (let data of dataArray) {
-              try {
-                let obj = JSON.parse(data);
-                let choice = obj.choices[0];
-                if (choice.finish_reason) {
-                  break;
-                }
-                responseText += choice.delta.content || "";
-              } catch {
-                continue;
-              }
-            }
-
-            // Clear timeouts caused by stream transfers
+            let _responseText = ""
+            e.target.response.match(/"content":"(.+?)"/g).forEach((s: string) => {
+              _responseText += s.match(/"content":"(.+?)"/)![1]
+            })
+            _responseText = _responseText
+              .replace(/\\./g, (s: string) => window.eval(`'${s}'`))
+              .replace(/\n+/g, "\n")
+            responseText = _responseText
+            // this.outputContainer!.style.display = ""
             if (e.target.timeout) {
               e.target.timeout = 0;
-            }
-            // Remove \n\n from the beginning of the data
-            responseText = responseText.replace(/^\n\n/, "");
-            preLength = e.target.response.length;
-            this.outputContainer!.style.display = ""
-            if (responseText) {
-              outputSpan.innerText = responseText;
             }
           };
         },
       }
     );
-    if (xhr?.status !== 200) {
-      throw `Request error: ${xhr?.status}`;
-    }
+    isDone = true
     this.messages.push({
       role: "assistant",
       content: responseText
     })
     return responseText
   }
-
 
   /**
    * chatPDF
@@ -397,7 +442,7 @@ export default class Views {
         boxShadow: `0px 1.8px 7.3px rgba(0, 0, 0, 0.071),
                     0px 6.3px 24.7px rgba(0, 0, 0, 0.112),
                     0px 30px 90px rgba(0, 0, 0, 0.2)`,
-        fontFamily: `ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Microsoft YaHei Light", sans-serif`,
+        fontFamily: `Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji`,
       }
     })
     this.addDragEvent(container)
@@ -519,7 +564,16 @@ export default class Views {
           that._history.push(text)
           text = text.slice(1)
           let [key, value] = text.split(" ")
-          if (["secretKey", "model", "autoShow", "api"].indexOf(key) != -1) {  
+          if (key == "clear") {
+            that.messages = []
+            // @ts-ignore
+            this.value = ""
+            outputContainer.style.display = ""
+            outputContainer.querySelector("span")!.innerText = `success`
+          } else if (key == "help"){ 
+            outputContainer.style.display = ""
+            outputContainer.querySelector("span")!.innerText = that.help
+          } else if (["secretKey", "model", "autoShow", "api", "temperature"].indexOf(key) != -1) {  
             if (value?.length > 0) {
               if (key == "autoShow") {
                 if (value == "true") {
@@ -558,9 +612,6 @@ export default class Views {
         // 退出container
         that.container!.remove()
       }
-      // if (text.trim().length == 0) {
-      //   outputContainer.style.display = "none"
-      // }
     }
     inputNode.addEventListener("keyup", inputListener)
     textareaNode.addEventListener("keyup", inputListener)
