@@ -42,7 +42,7 @@ export default class Utils {
 
         let overlapCount = 0;
         for (let j = 0; j < textSentences.length; j++) {
-          if (textArrSentences.map(i => i.replace(/\s+/g, "")).includes(textSentences[j].replace(/\s+/g, ""))) {
+          if (textArrSentences.map(i => i.replace(/\x20+/g, "")).includes(textSentences[j].replace(/\x20+/g, ""))) {
             overlapCount++;
           }
         }
@@ -60,7 +60,8 @@ export default class Utils {
     let pdfItem = Zotero.Items.get(
       Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)!.itemID as number
     )
-
+    const fullText = await this.readPDFFullText(pdfItem.key, pdfItem.key in this.cache == false)
+    console.log(fullText.split("\n\n"))
     const xhr = await Zotero.HTTP.request(
       "POST",
       `http://${host}/getRelatedText`,
@@ -70,8 +71,8 @@ export default class Utils {
         },
         body: JSON.stringify({
           queryText,
+          fullText,
           id: pdfItem.key,
-          fullText: await this.readPDFFullText(pdfItem.key, pdfItem.key in this.cache == false)
         }),
         responseType: "json"
       }
@@ -82,7 +83,7 @@ export default class Utils {
       let refText = xhr.response[i]
       // 寻找坐标
       // const mainText = refText.split(/\n+/).sort((a: string, b: string) => b.length - a.length)[0]
-      let index = findMostOverlap(refText.replace(/\s+/g, " "), this.cache[pdfItem.key].map((i: any) => i.text.replace(/\s+/g, " ")))
+      let index = findMostOverlap(refText.replace(/\x20+/g, " "), this.cache[pdfItem.key].map((i: any) => i.text.replace(/\x20+/g, " ")))
       if (index >= 0) {
         const box = this.cache[pdfItem.key][index].box
         references.push({
@@ -129,10 +130,6 @@ export default class Utils {
           {
             type: "click",
             listener: () => {
-              // const breakLength = 100
-              // new ztoolkit.ProgressWindow(`[${reference.number}]`)
-              //   .createLine({ text: reference.text.slice(0, breakLength) + (reference.text.length > breakLength ? "...":"" ), type: "default" })
-              //   .show()
               win.eval(`
                 PDFViewerApplication.pdfViewer.scrollPageIntoView({
                   pageNumber: ${reference.box.page + 1},
@@ -167,7 +164,7 @@ export default class Utils {
     let pages = PDFViewerApplication.pdfViewer._pages;
     const PDFInstance = new PDF()
     let totalPageNum = pages.length
-    const popupWin = new ztoolkit.ProgressWindow("[Pending] PDF", {closeTime: -1, closeOtherProgressWindows: true})
+    const popupWin = new ztoolkit.ProgressWindow("[Pending] PDF", {closeTime: -1})
       .createLine({ text: `[1/${totalPageNum}] Reading`, progress: 1, type: "success"})
       .show()
     // 读取所有页面lines
@@ -177,8 +174,6 @@ export default class Utils {
       let textContent = await pdfPage.getTextContent()
       let items: PDFItem[] = textContent.items.filter((item: PDFItem) => item.str.trim().length)
       let lines = PDFInstance.mergeSameLine(items)
-      console.log("\n\n\n", pageNum + 1, lines)
-
       let index = lines.findIndex(line => /(r?eferences?|acknowledgements)$/i.test(line.text.trim()))
       if (index != -1) {
         lines = lines.slice(0, index)
@@ -208,7 +203,7 @@ export default class Utils {
           text = ""
         }
         // 正常页码1,2,3
-        text = text.replace(/\s+/g, "").replace(/\d+/g, "")
+        text = text.replace(/\x20+/g, "").replace(/\d+/g, "")
         return text
       }
       // 是否跨页同位置
@@ -289,12 +284,17 @@ export default class Utils {
         let lastLine = paragraphs.slice(-1)[0].slice(-1)[0]
         let currentLine = lines[i]
         let nextLine = lines[i+1]
-        const isNewParagraph =
+        const isNewParagraph = 
+          // 达到一定行数阈值
+          paragraphs.slice(-1)[0].length > 5 &&
+          // 字体每一个都比前一行大
           currentLine._height.every((h2: number) => lastLine._height.every((h1: number) => h2 > h1)) ||
+          // 是摘要自动为一段
           /abstract/i.test(currentLine.text) ||
+          // 两行间距过大
           abs(lastLine.y - currentLine.y) > currentLine.height * 2 ||
+          // 首行缩进分段
           (currentLine.x > lastLine.x && nextLine && nextLine.x < currentLine.x)
-
         // 开新段落
         if (isNewParagraph) {
           paragraphs.push([currentLine])
@@ -304,6 +304,7 @@ export default class Utils {
           paragraphs.slice(-1)[0].push(currentLine)
         }
       }
+      console.log(paragraphs)
       // 段落合并
       let pageText = ""
       for (let i = 0; i < paragraphs.length; i++) {
@@ -343,7 +344,7 @@ export default class Utils {
             }
           }
         }
-        _pageText = _pageText.replace(/\s+/g, " ");
+        _pageText = _pageText.replace(/\x20+/g, " ");
         (this.cache[itemkey] ??= []).push({
           box: box!,
           text: _pageText
@@ -371,7 +372,7 @@ export default class Utils {
     }
     popupWin.changeHeadline("[Done] PDF")
     popupWin.startCloseTimer(1000)
-    const fullText = pdfText.replace(/\s+/g, " ")
+    const fullText = pdfText.replace(/\x20+/g, " ")
     await Zotero.File.putContentsAsync(filename, fullText);
     console.log(fullText)
     return fullText

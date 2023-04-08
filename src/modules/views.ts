@@ -194,14 +194,18 @@ export default class Views {
         responseType: "text",
         requestObserver: (xmlhttp: XMLHttpRequest) => {
           xmlhttp.onprogress = (e: any) => {
-            let _responseText = ""
-            e.target.response.match(/"content":"(.+?)"/g).forEach((s: string) => {
-              _responseText += s.match(/"content":"(.+?)"/)![1]
-            })
-            _responseText = _responseText
-              .replace(/\\./g, (s: string) => window.eval(`'${s}'`))
-              .replace(/\n+/g, "\n")
-            responseText = _responseText
+            try {
+              let _responseText = ""
+              e.target.response.match(/"content":"(.+?)"/g).forEach((s: string) => {
+                _responseText += s.match(/"content":"(.+?)"/)![1]
+              })
+              _responseText = _responseText
+                .replace(/\\./g, (s: string) => window.eval(`'${s}'`))
+                .replace(/\n+/g, "\n")
+              responseText = _responseText
+            } catch {
+              this.setText(e.target.response + "\n\n" + requestText, true)
+            }
             // this.outputContainer!.style.display = ""
             if (e.target.timeout) {
               e.target.timeout = 0;
@@ -765,7 +769,6 @@ export default class Views {
         {
           type: "mousedown",
           listener: (event: any) => {
-            console.log(event)
             timer = window.setTimeout(() => {
               timer = undefined
               if (event.buttons == 1) {                
