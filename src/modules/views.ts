@@ -499,6 +499,10 @@ export default class Views {
     });
   }
 
+  /**
+   * 绑定ctrl+滚轮放大缩小
+   * @param div 
+   */
   private bindCtrlScrollZoom(div: HTMLDivElement) {
       // 为指定的div绑定wheel事件
     div.addEventListener('DOMMouseScroll', (event: any) => {
@@ -515,7 +519,7 @@ export default class Views {
         if (event.detail > 0) {
           // 缩小
           scale = scale - step
-          div.style.transform = `scale(${scale < minScale ? 1 : scale})`;
+          div.style.transform = `scale(${scale < minScale ? minScale : scale})`;
         } else {
           // 放大
           scale = scale + step
@@ -524,6 +528,7 @@ export default class Views {
       }
     })
   }
+
   private buildContainer() {
     // 顶层容器
     const container = ztoolkit.UI.createElement(document, "div", {
@@ -748,7 +753,7 @@ export default class Views {
           styles: {
             fontSize: "0.8em",
             lineHeight: "2em",
-            margin: ".5em 0"
+            // margin: ".5em 0"
           },
           properties: {
             // 用于复制
