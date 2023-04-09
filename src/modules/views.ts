@@ -8,26 +8,31 @@ markdown.use(mathjax3);
 const fontFamily = `Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji`
 const help = `
 ### Quick Commands
-**/help** - Show all commands.
-**/clear** - Clear history conversation.
-**/secretKey sk-xxx** - Set GPT secret key.
-**/api http://xxx** - Set API.
-**/model gpt-x** - Set GPT model.
-**/temperature 1.0** - Set GPT temperature.
-**/autoShow true/false** - Automatically showed when Zotero is opened.
+
+\`/help\` - Show all commands.
+\`/clear\` - Clear history conversation.
+\`/secretKey sk-xxx\` - Set GPT secret key.
+\`/api http://xxx\` - Set API.
+\`/model gpt-x\` - Set GPT model.
+\`/temperature 1.0\` - Set GPT temperature.
+\`/autoShow true/false\` - Automatically showed when Zotero is opened.
+\`/deltaTime 100\` - Control GPT smoothness (ms).
 
 ### About Tag
-You can long click on the tag below to see its internal pseudo-code.
-You can type #xxx and enter to create a tag and save it with Ctrl + S, during which you can execute it with Ctrl + R.
-You can right-click and long-click a tag to delete it.
+
+You can \`long click\` on the tag below to see its internal pseudo-code.
+You can type \`#xxx\` and enter to create a tag and save it with \`Ctrl + S\`, during which you can execute it with \`Ctrl + R\`.
+You can \`right-click\` and long-click a tag to delete it.
 
 ### About Output Text
-You can double click on this text to copy GPT's answer.
-You can long press me without releasing, then move me to a suitable position before releasing.
+
+You can \`double click\` on this text to copy GPT's answer.
+You can \`long press\` me without releasing, then move me to a suitable position before releasing.
 
 ### About Input Text
+
 You can type the question in my header, enter and ask me a question.
-You can exit me by pressing Esc above my head and wake me up by pressing Shift + / in the Zotero window.
+You can exit me by pressing \`Esc\` above my head and wake me up by pressing \`Shift + /\` in the Zotero window.
 `
 export default class Views {
   private id = "zotero-GPT-container";
@@ -106,8 +111,8 @@ export default class Views {
             font-family: ${fontFamily} !important;
           }
           #output-container div p, #output-container div span {
+            marigin: 0;
             padding: 0;
-            margin: 0;
             text-align: justify;
           }
           .markdown-body {
@@ -145,10 +150,10 @@ export default class Views {
             --color-fg-muted: #57606a;
             --color-fg-subtle: #6e7781;
             --color-canvas-default: transparent;
-            --color-canvas-subtle: #f6f8fa;
+            --color-canvas-subtle: rgba(89, 192, 188, .1);
             --color-border-default: #d0d7de;
-            --color-border-muted: hsla(210,18%,87%,1);
-            --color-neutral-muted: rgba(175,184,193,0.2);
+            --color-border-muted: rgba(89, 192, 188, .2);
+            --color-neutral-muted: rgba(89, 192, 188, .2);
             --color-accent-fg: #0969da;
             --color-accent-emphasis: #0969da;
             --color-attention-subtle: #fff8c5;
@@ -192,17 +197,25 @@ export default class Views {
     }
     if (isDone) {
       outputDiv.classList.remove("streaming")
-      let result = markdown.render(text.replace(/\n/g, "  \n"))
-      // 删除 assistive-mml 以避免 MathJax 重复渲染，应该有更好的方法
-      result = result.replace(/<mjx-assistive-mml[^>]*>.*?<\/mjx-assistive-mml>/g, "")
+      let result = markdown.render(
+        text
+          .replace(/\n/g, "  \n")  // 让换行生效
+          .replace(/```markdown\n([\s\S]+?)\n```/g, (_, s)=>`\n${s}\n`)
+      )
+        .replace(/<mjx-assistive-mml[^>]*>.*?<\/mjx-assistive-mml>/g, "")
         .replace(/<br>/g, "<br />")
       // 纯文本本身不需要MD渲染，防止样式不一致出现变形
       const tags = result.match(/<(.+)>[\s\S]+?<\/\1>/g)
       if (!(tags.length == 1 && tags[0].startsWith("<p>"))) {
-        outputDiv.innerHTML = result;
+        const _old = outputDiv.innerHTML
+        try {
+          outputDiv.innerHTML = result;
+        } catch {
+          console.log(result)
+          outputDiv.innerHTML = _old;
+        }
       }
       outputDiv.setAttribute("pureText", text);
-      // if (mdHTML.body.childNodes.length == 0 && mdHTML.body.childNodes[0].)
     }
   }
 
@@ -223,7 +236,7 @@ export default class Views {
       content: requestText
     })
     // outputSpan.innerText = responseText;
-    const deltaTime = 100
+    const deltaTime = Zotero.Prefs.get(`${config.addonRef}.deltaTime`) as number
     // 储存上一次的结果
     let _textArr: string[] = []
     // 随着请求返回实时变化
@@ -486,6 +499,31 @@ export default class Views {
     });
   }
 
+  private bindCtrlScrollZoom(div: HTMLDivElement) {
+      // 为指定的div绑定wheel事件
+    div.addEventListener('DOMMouseScroll', (event: any) => {
+      // 检查是否按下了ctrl键
+      if (event.ctrlKey) {
+        let _scale = div.style.transform.match(/scale\((.+)\)/)
+        let scale = _scale ? parseFloat(_scale[1]) : 1
+        let minScale = 0.5, maxScale = 2, step = 0.05
+        if (div.style.bottom == "0px") {
+          div.style.transformOrigin = "center bottom"
+        } else {
+          div.style.transformOrigin = "center center"
+        }
+        if (event.detail > 0) {
+          // 缩小
+          scale = scale - step
+          div.style.transform = `scale(${scale < minScale ? 1 : scale})`;
+        } else {
+          // 放大
+          scale = scale + step
+          div.style.transform = `scale(${scale > maxScale ? maxScale : scale})`;
+        }
+      }
+    })
+  }
   private buildContainer() {
     // 顶层容器
     const container = ztoolkit.UI.createElement(document, "div", {
@@ -508,6 +546,7 @@ export default class Views {
       }
     })
     this.addDragEvent(container)
+    this.bindCtrlScrollZoom(container)
     // 输入
     const inputContainer = this.inputContainer = ztoolkit.UI.appendElement({
       tag: "div",
@@ -555,6 +594,7 @@ export default class Views {
     this.bindUpDownKeys(inputNode)
     const textareaNode = inputContainer.querySelector("textarea")!
     const that = this;
+    let lastInputText = ""
     let inputListener = function (event: KeyboardEvent) {
       // @ts-ignore
       if(this.style.display == "none") { return }
@@ -607,6 +647,10 @@ export default class Views {
         }
       }
       if (event.key == "Enter") { 
+        if (text.length != lastInputText.length) {
+          lastInputText = text
+          return
+        }
         outputContainer.querySelector(".reference")?.remove()
         if (text.startsWith("#")) {
           if (inputNode.style.display != "none") {
@@ -634,7 +678,7 @@ export default class Views {
             outputContainer.querySelector("div")!.innerHTML = `success`
           } else if (key == "help"){ 
             that.setText(help, true)
-          } else if (["secretKey", "model", "autoShow", "api", "temperature"].indexOf(key) != -1) {  
+          } else if (["secretKey", "model", "autoShow", "api", "temperature", "deltaTime"].indexOf(key) != -1) {  
             if (value?.length > 0) {
               if (key == "autoShow") {
                 if (value == "true") {
@@ -642,6 +686,11 @@ export default class Views {
                 } else if (value == "false") {
                   value = false
                 } else return
+              }
+              if (key == "deltaTime") {
+                if (value) {
+                  value = Number(value)
+                }
               }
               Zotero.Prefs.set(`${config.addonRef}.${key}`, value)
             } else {
@@ -673,6 +722,7 @@ export default class Views {
         // 退出container
         that.container!.remove()
       }
+      lastInputText = text
     }
     inputNode.addEventListener("keyup", inputListener)
     textareaNode.addEventListener("keyup", inputListener)
@@ -698,8 +748,7 @@ export default class Views {
           styles: {
             fontSize: "0.8em",
             lineHeight: "2em",
-            // fontFamily: '"STIX Two Text", Symbola, "Times New Roman", serif', // Add this line
-            // lineHeight: "1.2em",
+            margin: ".5em 0"
           },
           properties: {
             // 用于复制

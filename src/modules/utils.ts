@@ -286,15 +286,16 @@ export default class Utils {
         let nextLine = lines[i+1]
         const isNewParagraph = 
           // 达到一定行数阈值
-          paragraphs.slice(-1)[0].length > 5 &&
-          // 字体每一个都比前一行大
-          currentLine._height.every((h2: number) => lastLine._height.every((h1: number) => h2 > h1)) ||
+          paragraphs.slice(-1)[0].length >= 3 && (
+          // 当前行存在一个非常大的字体的文字
+          currentLine._height.some((h2: number) => lastLine._height.every((h1: number) => h2 > h1)) ||
           // 是摘要自动为一段
           /abstract/i.test(currentLine.text) ||
-          // 两行间距过大
+          // 与上一行间距过大
           abs(lastLine.y - currentLine.y) > currentLine.height * 2 ||
           // 首行缩进分段
-          (currentLine.x > lastLine.x && nextLine && nextLine.x < currentLine.x)
+            (currentLine.x > lastLine.x && nextLine && nextLine.x < currentLine.x)
+          )
         // 开新段落
         if (isNewParagraph) {
           paragraphs.push([currentLine])

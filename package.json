@@ -38,9 +38,14 @@
   "homepage": "https://github.com/MuiseDestiny/zotero-gpt#readme",
   "dependencies": {
     "@iktakahiro/markdown-it-katex": "^4.0.1",
+    "@pinecone-database/pinecone": "^0.0.10",
+    "dotenv": "^16.0.3",
     "highlight": "^0.2.4",
+    "langchain": "^0.0.51",
     "markdown-it": "^13.0.1",
     "markdown-it-mathjax3": "^4.3.2",
+    "node-fetch": "^3.3.1",
+    "proxy-agent": "^5.0.0",
     "react-markdown": "^8.0.6",
     "showdown": "^2.1.0",
     "zotero-plugin-toolkit": "^2.0.1"
