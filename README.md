@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="background.svg" width="50%" />
+  <img src="imgs/background.svg" width="50%" />
 
 
 # Zotero GPT
@@ -30,7 +30,7 @@ Use `Shift + /` to call this plug-in，select the text in a PDF file and then pr
 
 API-key：
 
-![image](apikey.png)
+![image](imgs/apikey.png)
 
 ## Command labels
 
@@ -46,7 +46,7 @@ Of course `color` and `position` are optional parameters and will have default v
 
 In the next step, you can declare an executable code fragment for the current environment like this:
 
-![image](prompt.png)
+![image](imgs/prompt.png)
 
 It will be executed and the returned result will replace the code snippet here.
 
@@ -78,10 +78,10 @@ Make sure the plugin version is up-to-date.
 
 ## Demonstration
 
-![image](demo.png)
+![image](imgs/demo.png)
 
 
-![image](demo2.png)
+![image](imgs/demo2.png)
 
 ## Support the project
 
