@@ -1,0 +1,14 @@
+#📄AskClipboard[position=9][color=#dc4334]
+Read this:
+
+```js
+
+Zotero.ZoteroGPT.utils.getClipboardText()
+
+```
+
+---
+
+please answer this question based on above content (use 简体中文)：```js
+Zotero.ZoteroGPT.views.inputContainer.querySelector("input").value
+```

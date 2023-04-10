@@ -48,14 +48,18 @@ export default class Views {
   constructor() {
     this.registerKey()
     this.addStyle()
-    this.init()
+    window.setTimeout(() => {
+      this.init()
+    }, 1000)
   }
 
   private init() {
     if (Zotero.Prefs.get(`${config.addonRef}.autoShow`)) {
-      this.show()
-      this.inputContainer!.querySelector("input")!.value = "/help"
+      this.container = this.buildContainer()
+      this.container.style.display = "flex"
       this.setText(help, true)
+      this.inputContainer!.querySelector("input")!.value = "/help"
+      this.show(-1, -1, false)
     }
   }
   
@@ -115,50 +119,6 @@ export default class Views {
             padding: 0;
             text-align: justify;
           }
-          .markdown-body {
-            --color-prettylights-syntax-comment: #6e7781;
-            --color-prettylights-syntax-constant: #0550ae;
-            --color-prettylights-syntax-entity: #8250df;
-            --color-prettylights-syntax-storage-modifier-import: #24292f;
-            --color-prettylights-syntax-entity-tag: #116329;
-            --color-prettylights-syntax-keyword: #cf222e;
-            --color-prettylights-syntax-string: #0a3069;
-            --color-prettylights-syntax-variable: #953800;
-            --color-prettylights-syntax-brackethighlighter-unmatched: #82071e;
-            --color-prettylights-syntax-invalid-illegal-text: #f6f8fa;
-            --color-prettylights-syntax-invalid-illegal-bg: #82071e;
-            --color-prettylights-syntax-carriage-return-text: #f6f8fa;
-            --color-prettylights-syntax-carriage-return-bg: #cf222e;
-            --color-prettylights-syntax-string-regexp: #116329;
-            --color-prettylights-syntax-markup-list: #3b2300;
-            --color-prettylights-syntax-markup-heading: #0550ae;
-            --color-prettylights-syntax-markup-italic: #24292f;
-            --color-prettylights-syntax-markup-bold: #24292f;
-            --color-prettylights-syntax-markup-deleted-text: #82071e;
-            --color-prettylights-syntax-markup-deleted-bg: #ffebe9;
-            --color-prettylights-syntax-markup-inserted-text: #116329;
-            --color-prettylights-syntax-markup-inserted-bg: #dafbe1;
-            --color-prettylights-syntax-markup-changed-text: #953800;
-            --color-prettylights-syntax-markup-changed-bg: #ffd8b5;
-            --color-prettylights-syntax-markup-ignored-text: #eaeef2;
-            --color-prettylights-syntax-markup-ignored-bg: #0550ae;
-            --color-prettylights-syntax-meta-diff-range: #8250df;
-            --color-prettylights-syntax-brackethighlighter-angle: #57606a;
-            --color-prettylights-syntax-sublimelinter-gutter-mark: #8c959f;
-            --color-prettylights-syntax-constant-other-reference-link: #0a3069;
-            --color-fg-default: #24292f;
-            --color-fg-muted: #57606a;
-            --color-fg-subtle: #6e7781;
-            --color-canvas-default: transparent;
-            --color-canvas-subtle: rgba(89, 192, 188, .1);
-            --color-border-default: #d0d7de;
-            --color-border-muted: rgba(89, 192, 188, .2);
-            --color-neutral-muted: rgba(89, 192, 188, .2);
-            --color-accent-fg: #0969da;
-            --color-accent-emphasis: #0969da;
-            --color-attention-subtle: #fff8c5;
-            --color-danger-fg: #cf222e
-        }
         `
       },
     }, document.documentElement);
@@ -169,7 +129,7 @@ export default class Views {
       properties: {
         type: "text/css",
         rel: "stylesheet",
-        href: "https://sindresorhus.com/github-markdown-css/github-markdown.css"
+        href: `chrome://${config.addonRef}/content/md.css`
       }
     }, document.documentElement)
   }
@@ -181,8 +141,9 @@ export default class Views {
    */
   private setText(text: string, isDone: boolean = false) {
     this.outputContainer.style.display = ""
-    const outputDiv = this.outputContainer.querySelector("div")!
+    const outputDiv = this.outputContainer.querySelector(".markdown-body")!
     outputDiv.classList.add("streaming");
+    outputDiv.setAttribute("pureText", text);
     let textSpan
     if (!(textSpan = outputDiv.querySelector(".text") as HTMLSpanElement)) {
       ztoolkit.UI.appendElement({
@@ -215,8 +176,8 @@ export default class Views {
           outputDiv.innerHTML = _old;
         }
       }
-      outputDiv.setAttribute("pureText", text);
     }
+    
   }
 
   /**
@@ -227,7 +188,7 @@ export default class Views {
   private async getGPTResponseText(requestText: string) {
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
     const temperature = Zotero.Prefs.get(`${config.addonRef}.temperature`)
-    const api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
+    let api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
     const model = Zotero.Prefs.get(`${config.addonRef}.model`)
     if (!secretKey) { return await this[`getGPTResponseTextBy${this.freeAPI}`](requestText) }
     const outputDiv = this.outputContainer.querySelector("div")!
@@ -262,7 +223,7 @@ export default class Views {
     outputDiv.setAttribute("stream-id", String(id))
     const xhr = await Zotero.HTTP.request(
       "POST",
-      api,
+      `${api}/v1/chat/completions`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -701,8 +662,7 @@ export default class Views {
             } else {
               value = Zotero.Prefs.get(`${config.addonRef}.${key}`)
             }
-            outputContainer.style.display = ""
-            outputContainer.querySelector("div")!.innerHTML = `${key} = ${value}`
+            that.setText(`${key} = ${value}`, true)
             // @ts-ignore
             this.value = ""
           }
@@ -742,8 +702,8 @@ export default class Views {
         maxHeight: document.documentElement.getBoundingClientRect().height * .5 + "px",
         overflowY: "auto",
         overflowX: "hidden",
-        padding: "0 .5em",
-        display: "block",
+        padding: "0.5em",
+        display: "none",
         // resize: "vertical"
       },
       children: [
@@ -765,11 +725,13 @@ export default class Views {
         {
           type: "dblclick",
           listener: () => {
+            const text = outputContainer.querySelector("[pureText]")!.getAttribute("pureText") || ""
             new ztoolkit.Clipboard()
-              .addText(outputContainer.querySelector("div")!.getAttribute("pureText") || "", "text/unicode")
+              .addText(text, "text/unicode")
               .copy()
+            
             new ztoolkit.ProgressWindow("Copy Text")
-              .createLine({ text: outputContainer.querySelector("div")!.getAttribute("pureText") || "", type: "success" })
+              .createLine({ text, type: "success" })
               .show()
           }
         }
@@ -979,7 +941,9 @@ export default class Views {
     let defaultTags = [
       { "tag": "🪐AskPDF", "color": "#009FBD", "position": 0, "text": "#🪐AskPDF[pos=0][color=#009FBD]\n\nYou are a helpful assistant. Context information is below.\n\n---\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\n\"127.0.0.1:5000\", window.gptInputString \n)\n\n```\n---\n\nCurrent date: ```js\nString(new Date())\n```\nUsing the provided context information, write a comprehensive reply to the given query. Make sure to cite results using [number] notation after the reference. If the provided context information refer to multiple subjects with the same name, write separate answers for each subject. Use prior knowledge only if the given context didn't provide enough information. \n\nAnswer the question:\n```js\nwindow.gptInputString \n```\n\nReply in 简体中文\n" },
       { "tag": "🎈Tranlate", "color": "#21a2f1", "position": 1, "text": "#🎈Tranlate[pos=1][c=#21a2f1]\n\ntranslate these from english to 简体中文:\n```js\nZotero.ZoteroGPT.utils.getPDFSelection()\n```" },
-      { "tag": "✍️Abs2Sum", "color": "#E11299", "position": 2, "text": "#✍️Abs2Sum[pos=2][color=#E11299]\n下面是一篇论文的摘要：\n```js\n// 确保你选择的是PDF的摘要部分\nZotero.ZoteroGPT.utils.getPDFSelection()\n```\n\n---\n\n请问它的主要工作是什么，在什么地区，时间范围是什么，使用的数据是什么，创新点在哪？\n\n请你用下列示例格式回答我：\n主要工作：反演AOD；\n地区：四川盆地；\n时间：2017~2021；\n数据：Sentinel-2卫星数据；\n创新：考虑了BRDF效应。\n\n" }]
+      { "tag": "✍️Abs2Sum", "color": "#E11299", "position": 2, "text": "#✍️Abs2Sum[pos=2][color=#E11299]\n下面是一篇论文的摘要：\n```js\n// 确保你选择的是PDF的摘要部分\nZotero.ZoteroGPT.utils.getPDFSelection()\n```\n\n---\n\n请问它的主要工作是什么，在什么地区，时间范围是什么，使用的数据是什么，创新点在哪？\n\n请你用下列示例格式回答我：\n主要工作：反演AOD；\n地区：四川盆地；\n时间：2017~2021；\n数据：Sentinel-2卫星数据；\n创新：考虑了BRDF效应。\n\n" },
+
+    ]
     // 进行一个简单的处理，应该是中文/表情写入prefs.js导致的bug
     let tagString = Zotero.Prefs.get(`${config.addonRef}.tags`) as string
     if (!tagString) {
@@ -999,14 +963,17 @@ export default class Views {
    * @param x 
    * @param y 
    */
-  private show(x: number = -1, y: number = -1) {
+  private show(x: number = -1, y: number = -1, reBuild: boolean = true) {
+    if (reBuild) {
+      this.container?.remove()
+      this.container = this.buildContainer()
+      this.container.style.display = "flex"
+    }
     if (x + y < 0) {
       const rect = document.documentElement.getBoundingClientRect()
-      x = rect.width / 2 - rect.width * .16, y = rect.height / 2 - rect.height * .16
+      x = rect.width / 2 - this.container.offsetWidth / 2;
+      y = rect.height / 2 - this.container.offsetHeight / 2;
     }
-    this.container?.remove()
-    this.container = this.buildContainer()
-    this.container.style.display = "flex"
 
     // ensure container doesn't go off the right side of the screen
     if (x + this.container.offsetWidth > window.innerWidth) {

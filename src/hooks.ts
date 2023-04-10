@@ -10,7 +10,6 @@ import { getString, initLocale } from "./modules/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
 import Views from "./modules/views";
 import Utils from "./modules/utils";
-import Extract from "./modules/extract";
 
 async function onStartup() {
   await Promise.all([

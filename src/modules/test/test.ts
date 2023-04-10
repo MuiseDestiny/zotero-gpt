@@ -20,7 +20,7 @@ import { OpenAI } from "langchain";
 export const run = async () => {
   const embeddings = new OpenAIEmbeddings({
     timeout: 1000, // 1s timeout
-  });
+  }, { basePath: "https://openai.api2d.net", apiKey: "fk193146-yRZiddVj2s84RwpJOSsE0lGLuHQ8uK6Q"});
   /* Embed queries */
   const res = await embeddings.embedQuery("Hello world");
   console.log(res);

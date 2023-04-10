@@ -73,6 +73,8 @@ export default class Utils {
           queryText,
           fullText,
           id: pdfItem.key,
+          secretKey: Zotero.Prefs.get(`${config.addonRef}.secretKey`) as string,
+          api: Zotero.Prefs.get(`${config.addonRef}.api`) as string,
         }),
         responseType: "json"
       }
@@ -377,5 +379,32 @@ export default class Utils {
     await Zotero.File.putContentsAsync(filename, fullText);
     console.log(fullText)
     return fullText
+  }
+
+  /**
+   * 获取剪贴板文本
+   * @returns 
+   */
+  public getClipboardText() {
+    // @ts-ignore
+    const clipboardService = window.Cc['@mozilla.org/widget/clipboard;1'].getService(Ci.nsIClipboard);
+    // @ts-ignore
+    const transferable = window.Cc['@mozilla.org/widget/transferable;1'].createInstance(Ci.nsITransferable);
+    if (!transferable) {
+      window.alert('剪贴板服务错误：无法创建可传输的实例');
+    }
+    transferable.addDataFlavor('text/unicode');
+    clipboardService.getData(transferable, clipboardService.kGlobalClipboard);
+    let clipboardData = {};
+    let clipboardLength = {};
+    try {
+      transferable.getTransferData('text/unicode', clipboardData, clipboardLength);
+    } catch (err: any) {
+      console.error('剪贴板服务获取失败：', err.message);
+    }
+    // @ts-ignore
+    clipboardData = clipboardData.value.QueryInterface(Ci.nsISupportsString);
+    // @ts-ignore
+    return clipboardData.data
   }
 }
