@@ -61,7 +61,6 @@ export default class Utils {
       Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)!.itemID as number
     )
     const fullText = await this.readPDFFullText(pdfItem.key, pdfItem.key in this.cache == false)
-    console.log(fullText.split("\n\n"))
     const xhr = await Zotero.HTTP.request(
       "POST",
       `http://${host}/getRelatedText`,
@@ -72,7 +71,7 @@ export default class Utils {
         body: JSON.stringify({
           queryText,
           fullText,
-          id: pdfItem.key,
+          key: pdfItem.key,
           secretKey: Zotero.Prefs.get(`${config.addonRef}.secretKey`) as string,
           api: Zotero.Prefs.get(`${config.addonRef}.api`) as string,
         }),
