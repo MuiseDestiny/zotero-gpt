@@ -54,7 +54,7 @@
     "@types/markdown-it": "^12.2.3",
     "@types/node": "^18.11.17",
     "compressing": "^1.6.3",
-    "concurrently": "^7.6.0",
+    "concurrently": "^8.0.1",
     "cross-env": "^7.0.3",
     "esbuild": "^0.17.4",
     "minimist": "^1.2.7",
