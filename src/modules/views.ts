@@ -490,6 +490,60 @@ export default class Views {
     })
   }
 
+  /**
+   * 绑定ctrl+滚轮放大缩小控件内的所有元素
+   * @param div
+   */
+  private bindCtrlScrollZoomOutput(div: HTMLDivElement) {
+    const styleAttributes = {
+      fontSize: 'font-size',
+      lineHeight: 'line-height',
+      marginBottom: 'margin-bottom',
+      marginTop: 'margin-top',
+      paddingBottom: 'padding-bottom',
+      paddingTop: 'padding-top',
+    } as const;
+    type StyleAttributeKeys = keyof typeof styleAttributes;
+    type StyleAttributes = {
+      [K in StyleAttributeKeys]: string;
+    };
+    // 获取子元素的初始样式
+    const getChildStyles = (child: Element): StyleAttributes => {
+      const style = window.getComputedStyle(child);
+      const result: Partial<StyleAttributes> = {};
+      for (const key in styleAttributes) {
+        const typedKey = key as StyleAttributeKeys;
+        result[typedKey] = style.getPropertyValue(styleAttributes[typedKey]);
+      }
+      return result as StyleAttributes;
+    };
+  
+    // 更新并应用子元素的样式
+    const applyNewStyles = (child: HTMLElement, style: StyleAttributes, scale: number) => {
+      const newStyle = (value: string) => parseFloat(value) * scale + 'px';
+  
+      for (const key in styleAttributes) {
+        child.style[key as StyleAttributeKeys] = newStyle(style[key as StyleAttributeKeys]);
+      }
+    };
+    // 为指定的div绑定wheel事件
+    div.addEventListener('DOMMouseScroll', (event: any) => {
+      const children = div.children[0].children;
+      if (event.ctrlKey) {
+        const step = 0.05;
+        event.preventDefault();
+        // 阻止事件冒泡
+        event.stopPropagation();
+        const scale = event.detail > 0 ? 1 - step : 1 + step;
+        Array.from(children).forEach((child) => {
+          const childElement = child as HTMLElement;
+          const currentStyle = getChildStyles(child);
+          applyNewStyles(childElement, currentStyle, scale);
+        });
+      }
+    });
+  }
+
   private buildContainer() {
     // 顶层容器
     const container = ztoolkit.UI.createElement(document, "div", {
@@ -737,6 +791,7 @@ export default class Views {
         }
       ]
     }, container) as HTMLDivElement
+    this.bindCtrlScrollZoomOutput(outputContainer)
     // 命令标签
     const tagContainer = this.tagContainer = ztoolkit.UI.appendElement({
       tag: "div",
