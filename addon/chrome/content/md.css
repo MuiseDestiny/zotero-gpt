@@ -241,7 +241,8 @@
     display: block;
     width: max-content;
     max-width: 100%;
-    overflow: auto
+    overflow: auto;
+    margin: 0.25em 0 !important;
 }
 
 .markdown-body td,

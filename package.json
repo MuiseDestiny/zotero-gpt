@@ -1,6 +1,6 @@
 {
   "name": "zotero-gpt",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "GPT Meets Zotero",
   "config": {
     "addonName": "Zotero GPT",
@@ -38,8 +38,6 @@
   "homepage": "https://github.com/MuiseDestiny/zotero-gpt#readme",
   "dependencies": {
     "@iktakahiro/markdown-it-katex": "^4.0.1",
-    "@pinecone-database/pinecone": "^0.0.12",
-    "@pinecone-database/pinecone": "^0.0.10",
     "blueimp-md5": "^2.19.0",
     "crypto": "^1.0.1",
     "dotenv": "^16.0.3",

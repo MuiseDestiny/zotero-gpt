@@ -17,6 +17,7 @@ const help = `
 \`/temperature 1.0\` - Set GPT temperature.
 \`/autoShow true/false\` - Automatically showed when Zotero is opened.
 \`/deltaTime 100\` - Control GPT smoothness (ms).
+\`/width 32%\` - Control GPT UI width (pct).
 
 ### About UI
 
@@ -458,14 +459,17 @@ export default class Views {
   private bindUpDownKeys(inputNode: HTMLInputElement) {
     // let currentIdx = this._history.length;
     inputNode.addEventListener("keydown", (e) => {
+
       let currentIdx = this._history.indexOf(this.inputContainer!.querySelector("input")!.value)
       currentIdx = currentIdx == -1 ? this._history.length : currentIdx
+
       if (e.key === "ArrowUp") {
         currentIdx--;
         if (currentIdx < 0) {
           currentIdx = 0;
         }
         inputNode.value = this._history[currentIdx];
+
       } else if (e.key === "ArrowDown") {
         currentIdx++;
         if (currentIdx >= this._history.length) {
@@ -474,6 +478,11 @@ export default class Views {
         } else {
           inputNode.value = this._history[currentIdx];
         }
+      }
+      if (["ArrowDown", "ArrowUp"].indexOf(e.key) >= 0) {
+        e.stopPropagation();
+        e.preventDefault();
+        inputNode.setSelectionRange(inputNode.value.length, inputNode.value.length);
       }
     });
   }
@@ -572,7 +581,7 @@ export default class Views {
         justifyContent: "flex-start",
         alignItems: "center",
         position: "fixed",
-        width: "32%",
+        width: Zotero.Prefs.get(`${config.addonRef}.width`) as string,
         // height: "4em",
         fontSize: "18px",
         borderRadius: "10px",
@@ -600,7 +609,7 @@ export default class Views {
         {
           tag: "input",
           styles: {
-            width: "95%",
+            width: "calc(100% - 1.5em)",
             height: "2.5em",
             borderRadius: "10px",
             border: "none",
@@ -613,13 +622,14 @@ export default class Views {
           tag: "textarea",
           styles: {
             display: "none",
-            width: "93%",
+            width: "calc(100% - 1.5em)",
             maxHeight: "20em",
+            minHeight: "2em",
             borderRadius: "10px",
             border: "none",
             outline: "none",
             resize: "vertical",
-            marginTop: "0.75em",
+            marginTop: "0.55em",
             fontFamily: "Consolas",
             fontSize: ".8em"
 
@@ -748,7 +758,7 @@ export default class Views {
             outputContainer.querySelector("div")!.innerHTML = `success`
           } else if (key == "help"){ 
             that.setText(help, true)
-          } else if (["secretKey", "model", "autoShow", "api", "temperature", "deltaTime"].indexOf(key) != -1) {  
+          } else if (["secretKey", "model", "autoShow", "api", "temperature", "deltaTime", "width"].indexOf(key) != -1) {  
             if (value?.length > 0) {
               if (key == "autoShow") {
                 if (value == "true") {
@@ -760,6 +770,11 @@ export default class Views {
               if (key == "deltaTime") {
                 if (value) {
                   value = Number(value)
+                }
+              }
+              if (key == "width") {
+                if (value && value.match(/[\d\.]+%/)) {
+                  that.container.style.width = value
                 }
               }
               Zotero.Prefs.set(`${config.addonRef}.${key}`, value)
@@ -806,7 +821,7 @@ export default class Views {
         maxHeight: document.documentElement.getBoundingClientRect().height * .5 + "px",
         overflowY: "auto",
         overflowX: "hidden",
-        padding: "0.5em",
+        padding: "0.25em 0.5em",
         display: "none",
         // resize: "vertical"
       },
