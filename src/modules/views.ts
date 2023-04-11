@@ -26,8 +26,8 @@ And when your mouse is in the output box, the size of any content in the output 
 ### About Tag
 
 You can \`long click\` on the tag below to see its internal pseudo-code.
-You can type \`#xxx\` and enter to create a tag and save it with \`Ctrl + S\`, during which you can execute it with \`Ctrl + R\`.
-You can \`right-click\` and long-click a tag to delete it.
+You can type \`#xxx\` and press \`Enter\` to create a tag. And save it with \`Ctrl + S\`, during which you can execute it with \`Ctrl + R\`.
+You can \`right-long-click\` a tag to delete it.
 
 ### About Output Text
 
@@ -36,7 +36,7 @@ You can \`long press\` me without releasing, then move me to a suitable position
 
 ### About Input Text
 
-You can exit me by pressing \`Esc\` above my head and wake me up by pressing \`Shift + /\` in the main Zotero window.
+You can exit me by pressing \`Esc\` above my head and wake me up by pressing \`Shift + /\` in the Zotero main window.
 You can type the question in my header, then press \`Enter\` to ask me.
 You can press \`Ctrl + Enter\` to execute your first command tab.
 You can press \`Shift + Enter\` to enter long text editing mode and press \`Ctrl + R\` to execute long text.
@@ -44,7 +44,7 @@ You can press \`Shift + Enter\` to enter long text editing mode and press \`Ctrl
 `
 export default class Views {
   private id = "zotero-GPT-container";
-  private freeAPI: "ChatPDF" | "AIApp" = "ChatPDF"
+  private freeAPI: "ChatPDF" = "ChatPDF"
   private messages: { role: "user" | "assistant"; content: string }[] = [];
   private history: { author: "AI" | "uplaceholder", msg: string }[] = [];
   private _history: string[] = []
@@ -148,6 +148,7 @@ export default class Views {
    * @param isDone 
    */
   private setText(text: string, isDone: boolean = false) {
+    
     this.outputContainer.style.display = ""
     const outputDiv = this.outputContainer.querySelector(".markdown-body")!
     outputDiv.classList.add("streaming");
@@ -367,15 +368,18 @@ export default class Views {
       return await this.getGPTResponseTextByChatPDF(requestText)
     }
     if (responseText.length == 0) {
-      this.freeAPI = "AIApp"
       new ztoolkit.ProgressWindow("Change API")
-        .createLine({ text: this.freeAPI, type: "default" })
+        .createLine({ text: "开发者提示：由于您未配置密钥，正在使用的免费API，今日次数可能已经用完，可以尝试开启代理或者明天再来试试。", type: "default" })
         .show()
     }
     this.history.push({ author: 'AI', msg: responseText });
     return responseText
   }
 
+  /**
+   * @deprecated
+   * @param requestText 
+   */
   private async getGPTResponseTextByAIApp(requestText: string) {
     const outputDiv = this.outputContainer.querySelector("div")!
     const xhr = await Zotero.HTTP.request(
@@ -391,6 +395,12 @@ export default class Views {
               .map((s: string) => s.match(/"msg":"([\s\S]+?)"/)![1])
               .join("")
               .replace(/\\./g, (s: string) => window.eval(`'${s}'`))
+            /**
+             * 防止
+             */
+            if (text.includes("公众号")) {
+              return
+            }
             this.setText(text);
           };
         },
@@ -1035,7 +1045,7 @@ export default class Views {
    * 从Zotero.Prefs获取所有已保存标签
    */
   private getTags() {
-    let defaultTags = [{ "tag": "🪐AskPDF", "color": "#009FBD", "position": 0, "text": "#🪐AskPDF[pos=0][color=#009FBD]\n\nYou are a helpful assistant. Context information is below.\n\n---\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\n\"127.0.0.1:5000\", window.gptInputString \n)\n\n```\n---\n\nCurrent date: ```js\nString(new Date())\n```\nUsing the provided context information, write a comprehensive reply to the given query. Make sure to cite results using [number] notation after the reference. If the provided context information refer to multiple subjects with the same name, write separate answers for each subject. Use prior knowledge only if the given context didn't provide enough information. \n\nAnswer the question:\n```js\nwindow.gptInputString \n```\n\nReply in 简体中文\n" }, { "tag": "✍️Abs2Sum", "color": "#E11299", "position": 2, "text": "#✍️Abs2Sum[pos=2][color=#E11299]\n下面是一篇论文的摘要：\n```js\n// 确保你选择的是PDF的摘要部分\nZotero.ZoteroGPT.utils.getPDFSelection()\n```\n\n---\n\n请问它的主要工作是什么，在什么地区，时间范围是什么，使用的数据是什么，创新点在哪？\n\n请你用下列示例格式回答我：\n主要工作：反演AOD；\n地区：四川盆地；\n时间：2017~2021；\n数据：Sentinel-2卫星数据；\n创新：考虑了BRDF效应。\n\n" }, { "tag": "🌸AskClipboard", "color": "#dc4334", "position": 9, "text": "#🌸AskClipboard[position=9][color=#dc4334]\nRead this:\n\n```js\n\nZotero.ZoteroGPT.utils.getClipboardText()\n\n```\n\n---\n\nplease answer this question based on above content (use 简体中文). In the end, you need repeat above content：```js\nZotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\n```" }, { "tag": "🎈Translate", "color": "#21a2f1", "position": 1, "text": "#🎈Translate[position=1][color=#21a2f1]\n\ntranslate these from English to 简体中文:\n```js\nZotero.ZoteroGPT.utils.getPDFSelection()\n```" }]
+    let defaultTags = [{ "tag": "🪐AskPDF", "color": "#009FBD", "position": 0, "text": "#🪐AskPDF[pos=0][color=#009FBD]\n\nYou are a helpful assistant. Context information is below.\n\n---\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\n\"127.0.0.1:5000\", window.gptInputString \n)\n\n```\n---\n\nCurrent date: ```js\nString(new Date())\n```\nUsing the provided context information, write a comprehensive reply to the given query. Make sure to cite results using [number] notation after the reference. If the provided context information refer to multiple subjects with the same name, write separate answers for each subject. Use prior knowledge only if the given context didn't provide enough information. \n\nAnswer the question:\n```js\nwindow.gptInputString \n```\n\nReply in 简体中文\n" }, { "tag": "✍️Abs2Sum", "color": "#E11299", "position": 2, "text": "#✍️Abs2Sum[pos=2][color=#E11299]\n下面是一篇论文的摘要：\n```js\n// 确保你选择的是PDF的摘要部分\nZotero.ZoteroGPT.utils.getPDFSelection()\n```\n\n---\n\n请问它的主要工作是什么，在什么地区，时间范围是什么，使用的数据是什么，创新点在哪？\n\n请你用下列示例格式回答我：\n主要工作：反演AOD；\n地区：四川盆地；\n时间：2017~2021；\n数据：Sentinel-2卫星数据；\n创新：考虑了BRDF效应。\n\n" }, { "tag": "🌸AskClipboard", "color": "#dc4334", "position": 9, "text": "#🌸AskClipboard[position=9][color=#dc4334]\nRead this:\n\n```js\n\nZotero.ZoteroGPT.utils.getClipboardText()\n\n```\n\n---\n\nplease answer this question based on above content (use 简体中文). In the end, you need repeat above content：```js\nZotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\n```" }, { "tag": "🎈Translate", "color": "#21a2f1", "position": 1, "text": "#🎈Translate[position=1][color=#21a2f1]\n\ntranslate these from English to 简体中文:\n```js\nZotero.ZoteroGPT.utils.getPDFSelection()\n```" }, { "tag": "🔍SearchItems", "color": "#ED5629", "position": 9, "text": "#🔍SearchItems[position=9][color=#ED5629]\n\n现在你是一个数据库系统，下面是一些JSON信息，每个JSON对应Zotero一篇文献：\n\n---\n\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\n\"127.0.0.1:5000\", window.gptInputString \n)\n\n```\n\n---\n\n我现在在寻找一篇文献，它很可能就在我上面给你的文献之中。下面是对我想找的文献的描述：\n```js\nwindow.gptInputString \n```\n\n请你回答最有可能是哪几篇文献，请同时给出最可能的一篇。\n\nReply in 简体中文" }]
     // 进行一个简单的处理，应该是中文/表情写入prefs.js导致的bug
     let tagString = Zotero.Prefs.get(`${config.addonRef}.tags`) as string
     if (!tagString) {
@@ -1057,7 +1067,7 @@ export default class Views {
    */
   private show(x: number = -1, y: number = -1, reBuild: boolean = true) {
     if (reBuild) {
-      this.container?.remove()
+      document.querySelectorAll(`#${this.id}`).forEach(e=>e.remove())
       this.container = this.buildContainer()
       this.container.style.display = "flex"
     }
@@ -1160,6 +1170,5 @@ export default class Views {
     return sColor;
   }
 }
-
 
 interface Tag { tag: string; color: string; position: number, text: string }

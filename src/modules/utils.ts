@@ -2,6 +2,7 @@
 import PDF from "E:/Github/zotero-reference/src/modules/pdf"
 import { config } from "../../package.json";
 
+
 export default class Utils {
   private cache: any = {}
   constructor() {
@@ -30,7 +31,16 @@ export default class Utils {
     return ZoteroPane.getSelectedItems()[0].getField(fieldName)
   }
 
+  /**
+   * 如果当前在主面板，根据选中条目生成文本，查找相关 - 用于搜索条目
+   * 如果在PDF阅读界面，阅读PDF原文，查找返回相应段落 - 用于总结问题
+   * @param host 
+   * @param queryText 
+   * @returns 
+   */
   public async getRelatedText(host: string, queryText: string) {
+    // 由于处理后的文本会被优化，需要一个函数与cache里做匹配
+    // 有一定概率匹配不上
     function findMostOverlap(text: string, textArr: string[]): number {
       let maxOverlapIndex = -1;
       let maxOverlap = 0;
@@ -55,12 +65,22 @@ export default class Utils {
 
       return maxOverlapIndex;
     }
-
-
-    let pdfItem = Zotero.Items.get(
-      Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)!.itemID as number
-    )
-    const fullText = await this.readPDFFullText(pdfItem.key, pdfItem.key in this.cache == false)
+    let fullText: string, key: string
+    switch (Zotero_Tabs.selectedIndex) {
+      case 0:
+        // 只有再次选中相同条目，且条目没有更新变化，才会复用，不然会一直重复建立索引
+        // TODO - 优化
+        key = ZoteroPane.getSelectedItems().map(i => i.key).join("")
+        fullText = await this.selectedItems2FullText(key)
+        break;
+      default:
+        let pdfItem = Zotero.Items.get(
+          Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)!.itemID as number
+        )
+        key = pdfItem.key
+        fullText = await this.readPDFFullText(key, key in this.cache == false)
+        break
+    }
     const xhr = await Zotero.HTTP.request(
       "POST",
       `http://${host}/getRelatedText`,
@@ -71,7 +91,7 @@ export default class Utils {
         body: JSON.stringify({
           queryText,
           fullText,
-          key: pdfItem.key,
+          key,
           secretKey: Zotero.Prefs.get(`${config.addonRef}.secretKey`) as string,
           api: Zotero.Prefs.get(`${config.addonRef}.api`) as string,
         }),
@@ -83,13 +103,11 @@ export default class Utils {
     for (let i = 0; i < xhr.response.length; i++) {
       let refText = xhr.response[i]
       // 寻找坐标
-      // const mainText = refText.split(/\n+/).sort((a: string, b: string) => b.length - a.length)[0]
-      let index = findMostOverlap(refText.replace(/\x20+/g, " "), this.cache[pdfItem.key].map((i: any) => i.text.replace(/\x20+/g, " ")))
+      let index = findMostOverlap(refText.replace(/\x20+/g, " "), this.cache[key].map((i: any) => i.text.replace(/\x20+/g, " ")))
       if (index >= 0) {
-        const box = this.cache[pdfItem.key][index].box
         references.push({
           number: i + 1,
-          box,
+          location: this.cache[key][index].location,
           text: refText
         })
       }
@@ -98,8 +116,6 @@ export default class Utils {
         text += "\n\n"
       }  
     }
-    const reader = await ztoolkit.Reader.getReader()
-    let win = (reader!._iframeWindow as any).wrappedJSObject
     const outputContainer = Zotero[config.addonInstance].views.outputContainer
     outputContainer.querySelector(".reference")?.remove()
     const refDiv = ztoolkit.UI.appendElement({
@@ -113,8 +129,8 @@ export default class Utils {
       }
     }, outputContainer)
     console.log(references)
-    references.forEach((reference: { number: number; box: any, text: string }) => {
-      if (!reference.box) { return }
+    references.forEach((reference: { number: number; location: { type: "box" | "id", box?: any, id?: number}, text: string }) => {
+      if (!reference.location) { return }
       ztoolkit.UI.appendElement({
         namespace: "html",
         tag: "a",
@@ -130,15 +146,21 @@ export default class Utils {
         listeners: [ 
           {
             type: "click",
-            listener: () => {
-              win.eval(`
-                PDFViewerApplication.pdfViewer.scrollPageIntoView({
-                  pageNumber: ${reference.box.page + 1},
-                  destArray: ${JSON.stringify([null, { name: "XYZ" }, reference.box.left, reference.box.top, 3.5])},
-                  allowNegativeOffset: false,
-                  ignoreDestinationZoom: false
-                })
-              `)
+            listener: async () => {
+              console.log(reference)
+              if (reference.location.type == "box") {
+                const reader = await ztoolkit.Reader.getReader();
+                (reader!._iframeWindow as any).wrappedJSObject.eval(`
+                  PDFViewerApplication.pdfViewer.scrollPageIntoView({
+                    pageNumber: ${reference.location.box.page + 1},
+                    destArray: ${JSON.stringify([null, { name: "XYZ" }, reference.location.box.left, reference.location.box.top, 3.5])},
+                    allowNegativeOffset: false,
+                    ignoreDestinationZoom: false
+                  })
+                `)
+              } else if (reference.location.type == "id") {
+                await ZoteroPane.selectItem(reference.location.id as number)
+              }
             }
           }
         ]
@@ -348,7 +370,7 @@ export default class Utils {
         }
         _pageText = _pageText.replace(/\x20+/g, " ");
         (this.cache[itemkey] ??= []).push({
-          box: box!,
+          location: {type: "box", box: box!},
           text: _pageText
         })
         pageText += _pageText
@@ -377,6 +399,27 @@ export default class Utils {
     const fullText = pdfText.replace(/\x20+/g, " ")
     await Zotero.File.putContentsAsync(filename, fullText);
     console.log(fullText)
+    return fullText
+  }
+
+  /**
+   * 将选中条目处理成全文
+   * @param key 
+   * @param force 
+   * @returns 
+   */
+  public async selectedItems2FullText(key: string) {
+    const fullText = ZoteroPane.getSelectedItems().map((item: Zotero.Item) => {
+      const text = JSON.stringify(item.toJSON());
+      (this.cache[key] ??= []).push({
+        location: {
+          type: "id",
+          id: item.id
+        },
+        text
+      })
+      return text
+    }).join("\n\n")
     return fullText
   }
 

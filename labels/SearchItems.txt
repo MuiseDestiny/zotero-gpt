@@ -1,0 +1,26 @@
+#🔍SearchItems[position=9][color=#ED5629]
+
+现在你是一个数据库系统，下面是一些JSON信息，每个JSON对应Zotero一篇文献：
+
+---
+
+```js
+window.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector("input").value
+Zotero.ZoteroGPT.views.messages = [];
+
+Zotero.ZoteroGPT.utils.getRelatedText(
+"127.0.0.1:5000", window.gptInputString 
+)
+
+```
+
+---
+
+我现在在寻找一篇文献，它很可能就在我上面给你的文献之中。下面是对我想找的文献的描述：
+```js
+window.gptInputString 
+```
+
+请你回答最有可能是哪几篇文献，请同时给出最可能的一篇。
+
+Reply in 简体中文
