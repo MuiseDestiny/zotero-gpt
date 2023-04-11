@@ -76,6 +76,13 @@ Make sure the plugin version is up-to-date.
 4. Click `AskPDF` label.
 5. You can click on the serial number below the GPT answer to locate the reference paragraph of the GPT answer.
 
+## Search Items
+
+![image](https://user-images.githubusercontent.com/51939531/231054213-427056c2-35dd-48d4-8e0d-e334bb85a46f.png)
+
+Implementation method: 
+Same as `Ask PDF`
+
 ## Demonstration
 
 ![image](imgs/demo.png)
