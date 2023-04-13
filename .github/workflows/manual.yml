@@ -29,6 +29,7 @@ jobs:
       - name: Update wiki
         run: |
           cd wiki
+          mkdir -p versions
           export releases=$(curl -L \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
@@ -45,7 +46,7 @@ jobs:
               tag_name=$(echo "$release" | jq -r '.tag_name')
               MAJOR_VERSION=$(echo ${tag_name} | cut -d. -f1)
               MINOR_VERSION=$(echo ${tag_name} | cut -d. -f2)
-              dir_name=${MAJOR_VERSION}.${MINOR_VERSION}
+              dir_name=versions/${MAJOR_VERSION}.${MINOR_VERSION}
               mkdir -p ${dir_name}
               name=${dir_name}/${tag_name}.bk
               if [ ! -f "${name}" ]; then
@@ -63,7 +64,7 @@ jobs:
           # generate CHANGELOG.md
           # get all files start with v recrusive, and sort by version
           echo -e "" > CHANGELOG.md
-          export files=$(find . -name "v*" -type f | sort -r)
+          export files=$(find versions -name "*" -type f | sort -r)
           for file in ${files}; do
             t=$(basename ${file})
             echo -e "# ${t%.*}  \n" >> CHANGELOG.md
