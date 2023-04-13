@@ -71,6 +71,7 @@ export default class Views {
   private outputContainer!: HTMLDivElement;
   private threeDotsContainer!: HTMLDivElement;
   private tagContainer!: HTMLDivElement;
+  private scrollContainer!: HTMLDivElement;
   constructor() {
     this.registerKey()
     this.addStyle()
@@ -504,6 +505,17 @@ export default class Views {
     })
   }
 
+  private bindScrollTags(div: HTMLDivElement){
+    let scrollSpeed = 80
+    div.addEventListener('DOMMouseScroll', (event: any) => {
+      if (event.detail > 0)
+        div.scrollLeft += scrollSpeed
+      else
+        div.scrollLeft -= scrollSpeed
+      event.preventDefault()
+    });
+  }
+
   /**
    * 绑定ctrl+滚轮放大缩小控件内的所有元素
    * @param div
@@ -854,10 +866,25 @@ export default class Views {
         alignItems: "center",
         margin: ".25em 0",
         flexWrap: "wrap",
-        overflow: "hidden",
+        overflow: "auto",
         height: "1.7em"
       }
     }, container) as HTMLDivElement
+    // 创建一个新的 div 作为 scrollContainer
+    const scrollContainer = this.scrollContainer = ztoolkit.UI.appendElement({
+      tag: "div",
+      classList: ["scroll-container"],
+      styles: {
+        display: "inline-flex",
+        flexDirection: "row",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        flexWrap: "nowrap",
+        whiteSpace: "nowrap",
+        overflowX: "auto",
+      }
+    }, tagContainer) as HTMLDivElement;
+    this.bindScrollTags(scrollContainer)
     // 折叠标签按钮
     const threeDotsContainer = this.threeDotsContainer = ztoolkit.UI.appendElement({
       tag: "div",
@@ -894,7 +921,7 @@ export default class Views {
         {
           type: "click",
           listener: () => {
-            tagContainer.style.height = tagContainer.style.height == "auto" ? "1.7em" : "auto"
+            scrollContainer!.style.height = scrollContainer.style.height == "auto" ? "1.7em" : "auto"
 
           }
         }
@@ -915,7 +942,7 @@ export default class Views {
    * 渲染标签，要根据position排序
    */
   private renderTags() {
-    this.tagContainer?.querySelectorAll("div").forEach(e=>e.remove())
+    this.scrollContainer!?.querySelectorAll("div").forEach(e=>e.remove())
     let tags = this.getTags() as Tag[]
     tags.forEach(tag => {
       this.addTag(tag)
@@ -932,6 +959,7 @@ export default class Views {
       tag: "div",
       classList: ["tag"],
       styles: {
+        display: "inline-block",
         fontSize: "0.8em",
         height: "1.5em",
         color: `rgba(${red}, ${green}, ${blue}, 1)`,
@@ -980,7 +1008,7 @@ export default class Views {
           }
         }
       ]
-    }, this.tagContainer!) as HTMLDivElement
+    }, this.scrollContainer!) as HTMLDivElement
   }
 
   /**
