@@ -1,0 +1,48 @@
+name: Publish wiki tags
+
+permissions: write-all
+
+on:
+  push:
+    branches:
+      - bootstrap
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          repository: ${{github.repository}}
+          path: repo
+      - name: Checkout wiki
+        uses: actions/checkout@v3
+        with:
+          repository: ${{github.repository}}.wiki
+          path: wiki
+      - name: Update wiki
+        run: |
+          rm -rf wiki/labels
+          mkdir -p wiki/labels
+          cp -r repo/labels/*.txt wiki/labels/
+          cd wiki/labels
+          export files=$(find . -name "*.txt" -type f | sort -r)
+          for file in ${files}; do
+            t=$(basename ${file})
+            # echo "<pre>" > ${t%.*}.md
+            cat ${file} > ${t%.*}.md
+            # echo "</pre>" >> ${t%.*}.md
+          done
+          rm -rf *.txt
+          cd ../
+          ls -alhR -I .git
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Update wiki from ${{github.repository}}"
+          git push
