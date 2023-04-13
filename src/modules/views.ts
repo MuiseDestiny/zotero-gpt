@@ -18,6 +18,7 @@ const help = `
 \`/autoShow true/false\` Automatically showed when Zotero is opened.
 \`/deltaTime 100\` Control GPT smoothness (ms).
 \`/width 32%\` Control GPT UI width (pct).
+\`/tagsDisplay span/scroll\` Set tags display mode when tags are too many.
 
 ### About UI
 
@@ -505,15 +506,36 @@ export default class Views {
     })
   }
 
-  private bindScrollTags(div: HTMLDivElement){
-    let scrollSpeed = 80
-    div.addEventListener('DOMMouseScroll', (event: any) => {
-      if (event.detail > 0)
-        div.scrollLeft += scrollSpeed
-      else
-        div.scrollLeft -= scrollSpeed
-      event.preventDefault()
-    });
+  private handleTagContainerScroll(div: HTMLDivElement, scrollSpeed: number, event: any){
+    if (event.detail > 0)
+      div.scrollLeft += scrollSpeed
+    else
+      div.scrollLeft -= scrollSpeed
+    event.preventDefault()
+  }
+
+  /**
+   * 设置标签显示模式（当标签过多时）
+   * @param mode: scroll(单行滚动), span(直接展开显示所有标签)
+    */
+  private setTagDisplay(mode: string) {
+    // mode: scroll, span
+    let tagDiv = this.tagContainer
+    let scrollDiv = this.scrollContainer
+    const scrollSpeed = 80
+    if (mode == "scroll") {
+      scrollDiv.addEventListener('DOMMouseScroll',
+        this.handleTagContainerScroll.bind(this, scrollDiv, scrollSpeed)
+      )
+      scrollDiv.style.flexWrap = "nowrap"
+      tagDiv.style.height = "1.7em"
+    } else {
+      scrollDiv.removeEventListener("DOMMouseScroll",
+        this.handleTagContainerScroll.bind(this, scrollDiv, scrollSpeed)
+      )
+      scrollDiv.style.flexWrap = "wrap"
+      tagDiv.style.height = "auto"
+    }
   }
 
   /**
@@ -755,7 +777,7 @@ export default class Views {
             outputContainer.querySelector("div")!.innerHTML = `success`
           } else if (key == "help"){ 
             that.setText(help, true)
-          } else if (["secretKey", "model", "autoShow", "api", "temperature", "deltaTime", "width"].indexOf(key) != -1) {  
+          } else if (["secretKey", "model", "autoShow", "api", "temperature", "deltaTime", "width", "tagsDisplay"].indexOf(key) != -1) {  
             if (value?.length > 0) {
               if (key == "autoShow") {
                 if (value == "true") {
@@ -772,6 +794,11 @@ export default class Views {
               if (key == "width") {
                 if (value && value.match(/[\d\.]+%/)) {
                   that.container.style.width = value
+                }
+              }
+              if (key == "tagsDisplay") {
+                if (!["scroll", "span"].includes(value)) {
+                  return
                 }
               }
               Zotero.Prefs.set(`${config.addonRef}.${key}`, value)
@@ -884,8 +911,7 @@ export default class Views {
         overflowX: "auto",
       }
     }, tagContainer) as HTMLDivElement;
-    this.bindScrollTags(scrollContainer)
-    // 折叠标签按钮
+    this.setTagDisplay(Zotero.Prefs.get(`${config.addonRef}.tagsDisplay`) as string)
     const threeDotsContainer = this.threeDotsContainer = ztoolkit.UI.appendElement({
       tag: "div",
       classList: ["three-dots"],
