@@ -4,3 +4,4 @@ package-lock.json
 zotero-cmd.json
 README.md
 .env
+**/test
