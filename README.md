@@ -69,20 +69,11 @@ Implementation method:
 
 Make sure the plugin version is up-to-date.
 
-## Search Items
+## Search Items [build-in tag]
 
 ![image](https://user-images.githubusercontent.com/51939531/231054213-427056c2-35dd-48d4-8e0d-e334bb85a46f.png)
 
 Implementation method: 
-Same as `Ask PDF`
-
-## Search Items [build-in tag]
-
-![image](https://user-images.githubusercontent.com/51939531/231055243-af0bbd24-4188-4916-a064-753c89775d6d.png)
-
-
-Implementation method:
-
 Same as `Ask PDF`
 
 ## Demonstration
