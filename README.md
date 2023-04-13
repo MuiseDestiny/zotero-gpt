@@ -24,6 +24,10 @@ Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-
 
 ---
 
+
+![AskPDF](imgs/AskPDF.gif)
+
+
 ## Quick Start
 
 Use `Shift + /` to call this plug-in，select the text in a PDF file and then press`Shift + Tab + /` to enter the prompt input. Use `Esc` to exit.
