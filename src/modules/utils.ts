@@ -1,7 +1,7 @@
 // 可以从zotero-reference仓库获取
-import PDF from "E:/Github/zotero-reference/src/modules/pdf"
+import PDF from "zotero-reference/src/modules/pdf"
 // 可以从zotero-style仓库获取
-import LocalStorage from "E:/Github/zotero-style/src/modules/localStorage";
+import LocalStorage from "zotero-style/src/modules/localStorage";
 import { config } from "../../package.json";
 import { MD5 } from "crypto-js"
 import { Document } from "langchain/document";
