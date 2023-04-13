@@ -32,7 +32,7 @@ API-key：
 
 ![image](imgs/apikey.png)
 
-## Command labels
+## Command Tags
 
 The plug-in design concept is to configure command tabs according to different application scenarios, and directly click on the tabs to complete the interaction with GPT.
 
@@ -61,7 +61,7 @@ Single click on a label is to execute it.
 You can click and hold on each label after installing the plugin to see the internal statements of the sample tags, and I'm sure you'll be up and running writing a new one in no time.
 
 
-## Ask PDF
+## Ask PDF [build-in tag]
 
 ![image](https://user-images.githubusercontent.com/51939531/230595730-54c984f1-d2c1-45a0-adbd-8792a5afa175.png)
 
@@ -76,7 +76,7 @@ Make sure the plugin version is up-to-date.
 Implementation method: 
 Same as `Ask PDF`
 
-## Search Items
+## Search Items [build-in tag]
 
 ![image](https://user-images.githubusercontent.com/51939531/231055243-af0bbd24-4188-4916-a064-753c89775d6d.png)
 
