@@ -1,0 +1,85 @@
+name: Manual Trigger
+
+permissions: write-all
+
+on:
+  # 手动触发
+  workflow_dispatch:
+    # inputs:
+    #   logLevel:
+    #     description: 'Log level'
+    #     required: true
+    #     default: 'warning'
+    #     type: choice
+    #     options:
+    #     - info
+    #     - warning
+    #     - debug
+
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: ${{github.repository}}.wiki
+          path: wiki
+      - name: Update wiki
+        run: |
+          cd wiki
+          export releases=$(curl -L \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+          )
+          result=$(echo "${releases}" \
+            | awk -vRS='"' '!(NR%2){gsub(/\n/, "\\\\n"); gsub(/\r/, "\\\\r")} {printf("%s%s", $0, RT)}' \
+          )
+          echo "$result" | jq -c '.[]' | while read -r release; do 
+            draft=$(echo "$release" | jq -r '.draft')
+            prerelease=$(echo "$release" | jq -r '.prerelease')
+            if [ "$draft" == 'false' ] && [ "$prerelease" == 'false' ]; then
+              tag_name=$(echo "$release" | jq -r '.tag_name')
+              MAJOR_VERSION=$(echo ${tag_name} | cut -d. -f1)
+              MINOR_VERSION=$(echo ${tag_name} | cut -d. -f2)
+              dir_name=${MAJOR_VERSION}.${MINOR_VERSION}
+              mkdir -p ${dir_name}
+              name=${dir_name}/${tag_name}.bk
+              if [ ! -f "${name}" ]; then
+                title=$(echo "$release" | jq -r '.name')
+                body=$(echo "$release" | jq -r '.body')
+                echo -e "## ${title}  \n${body}" > ${name}
+                echo "file created: ${name}"
+              else
+                echo "file exists: ${name}"
+              fi
+            else
+              echo "draft: $draft, prerelease: $prerelease"
+            fi
+          done
+          # generate CHANGELOG.md
+          # get all files start with v recrusive, and sort by version
+          echo -e "" > CHANGELOG.md
+          export files=$(find . -name "v*" -type f | sort -r)
+          for file in ${files}; do
+            t=$(basename ${file})
+            echo -e "# ${t%.*}  \n" >> CHANGELOG.md
+            cat ${file} >> CHANGELOG.md
+            echo -e "\n\n\n  " >> CHANGELOG.md
+          done
+          cat CHANGELOG.md
+          ls -alhR -I .git
+          # commit and push
+          # check if there is any change
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Update wiki for ${tag_name}"
+          git push
