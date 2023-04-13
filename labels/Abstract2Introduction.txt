@@ -1,0 +1,20 @@
+#摘要转综述[pos=1]
+
+下面是一篇论文的摘要：
+
+```js
+const ztoolkit = Zotero.ZoteroGPT.data.ztoolkit
+let getSelection = () => {
+    return ztoolkit.Reader.getSelectedText(
+ Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)
+    );
+}
+getSelection()
+```
+
+
+现在我想引用它写一篇文献综述，请你帮我写几句话总结这篇论文的工作，作者没有告诉你，你可以用XX代替。我要中文的。要求50字左右。
+
+---
+
+使用场景: 选中PDF的摘要的时候

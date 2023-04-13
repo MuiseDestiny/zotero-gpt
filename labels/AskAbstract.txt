@@ -1,0 +1,15 @@
+#摘要提问[pos=0]
+
+下面是一篇论文的摘要：
+
+
+
+```js
+const ztoolkit = Zotero.ZoteroGPT.data.ztoolkit
+let getSelection = () => {
+    return ztoolkit.Reader.getSelectedText(
+ Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)
+    );
+}
+getSelection()
+```
