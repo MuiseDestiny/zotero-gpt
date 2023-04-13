@@ -1,23 +1,15 @@
-// 可以从zotero-reference仓库获取
+
 import PDF from "E:/Github/zotero-reference/src/modules/pdf"
-// 可以从zotero-style仓库获取
-import LocalStorage from "E:/Github/zotero-style/src/modules/localStorage";
 import { config } from "../../package.json";
 import { MD5 } from "crypto-js"
+import { PineconeClient } from "@pinecone-database/pinecone";
 import { Document } from "langchain/document";
-const similarity = require('compute-cosine-similarity');
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { PineconeStore } from "langchain/vectorstores/pinecone";
 
 export default class Utils {
-  /**
-   * 与储存在本地的一个JSON文件进行交互，在Zotero储存目录下
-   */
-  private storage: LocalStorage;
-  /**
-   * 一般用于储存pdf文档
-   */
-  private cache: any =  {}
+  private cache: any = {}
   constructor() {
-    this.storage = new LocalStorage(config.addonRef);
   }
 
   /**
@@ -46,29 +38,88 @@ export default class Utils {
   /**
    * 如果当前在主面板，根据选中条目生成文本，查找相关 - 用于搜索条目
    * 如果在PDF阅读界面，阅读PDF原文，查找返回相应段落 - 用于总结问题
+   * @param host 
    * @param queryText 
    * @returns 
    */
-  public async getRelatedText(queryText: string) {
-    let docs: Document[], key: string
+  public async getRelatedText(host: string, queryText: string) {
+    // 由于处理后的文本会被优化，需要一个函数与cache里做匹配
+    // 有一定概率匹配不上
+    function findMostOverlap(text: string, textArr: string[]): number {
+      let maxOverlapIndex = -1;
+      let maxOverlap = 0;
+
+      const textSentences = text.split(/[.!?]/).filter(Boolean);
+
+      for (let i = 0; i < textArr.length; i++) {
+        const textArrSentences = textArr[i].split(/[.!?]/).filter(Boolean);
+
+        let overlapCount = 0;
+        for (let j = 0; j < textSentences.length; j++) {
+          if (textArrSentences.map(i => i.replace(/\x20+/g, "")).includes(textSentences[j].replace(/\x20+/g, ""))) {
+            overlapCount++;
+          }
+        }
+
+        if (overlapCount > maxOverlap) {
+          maxOverlap = overlapCount;
+          maxOverlapIndex = i;
+        }
+      }
+
+      return maxOverlapIndex;
+    }
+    let fullText: string, key: string
     switch (Zotero_Tabs.selectedIndex) {
       case 0:
         // 只有再次选中相同条目，且条目没有更新变化，才会复用，不然会一直重复建立索引
         // TODO - 优化
         key = MD5(ZoteroPane.getSelectedItems().map(i => i.key).join("")).toString()
-        docs = this.cache[key] || await this.selectedItems2documents(key)
+        fullText = await this.selectedItems2FullText(key)
         break;
       default:
         let pdfItem = Zotero.Items.get(
           Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)!.itemID as number
         )
         key = pdfItem.key
-        docs = this.cache[key] || await this.pdf2documents(key)
+        fullText = await this.readPDFFullText(key, key in this.cache == false)
         break
     }
-    this.cache[key] = docs
-    docs = await this.similaritySearch(queryText, docs, {key}) as Document[]
-    console.log("docs", docs)
+    const xhr = await Zotero.HTTP.request(
+      "POST",
+      `http://${host}/getRelatedText`,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          queryText,
+          fullText,
+          key,
+          secretKey: Zotero.Prefs.get(`${config.addonRef}.secretKey`) as string,
+          api: Zotero.Prefs.get(`${config.addonRef}.api`) as string,
+        }),
+        responseType: "json"
+      }
+    );
+    let text = ""
+    let references: any[] = []
+    for (let i = 0; i < xhr.response.length; i++) {
+      let refText = xhr.response[i]
+      // 寻找坐标
+      let index = findMostOverlap(refText.replace(/\x20+/g, " "), this.cache[key].map((i: any) => i.text.replace(/\x20+/g, " ")))
+      if (index >= 0) {
+        references.push({
+          number: i + 1,
+          location: this.cache[key][index].location,
+          text: refText
+        })
+      }
+      text += `[${i + 1}] ${refText}`
+      if (i < xhr.response.length - 1) {
+        text += "\n\n"
+      }  
+    }
     const outputContainer = Zotero[config.addonInstance].views.outputContainer
     outputContainer.querySelector(".reference")?.remove()
     const refDiv = ztoolkit.UI.appendElement({
@@ -81,7 +132,9 @@ export default class Utils {
         justifyContent: "center",
       }
     }, outputContainer)
-    docs.forEach((doc: Document, index: number) => {
+    console.log(references)
+    references.forEach((reference: { number: number; location: { type: "box" | "id", box?: any, id?: number}, text: string }) => {
+      if (!reference.location) { return }
       ztoolkit.UI.appendElement({
         namespace: "html",
         tag: "a",
@@ -92,39 +145,45 @@ export default class Utils {
           cursor: "pointer"
         },
         properties: {
-          innerText: `[${index + 1}]`
+          innerText: `[${reference.number}]`
         },
         listeners: [ 
           {
             type: "click",
             listener: async () => {
-              if (doc.metadata.type == "box") {
+              console.log(reference)
+              if (reference.location.type == "box") {
                 const reader = await ztoolkit.Reader.getReader();
                 (reader!._iframeWindow as any).wrappedJSObject.eval(`
                   PDFViewerApplication.pdfViewer.scrollPageIntoView({
-                    pageNumber: ${doc.metadata.box.page + 1},
-                    destArray: ${JSON.stringify([null, { name: "XYZ" }, doc.metadata.box.left, doc.metadata.box.top, 3.5])},
+                    pageNumber: ${reference.location.box.page + 1},
+                    destArray: ${JSON.stringify([null, { name: "XYZ" }, reference.location.box.left, reference.location.box.top, 3.5])},
                     allowNegativeOffset: false,
                     ignoreDestinationZoom: false
                   })
                 `)
-              } else if (doc.metadata.type == "id") {
-                await ZoteroPane.selectItem(doc.metadata.id as number)
+              } else if (reference.location.type == "id") {
+                await ZoteroPane.selectItem(reference.location.id as number)
               }
             }
           }
         ]
       }, refDiv)
     })
-    return docs.map((doc: Document, index: number) => `[${index+1}]${doc.pageContent}`).join("\n\n")
+    return text
   }
 
   /**
-   * 读取PDF全文，因为读取速度一般较快，所以不储存
-   * 当然排除学位论文，书籍等
-   * 此函数遇到reference关键词会停止读取，因为参考文献太影响最后计算相似度了
+   * await Zotero.ZoteroGPT.utils.readPDFFullText()
    */
-  public async pdf2documents(itemkey: string) {
+  public async readPDFFullText(itemkey: string, force: boolean = false) {
+    // @ts-ignore
+    const OS = window.OS;
+    const temp = Zotero.getTempDirectory()
+    const filename = OS.Path.join(temp.path.replace(temp.leafName, ""), `${config.addonRef}-${itemkey}.json`);
+    if (!force && await OS.File.exists(filename)) {
+      return await Zotero.File.getContentsAsync(filename) as string
+    }
     const reader = await ztoolkit.Reader.getReader() as _ZoteroTypes.ReaderInstance
     const PDFViewerApplication = (reader._iframeWindow as any).wrappedJSObject.PDFViewerApplication;
     await PDFViewerApplication.pdfLoadingTask.promise;
@@ -137,7 +196,6 @@ export default class Utils {
       .show()
     // 读取所有页面lines
     const pageLines: any = {}
-    let docs: Document[] = []
     for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
       let pdfPage = pages[pageNum].pdfPage
       let textContent = await pdfPage.getTextContent()
@@ -156,7 +214,9 @@ export default class Utils {
     console.log(pageLines)
     popupWin.changeHeadline("[Pending] PDF");
     popupWin.changeLine({ progress: 100 });
+    let pdfText = ""
     totalPageNum = Object.keys(pageLines).length
+    let _paragraphs: any[] | undefined
     for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
       let pdfPage = pages[pageNum].pdfPage
       const maxWidth = pdfPage._pageInfo.view[2];
@@ -253,7 +313,7 @@ export default class Utils {
         let nextLine = lines[i+1]
         const isNewParagraph = 
           // 达到一定行数阈值
-          paragraphs.slice(-1)[0].length >= 5 && (
+          paragraphs.slice(-1)[0].length >= 3 && (
           // 当前行存在一个非常大的字体的文字
           currentLine._height.some((h2: number) => lastLine._height.every((h1: number) => h2 > h1)) ||
           // 是摘要自动为一段
@@ -274,6 +334,7 @@ export default class Utils {
       }
       console.log(paragraphs)
       // 段落合并
+      let pageText = ""
       for (let i = 0; i < paragraphs.length; i++) {
         let box: { page: number, left: number; top: number; right: number; bottom: number }
         /**
@@ -312,38 +373,58 @@ export default class Utils {
           }
         }
         _pageText = _pageText.replace(/\x20+/g, " ");
-        docs.push(
-          new Document({
-            pageContent: _pageText,
-            metadata: { type: "box", box: box!, key: itemkey},
-          })
-        )
+        (this.cache[itemkey] ??= []).push({
+          location: {type: "box", box: box!},
+          text: _pageText
+        })
+        pageText += _pageText
+        if (i < paragraphs.length - 1) {
+          pageText += "\n\n"
+        }
       }
+      /**
+       * _paragraphs为上一页的paragraphs
+       */
+      if (_paragraphs && !(
+        // 两页首尾字体大小一致
+        _paragraphs.slice(-1)[0].slice(-1)[0].height == paragraphs[0][0].height &&
+        // 开头页没有首行缩进
+        paragraphs[0][0].x == paragraphs[0][1]?.x
+      )) {
+        pdfText += "\n\n"
+      } else {
+        pdfText += " "
+      }
+      pdfText += pageText
+      _paragraphs = paragraphs
     }
     popupWin.changeHeadline("[Done] PDF")
     popupWin.startCloseTimer(1000)
-    return docs
+    const fullText = pdfText.replace(/\x20+/g, " ")
+    await Zotero.File.putContentsAsync(filename, fullText);
+    console.log(fullText)
+    return fullText
   }
 
   /**
    * 将选中条目处理成全文
-   * 注意：这里目前是不储存得到向量的（懒，不想写）
    * @param key 
+   * @param force 
    * @returns 
    */
-  public async selectedItems2documents(key: string) {
-    const docs = ZoteroPane.getSelectedItems().map((item: Zotero.Item) => {
+  public async selectedItems2FullText(key: string) {
+    const fullText = ZoteroPane.getSelectedItems().map((item: Zotero.Item) => {
       const text = JSON.stringify(item.toJSON());
-      return new Document({
-        pageContent: text.slice(0, 500),
-        metadata: {
+      (this.cache[key] ??= []).push({
+        location: {
           type: "id",
-          id: item.id,
-          key
-        }
+          id: item.id
+        },
+        text: text.slice(0, 500)
       })
-    })
-    return docs
+      return text
+    }).join("\n\n")
+    return fullText
   }
 
   /**
@@ -373,66 +454,48 @@ export default class Utils {
     return clipboardData.data
   }
 
-  /**
-   * 手写的，很难受，因为没有包可以用
-   * 手写需要一直优化
-   * @param queryText 
-   * @param docs 
-   * @returns 
-   */
-  private async similaritySearch(queryText: string, docs: Document[], obj: {key: string}) {
-    const embeddings = new OpenAIEmbeddings() as any
-    // 查找本地，为节省空间，只储存向量
-    // 因为随着插件更新，解析出的PDF可能会有优化，因此再此进行提取MD5值作为验证
-    // 但可以预测，本地JSON文件可能会越来越大
-    const id = MD5(docs.map((i: any) => i.pageContent).join("\n\n")).toString()
-    const vv = this.storage.get(obj, id) ||
-      await embeddings.embedDocuments(docs.map((i: any) => i.pageContent))
-    window.setTimeout(async () => {
-      await this.storage.set(obj, id, vv)
-    })
-    const v0 = await embeddings.embedQuery(queryText)
-    // 从20个里面找出文本最长的几个，防止出现较短但相似度高的段落影响回答准确度
-    const k = 20
-    const pp = vv.map((v: any) => similarity(v0, v));
-    console.log(pp, [...pp].sort((a, b) => b - a))
-    docs = [...pp].sort((a, b) => b - a).slice(0, k).map((p: number) => {
-      return docs[pp.indexOf(p)]
-    })
-    return docs.sort((a, b) => b.pageContent.length - a.pageContent.length).slice(0, 5)
-  }
-}
+  private async similaritySearch(paragraphs: string[]) {
+    const client = new PineconeClient();
+    await client.init({
+      apiKey: "993aaaa3-6d08-4809-869f-1b6f11aa1b9b",
+      environment: "asia-southeast1-gcp",
+    });
+    const pineconeIndex = client.Index("polygon"); 
+    for (let paragraph of paragraphs) {
+      
+    }
+    const docs = [
+      new Document({
+        metadata: { foo: "bar" },
+        pageContent: "pinecone is a vector db",
+      }),
+      new Document({
+        metadata: { foo: "bar" },
+        pageContent: "the quick brown fox jumped over the lazy dog",
+      }),
+      new Document({
+        metadata: { baz: "qux" },
+        pageContent: "lorem ipsum dolor sit amet",
+      }),
+      new Document({
+        metadata: { baz: "qux" },
+        pageContent: "pinecones are the woody fruiting body and of a pine tree",
+      }),
+    ];
+    const embeddings = new OpenAIEmbeddings({
+      timeout: 1000, // 1s timeout
+    }, {
+      basePath: "https://www.openread.academy/personal-api/uc/openapi/v1"
+      // basePath: "https://openai.api2d.net/v1",
+      // apiKey: "fk193146-yRZiddVj2s84RwpJOSsE0lGLuHQ8uK6Q"
+    });
+    const vectorStore = await PineconeStore.fromDocuments(docs, embeddings, {
+      pineconeIndex,
+    });
 
-
-class OpenAIEmbeddings {
-  constructor() {
-  }
-  private async request(input: string[]) {
-    const api = Zotero.Prefs.get(`${config.addonRef}.api`)
-    const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
-    let res = await Zotero.HTTP.request(
-      "POST",
-      `${api}/embeddings`,
-      {
-        responseType: "json",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${secretKey}`,
-        },
-        body: JSON.stringify({
-          model: "text-embedding-ada-002",
-          input: input
-        })
-      }
-    )
-    return res.response.data.map((i: any) => i.embedding)
-  }
-
-  public async embedDocuments(texts: string[]) {
-    return await this.request(texts)
-  }
-
-  public async embedQuery(text: string) {
-    return (await this.request([text]))![0]
+    const results = await vectorStore.similaritySearch("pinecone", 3, {
+      foo: "bar",
+    });
+    console.log("results", results);
   }
 }
