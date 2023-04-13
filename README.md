@@ -69,13 +69,6 @@ Implementation method:
 
 Make sure the plugin version is up-to-date.
 
-1. Realize [zotero-gpt-helper](https://github.com/MuiseDestiny/zotero-gpt-helper) service (http://127.0.0.1:5000) opening according its README.
-2. Open a Zotero PDF.
-3. Press `Shift + /` to activate plugin UI.
-3. Enter your question about this PDF. 
-4. Click `AskPDF` label.
-5. You can click on the serial number below the GPT answer to locate the reference paragraph of the GPT answer.
-
 ## Search Items
 
 ![image](https://user-images.githubusercontent.com/51939531/231054213-427056c2-35dd-48d4-8e0d-e334bb85a46f.png)
