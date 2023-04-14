@@ -12,13 +12,13 @@ const help = `
 \`/help\` Show all commands.
 \`/clear\` Clear history conversation.
 \`/secretKey sk-xxx\` Set GPT secret key.
-\`/api http://xxx\` Set API.
-\`/model gpt-x\` Set GPT model.
+\`/api https://xxx/v1\` Set API.
+\`/model gpt-4/gpt-3.5-turbo\` Set GPT model.
 \`/temperature 1.0\` Set GPT temperature.
 \`/autoShow true/false\` Automatically showed when Zotero is opened.
 \`/deltaTime 100\` Control GPT smoothness (ms).
 \`/width 32%\` Control GPT UI width (pct).
-\`/tagsDisplay span/scroll\` Set tags display mode when tags are too many.
+\`/tagsMore expand/scroll\` Set mode to display more tags.
 
 ### About UI
 
@@ -42,7 +42,6 @@ You can exit me by pressing \`Esc\` above my head and wake me up by pressing \`S
 You can type the question in my header, then press \`Enter\` to ask me.
 You can press \`Ctrl + Enter\` to execute last executed command tag again.
 You can press \`Shift + Enter\` to enter long text editing mode and press \`Ctrl + R\` to execute long text.
-
 `
 export default class Views {
   private id = "zotero-GPT-container";
@@ -60,19 +59,18 @@ export default class Views {
    */
   private _history: string[] = []
   /**
-   * 用于储存上一个执行的标签，配合 Ctrl + Enter 快速再次调用
+   * 用于储存上一个执行的标签，配合 Ctrl + Enter 快速再次执行
    */
   private _tag: Tag | undefined;
   /**
-   * 记录当前GPT输出流setInterval的id
+   * 记录当前GPT输出流setInterval的id，防止终止后仍有输出
    */
   private _id: number | undefined
   private container!: HTMLDivElement;
   private inputContainer!: HTMLDivElement;
   private outputContainer!: HTMLDivElement;
-  private threeDotsContainer!: HTMLDivElement;
-  private tagContainer!: HTMLDivElement;
-  private scrollContainer!: HTMLDivElement;
+  private dotsContainer!: HTMLDivElement;
+  private tagsContainer!: HTMLDivElement;
   constructor() {
     this.registerKey()
     this.addStyle()
@@ -297,6 +295,7 @@ export default class Views {
 
   /**
    * chatPDF
+   * 即将移除此函数，插件不支持无密钥试用
    */
   private async getGPTResponseTextByChatPDF(requestText: string): Promise<string> {
     const maxMsgNumber = 50, maxMsgLength = 700;
@@ -348,6 +347,8 @@ export default class Views {
       {
         headers: {
           "Content-Type": "application/json",
+          // ChatPDF加入验证，可能不久会移除这个函数
+          "atoken": "xLSvjWup2vqxNBmF-D1MH"
         },
         body: JSON.stringify({
           "v": 2,
@@ -504,38 +505,6 @@ export default class Views {
         }
       }
     })
-  }
-
-  private handleTagContainerScroll(div: HTMLDivElement, scrollSpeed: number, event: any){
-    if (event.detail > 0)
-      div.scrollLeft += scrollSpeed
-    else
-      div.scrollLeft -= scrollSpeed
-    event.preventDefault()
-  }
-
-  /**
-   * 设置标签显示模式（当标签过多时）
-   * @param mode: scroll(单行滚动), span(直接展开显示所有标签)
-    */
-  private setTagDisplay(mode: string) {
-    // mode: scroll, span
-    let tagDiv = this.tagContainer
-    let scrollDiv = this.scrollContainer
-    const scrollSpeed = 80
-    if (mode == "scroll") {
-      scrollDiv.addEventListener('DOMMouseScroll',
-        this.handleTagContainerScroll.bind(this, scrollDiv, scrollSpeed)
-      )
-      scrollDiv.style.flexWrap = "nowrap"
-      tagDiv.style.height = "1.7em"
-    } else {
-      scrollDiv.removeEventListener("DOMMouseScroll",
-        this.handleTagContainerScroll.bind(this, scrollDiv, scrollSpeed)
-      )
-      scrollDiv.style.flexWrap = "wrap"
-      tagDiv.style.height = "auto"
-    }
   }
 
   /**
@@ -777,7 +746,7 @@ export default class Views {
             outputContainer.querySelector("div")!.innerHTML = `success`
           } else if (key == "help"){ 
             that.setText(help, true)
-          } else if (["secretKey", "model", "autoShow", "api", "temperature", "deltaTime", "width", "tagsDisplay"].indexOf(key) != -1) {  
+          } else if (["secretKey", "model", "autoShow", "api", "temperature", "deltaTime", "width", "tagsMore"].indexOf(key) != -1) {  
             if (value?.length > 0) {
               if (key == "autoShow") {
                 if (value == "true") {
@@ -796,8 +765,8 @@ export default class Views {
                   that.container.style.width = value
                 }
               }
-              if (key == "tagsDisplay") {
-                if (!["scroll", "span"].includes(value)) {
+              if (key == "tagsMore") {
+                if (["scroll", "expand"].indexOf(value) == -1) {
                   return
                 }
               }
@@ -882,7 +851,8 @@ export default class Views {
     }, container) as HTMLDivElement
     this.bindCtrlScrollZoomOutput(outputContainer)
     // 命令标签
-    const tagContainer = this.tagContainer = ztoolkit.UI.appendElement({
+    const tagsMore = Zotero.Prefs.get(`${config.addonRef}.tagsMore`) as string
+    const tagsContainer = this.tagsContainer = ztoolkit.UI.appendElement({
       tag: "div",
       classList: ["tags-container"],
       styles: {
@@ -892,27 +862,29 @@ export default class Views {
         justifyContent: "flex-start",
         alignItems: "center",
         margin: ".25em 0",
-        flexWrap: "wrap",
-        overflow: "auto",
+        flexWrap: tagsMore == "expand" ? "wrap" : "nowrap",
+        overflow: "hidden",
         height: "1.7em"
-      }
+      },
+      listeners: [
+        {
+          type: "DOMMouseScroll",
+          listener: (event: any) => {
+            if (tagsMore == "expand") { return }
+            const scrollSpeed = 80
+            // @ts-ignore
+            if (event.detail > 0) {
+              tagsContainer.scrollLeft += scrollSpeed
+            } else {
+              tagsContainer.scrollLeft -= scrollSpeed
+            }
+            event.preventDefault()
+            event.stopPropagation()
+          }
+        }
+      ]
     }, container) as HTMLDivElement
-    // 创建一个新的 div 作为 scrollContainer
-    const scrollContainer = this.scrollContainer = ztoolkit.UI.appendElement({
-      tag: "div",
-      classList: ["scroll-container"],
-      styles: {
-        display: "inline-flex",
-        flexDirection: "row",
-        justifyContent: "flex-start",
-        alignItems: "center",
-        flexWrap: "nowrap",
-        whiteSpace: "nowrap",
-        overflowX: "auto",
-      }
-    }, tagContainer) as HTMLDivElement;
-    this.setTagDisplay(Zotero.Prefs.get(`${config.addonRef}.tagsDisplay`) as string)
-    const threeDotsContainer = this.threeDotsContainer = ztoolkit.UI.appendElement({
+    this.dotsContainer = ztoolkit.UI.appendElement({
       tag: "div",
       classList: ["three-dots"],
       styles: {
@@ -938,7 +910,7 @@ export default class Views {
                 margin: "0 .25em",
                 backgroundColor: "#ff7675",
                 borderRadius: "6px",
-              }
+              },
             })
           }
           return arr
@@ -947,8 +919,8 @@ export default class Views {
         {
           type: "click",
           listener: () => {
-            scrollContainer!.style.height = scrollContainer.style.height == "auto" ? "1.7em" : "auto"
-
+            if (tagsMore == "scroll") { return }
+            tagsContainer.style.height = tagsContainer.style.height == "auto" ? "1.7em" : "auto"
           }
         }
       ]
@@ -968,7 +940,7 @@ export default class Views {
    * 渲染标签，要根据position排序
    */
   private renderTags() {
-    this.scrollContainer!?.querySelectorAll("div").forEach(e=>e.remove())
+    this.tagsContainer!?.querySelectorAll("div").forEach(e=>e.remove())
     let tags = this.getTags() as Tag[]
     tags.forEach(tag => {
       this.addTag(tag)
@@ -994,10 +966,11 @@ export default class Views {
         border: "1px solid #fff",
         margin: ".25em",
         padding: "0 .8em",
-        cursor: "pointer"
+        cursor: "pointer",
+        whiteSpace: "nowrap"
       },
       properties: {
-        innerText: tag.tag
+        innerHTML: tag.tag
       },
       listeners: [
         {
@@ -1034,7 +1007,7 @@ export default class Views {
           }
         }
       ]
-    }, this.scrollContainer!) as HTMLDivElement
+    }, this.tagsContainer!) as HTMLDivElement
   }
 
   /**
@@ -1047,7 +1020,7 @@ export default class Views {
 
     popunWin
       .createLine({ text: "Plugin is generating content...", type: "default" })
-    this.threeDotsContainer?.classList.add("loading")
+    this.dotsContainer?.classList.add("loading")
     this.outputContainer.style.display = "none"
     const outputDiv = this.outputContainer.querySelector("div")!
     outputDiv.innerHTML = ""
@@ -1065,7 +1038,7 @@ export default class Views {
     popunWin.createLine({ text: "GPT is answering...", type: "default" })
     // 运行替换其中js代码
     text = await this.getGPTResponseText(text) as string
-    this.threeDotsContainer?.classList.remove("loading")
+    this.dotsContainer?.classList.remove("loading")
     try {
       window.eval(`
         setTimeout(async () => {
@@ -1089,10 +1062,9 @@ export default class Views {
     outputDiv.innerHTML = ""
     outputDiv.setAttribute("pureText", "");
     if (text.trim().length == 0) { return }
-    this.threeDotsContainer?.classList.add("loading")
+    this.dotsContainer?.classList.add("loading")
     await this.getGPTResponseText(text)
-
-    this.threeDotsContainer?.classList.remove("loading")
+    this.dotsContainer?.classList.remove("loading")
   }
 
   /**
