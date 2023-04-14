@@ -2,8 +2,6 @@
 
 下面是一篇论文的摘要：
 
-
-
 ```js
 const ztoolkit = Zotero.ZoteroGPT.data.ztoolkit
 let getSelection = () => {
