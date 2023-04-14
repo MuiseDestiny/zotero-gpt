@@ -1,0 +1,18 @@
+#总结实验方法[pos=9]
+
+请用子弹列表的形式提取该段落的信息，包括，被试数量，实验设计(如, 2(Gender: male vs female) X 2(Matching Condition: matching or mismatching))，实验流程(如，被试首先观看刺激，然后进行反应，最后呈现反馈给被试)。务必使用中文回答。  
+下面是论文的方法部分：  
+```js
+const ztoolkit = Zotero.ZoteroGPT.data.ztoolkit
+let getSelection = () => {
+    return ztoolkit.Reader.getSelectedText(
+ Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)
+    );
+}
+console.log(getSelection())
+getSelection()
+```
+
+---
+
+选中PDF文字时候

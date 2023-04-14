@@ -7,6 +7,7 @@ pref("extensions.zotero.__addonRef__.api", "https://api.openai.com/v1");
 pref("extensions.zotero.__addonRef__.temperature", "1.0");
 pref("extensions.zotero.__addonRef__.deltaTime", 100);
 pref("extensions.zotero.__addonRef__.width", "32%");
+pref("extensions.zotero.__addonRef__.tagsDisplay", "span");
 
 
 

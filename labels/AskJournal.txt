@@ -1,0 +1,10 @@
+#期刊介绍[pos=9]
+
+介绍一下下面这个期刊：  
+```js
+ZoteroPane.getSelectedItems()[0].getField("publicationTitle")
+```
+
+---
+
+应用场景: 选中主界面条目时候

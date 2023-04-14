@@ -43,6 +43,7 @@
     "chromadb": "^1.3.1",
     "compute-cosine-similarity": "^1.0.0",
     "crypto": "^1.0.1",
+    "crypto-js": "^4.1.1",
     "dotenv": "^16.0.3",
     "highlight": "^0.2.4",
     "langchain": "^0.0.53",
@@ -53,7 +54,9 @@
     "proxy-agent": "^5.0.0",
     "react-markdown": "^8.0.6",
     "showdown": "^2.1.0",
-    "zotero-plugin-toolkit": "^2.0.1"
+    "zotero-plugin-toolkit": "^2.0.1",
+    "zotero-reference": "github:MuiseDestiny/zotero-reference",
+    "zotero-style": "github:MuiseDestiny/zotero-style"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",

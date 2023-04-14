@@ -1,0 +1,70 @@
+name: Release Trigger
+
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs#overview
+permissions: write-all
+
+on:
+  # 通过Event API触发
+  release:
+    types: [released, edited]
+
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: ${{github.repository}}.wiki
+          path: wiki
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
+      - name: Check release
+        id: check_release
+        run: |
+          if [ ${{ github.event.release.draft }} == 'false' ] && [ ${{ github.event.release.prerelease }} == 'false' ]; then
+            echo "next=true" >> $GITHUB_ENV
+          else
+            echo "next=false" >> $GITHUB_ENV
+          fi
+      - name: Update wiki
+        if: ${{ env.next }}
+        run: |
+          cd wiki
+          mkdir -p versions
+          export tag_name=${{ github.event.release.tag_name }}
+          export body="${{ github.event.release.body }}"
+          export title="${{ github.event.release.name }}"
+          export MAJOR_VERSION=$(echo ${tag_name} | cut -d. -f1)
+          export MINOR_VERSION=$(echo ${tag_name} | cut -d. -f2)
+          export dir_name=versions/${MAJOR_VERSION}.${MINOR_VERSION}
+          # generate certain version wiki
+          mkdir -p ${dir_name}
+          export name=${dir_name}/${tag_name}.bk
+          echo -e "## ${title}  \n${body}" > ${name}
+          # generate CHANGELOG.md
+          # get all files start with v recrusive, and sort by version
+          echo -e "" > CHANGELOG.md
+          export files=$(find versions -name "*" -type f | sort -r)
+          for file in ${files}; do
+            t=$(basename ${file})
+            echo -e "# ${t%.*}  \n" >> CHANGELOG.md
+            cat ${file} >> CHANGELOG.md
+            echo -e "\n\n\n  " >> CHANGELOG.md
+          done
+          ls -alhR -I .git
+          # commit and push
+          # check if there is any change
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Update wiki for ${tag_name}"
+          git push
