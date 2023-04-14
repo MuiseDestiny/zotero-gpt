@@ -356,7 +356,7 @@ export default class Views {
           {
             "type": "join",
             // 这个id对应我上传的一个空白PDF，里面只有文字 `Zotero GPT`，为了防止回答跑偏
-            "chatId": "JRcqq2KpiVUC1KBv_7yh1",  
+            "chatId": "fDZbILSPm565qetWM7-E2",  
           },
           "history": [
             {
@@ -397,6 +397,7 @@ export default class Views {
         .show()
     }
     this.history.push({ author: 'AI', msg: responseText });
+    this.setText(responseText, true)
     return responseText
   }
 
@@ -1147,8 +1148,12 @@ export default class Views {
           const span = range.endContainer
           if (/[\n ]+/.test(span.innerText)) {
             let { x, y } = span.getBoundingClientRect();
-            x = Number(document.querySelector("#betternotes-workspace-outline-container")!.getAttribute("width") as string)
-            this.show(x + 25, y + 38)
+            const leftPanel = document.querySelector("#betternotes-workspace-outline-container")!
+            x = leftPanel.getAttribute("collapsed") ?
+              0
+              :
+              Number(leftPanel.getAttribute("width") as string)
+            this.show(x + 30, y + 38)
             event.preventDefault();
           }
           return 
