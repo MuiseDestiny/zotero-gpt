@@ -1,7 +1,7 @@
 {
   "name": "zotero-gpt",
   "version": "0.1.5",
-  "description": "GPT Meets Zotero",
+  "description": "GPT Meet Zotero",
   "config": {
     "addonName": "Zotero GPT",
     "addonID": "zoterogpt@polygon.org",
