@@ -25,7 +25,7 @@ jobs:
         run: |
           rm -rf wiki/labels
           mkdir -p wiki/labels
-          cp -r repo/labels/*.txt wiki/tags/
+          cp -r repo/tags/*.txt wiki/tags/
           cd wiki/labels
           export files=$(find . -name "*.txt" -type f | sort -r)
           for file in ${files}; do
