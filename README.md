@@ -4,7 +4,7 @@
 
 # Zotero GPT
 
-[中文文档](https://www.yuque.com/polygon-qvorl/hcf5p8/zxoogs59anx1drqw/edit)
+[📖中文文档](https://www.yuque.com/polygon-qvorl/hcf5p8/zxoogs59anx1drqw/edit)
 
 This plugin is for users with some basic programming skills
 
