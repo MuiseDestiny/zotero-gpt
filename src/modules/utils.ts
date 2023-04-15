@@ -1,7 +1,7 @@
 // 可以从zotero-reference仓库获取
-import PDF from "E:/Github/zotero-reference/src/modules/pdf"
+import PDF from "zotero-reference/src/modules/pdf"
 // 可以从zotero-style仓库获取
-import LocalStorage from "E:/Github/zotero-style/src/modules/localStorage";
+import LocalStorage from "zotero-style/src/modules/localStorage";
 import { config } from "../../package.json";
 import { MD5 } from "crypto-js"
 import { Document } from "langchain/document";
@@ -44,12 +44,31 @@ export default class Utils {
   }
 
   /**
+   * 检查OpenAI Embeddings是否可用
+   * @returns 
+   */
+  public async checkOpenAIEmbeddings() {
+    const text=["test"];
+    const embeddings = new OpenAIEmbeddings() as any
+    try {
+      const v0 = await embeddings.embedDocuments(text)
+      return [true, v0]
+    } catch (error : any) {
+      return [false, error.message as string]
+    }
+  }
+
+  /**
    * 如果当前在主面板，根据选中条目生成文本，查找相关 - 用于搜索条目
    * 如果在PDF阅读界面，阅读PDF原文，查找返回相应段落 - 用于总结问题
    * @param queryText 
    * @returns 
    */
   public async getRelatedText(queryText: string) {
+    const checkResult = await this.checkOpenAIEmbeddings()
+    if (!checkResult[0]) {
+      return checkResult[1]
+    }
     let docs: Document[], key: string
     switch (Zotero_Tabs.selectedIndex) {
       case 0:
