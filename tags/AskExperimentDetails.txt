@@ -9,7 +9,7 @@ let getSelection = () => {
  Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)
     );
 }
-console.log(getSelection())
+ztoolkit.log(getSelection())
 getSelection()
 ```
 

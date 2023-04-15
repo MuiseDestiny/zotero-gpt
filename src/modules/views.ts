@@ -198,7 +198,7 @@ export default class Views {
         try {
           outputDiv.innerHTML = result;
         } catch {
-          console.log(result)
+          ztoolkit.log(result)
           outputDiv.innerHTML = _old;
         }
       }
@@ -327,7 +327,7 @@ export default class Views {
     addToHistory(requestText, this.history)
     let responseText = ""
     let preResponseText = ""
-    console.log(this.history)
+    ztoolkit.log(this.history)
     let joinPre = (lastIndex: number): any => {
       if (this.history[lastIndex].author == "uplaceholder" && this.history[lastIndex].msg == "continue") {
         let i = lastIndex - 1
@@ -342,7 +342,7 @@ export default class Views {
       }
     }
     joinPre(this.history.length - 1)
-    console.log(this.history)
+    ztoolkit.log(this.history)
     // 文本突破限制
     const outputDiv = this.outputContainer.querySelector("div")!
     const errorMsg = "<Service Error 331>"
@@ -699,13 +699,13 @@ export default class Views {
         }
       }
       if (event.key == "Enter") { 
-        console.log(event)
+        ztoolkit.log(event)
         outputContainer.querySelector(".reference")?.remove()
 
         // 同时按Ctrl，会点击第一个标签
         if (event.ctrlKey) {
           // 查找第一个点击
-          console.log("Ctrl + Enter")
+          ztoolkit.log("Ctrl + Enter")
           let tag = that._tag || that.getTags()[0]
           return that.execTag(tag)
         }
@@ -1039,7 +1039,7 @@ export default class Views {
     // text = text.replace(/```j[ava]?s[cript]?\n([\s\S]+?)\n```/, (_, codeString) => window.eval(`
     //   ${codeString}
     // `))
-    console.log(text)
+    ztoolkit.log(text)
     popunWin.createLine({text: `Text total length is ${text.length}`, type: "success"})
     popunWin.createLine({ text: "GPT is answering...", type: "default" })
     // 运行替换其中js代码

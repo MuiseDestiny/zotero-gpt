@@ -87,7 +87,7 @@ export default class Utils {
     }
     this.cache[key] = docs
     docs = await this.similaritySearch(queryText, docs, {key}) as Document[]
-    console.log("docs", docs)
+    ztoolkit.log("docs", docs)
     const outputContainer = Zotero[config.addonInstance].views.outputContainer
     outputContainer.querySelector(".reference")?.remove()
     const refDiv = ztoolkit.UI.appendElement({
@@ -172,7 +172,7 @@ export default class Utils {
         break
       }
     }
-    console.log(pageLines)
+    ztoolkit.log(pageLines)
     popupWin.changeHeadline("[Pending] PDF");
     popupWin.changeLine({ progress: 100 });
     totalPageNum = Object.keys(pageLines).length
@@ -291,7 +291,7 @@ export default class Utils {
           paragraphs.slice(-1)[0].push(currentLine)
         }
       }
-      console.log(paragraphs)
+      ztoolkit.log(paragraphs)
       // 段落合并
       for (let i = 0; i < paragraphs.length; i++) {
         let box: { page: number, left: number; top: number; right: number; bottom: number }
@@ -414,7 +414,7 @@ export default class Utils {
     // 从20个里面找出文本最长的几个，防止出现较短但相似度高的段落影响回答准确度
     const k = 20
     const pp = vv.map((v: any) => similarity(v0, v));
-    console.log(pp, [...pp].sort((a, b) => b - a))
+    ztoolkit.log(pp, [...pp].sort((a, b) => b - a))
     docs = [...pp].sort((a, b) => b - a).slice(0, k).map((p: number) => {
       return docs[pp.indexOf(p)]
     })
