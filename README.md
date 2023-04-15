@@ -4,7 +4,7 @@
 
 # Zotero GPT
 
-[中文文档](https://www.yuque.com/polygon-qvorl/hcf5p8/zxoogs59anx1drqw/edit)
+[中文文档]https://airy-manta-58b.notion.site/Zotero-GPT-7a008a8bd4f5448ca0ffe1c304ec31b3)
 
 This plugin is for users with some basic programming skills
 
