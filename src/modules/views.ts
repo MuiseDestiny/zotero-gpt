@@ -248,42 +248,47 @@ export default class Views {
       this.setText(_textArr.join(""))
     }, deltaTime)
     this._id = id
-    await Zotero.HTTP.request(
-      "POST",
-      `${api}/chat/completions`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${secretKey}`,
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: this.messages,
-          stream: true,
-          temperature: Number(temperature)
-        }),
-        responseType: "text",
-        requestObserver: (xmlhttp: XMLHttpRequest) => {
-          xmlhttp.onprogress = (e: any) => {
-            try {
-              textArr = e.target.response.match(/data: (.+)/g).filter((s: string) => s.indexOf("content")>=0).map((s: string) => {
-                try {
-                  return JSON.parse(s.replace("data: ", "")).choices[0].delta.content.replace(/\n+/g, "\n")
-                } catch {
-                  return false
-                }
-              }).filter(Boolean)
-            } catch {
-              // 出错一般是token超出限制
-              this.setText(e.target.response + "\n\n" + requestText, true)
-            }
-            if (e.target.timeout) {
-              e.target.timeout = 0;
-            }
-          };
-        },
-      }
-    );
+    try{
+      await Zotero.HTTP.request(
+        "POST",
+        `${api}/chat/completions`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${secretKey}`,
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: this.messages,
+            stream: true,
+            temperature: Number(temperature)
+          }),
+          responseType: "text",
+          requestObserver: (xmlhttp: XMLHttpRequest) => {
+            xmlhttp.onprogress = (e: any) => {
+              try {
+                textArr = e.target.response.match(/data: (.+)/g).filter((s: string) => s.indexOf("content")>=0).map((s: string) => {
+                  try {
+                    return JSON.parse(s.replace("data: ", "")).choices[0].delta.content.replace(/\n+/g, "\n")
+                  } catch {
+                    return false
+                  }
+                }).filter(Boolean)
+              } catch {
+                // 出错一般是JSON解析错误，因为返回的是报错信息
+                textArr = [e.target.response, "\n\n", requestText]
+              }
+              if (e.target.timeout) {
+                e.target.timeout = 0;
+              }
+            };
+          },
+        }
+      );
+    } catch (e : any) {
+      // 出错一般是token超出限制
+      // Zotero.debug(`exception name: ${e.name}, message: ${e.message}`)
+    }
     isDone = true
     const responseText = textArr.join("")
     this.messages.push({
@@ -1040,15 +1045,19 @@ export default class Views {
     // 运行替换其中js代码
     text = await this.getGPTResponseText(text) as string
     this.dotsContainer?.classList.remove("loading")
-    try {
-      window.eval(`
-        setTimeout(async () => {
-          ${text}
-        })
-      `)
-      popunWin.createLine({ text: "Code is executed", type: "success" })
-    } catch { }
-    popunWin.createLine({ text: "Done", type: "success" })
+    if(text.length) {
+      try {
+        window.eval(`
+          setTimeout(async () => {
+            ${text}
+          })
+        `)
+        popunWin.createLine({ text: "Code is executed", type: "success" })
+      } catch { }
+      popunWin.createLine({ text: "Done", type: "success" })
+    }else {
+      popunWin.createLine({ text: "No code is executed", type: "fail" })
+    }
     popunWin.startCloseTimer(3000)
   }
 
