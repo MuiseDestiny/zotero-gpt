@@ -27,6 +27,7 @@ Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-
 
 ![AskPDF](imgs/AskPDF.gif)
 
+[视频演示](https://b23.tv/4mNydhl)
 
 ## Quick Start
 
