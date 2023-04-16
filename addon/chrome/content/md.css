@@ -833,6 +833,14 @@
         visibility: hidden;
     }
 }
+
+.markdown-body math {
+    display: none;
+}
+.markdown-body svg {
+    margin-left: 2em;
+}
+
 .streaming>span:after,
 .streaming>ul:last-child li:last-child:after,
 .streaming>pre:last-child code:after,

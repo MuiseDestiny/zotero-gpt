@@ -1,6 +1,6 @@
 {
   "name": "zotero-gpt",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "GPT Meet Zotero",
   "config": {
     "addonName": "Zotero GPT",

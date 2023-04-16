@@ -7,6 +7,9 @@ const markdown = require("markdown-it")({
 });
 const mathjax3 = require('markdown-it-mathjax3');
 markdown.use(mathjax3);
+// {
+//   startup: { AssistiveMMLStartup: false }
+// }
 
 
 const fontFamily = `Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji`
@@ -70,6 +73,10 @@ export default class Views {
    * 记录当前GPT输出流setInterval的id，防止终止后仍有输出
    */
   private _id: number | undefined
+  /**
+   * 是否在笔记环境下
+   */
+  private isInNote: boolean = true
   private container!: HTMLDivElement;
   private inputContainer!: HTMLDivElement;
   private outputContainer!: HTMLDivElement;
@@ -84,12 +91,14 @@ export default class Views {
   }
 
   private init() {
+    
     if (Zotero.Prefs.get(`${config.addonRef}.autoShow`)) {
       this.container = this.buildContainer()
       this.container.style.display = "flex"
       this.setText(help, true, false)
       this.inputContainer!.querySelector("input")!.value = "/help"
       this.show(-1, -1, false)
+      
     }
   }
   
@@ -161,16 +170,20 @@ export default class Views {
   private setText(text: string, isDone: boolean = false, scrollToNewLine : boolean = true) {
     this.outputContainer.style.display = ""
     const outputDiv = this.outputContainer.querySelector(".markdown-body")!
-    outputDiv.classList.add("streaming");
     outputDiv.setAttribute("pureText", text);
-    if (outputDiv.innerHTML == "") {
-      outputDiv.innerHTML = "<span></span>"
+    outputDiv.classList.add("streaming");
+    let ready = () => {
+      if (outputDiv.innerHTML.trim() == "") {
+        outputDiv.innerHTML = `<span></span>`
+      }
     }
+    ready()
     /**
      * 根据差异渲染，只为保全光标闪烁
      */
     let md2html = () => {
       let result = markdown.render(text)
+        // .replace(/<mjx-assistive-mml[^>]*>.*?<\/mjx-assistive-mml>/g, "")
       /**
        * 监测差异，替换节点或文字
        * @param oldNode 
@@ -178,17 +191,32 @@ export default class Views {
        * @returns 
        */
       let diffRender = (oldNode: any, newNode: any) => {
+        if (newNode.nodeName == "svg") {
+          oldNode.parentNode.replaceChild(newNode, oldNode)
+          return
+        }
         if (oldNode.nodeName == "#text" && newNode.nodeName == "#text") { 
           oldNode.data = newNode.data
           return
         } else {
-          if (oldNode.outerHTML == newNode.outerHTML &&
-            oldNode.innerHTML == newNode.innerHTML) { return }
+          if (
+            oldNode.outerHTML == newNode.outerHTML &&
+            oldNode.innerHTML == newNode.innerHTML
+          ) {
+            return
+          }
         }
+        // 老的比新的多要去除
+        [...oldNode.childNodes].slice(newNode.childNodes.length).forEach((e: any)=>e.remove())
         for (let i = 0; i < newNode.childNodes.length; i++) {
           if (i < oldNode.childNodes.length) {
             if (oldNode.childNodes[i].tagName != newNode.childNodes[i].tagName) {
-              oldNode.replaceChild(newNode.childNodes[i], oldNode.childNodes[i])
+              if (oldNode.childNodes[i].tagName == "#text") {
+                oldNode.childNodes[i].remove()
+                oldNode.appendChild(newNode.childNodes[i])
+              } else {
+                oldNode.replaceChild(newNode.childNodes[i], oldNode.childNodes[i])
+              }
               continue
             } else {
               diffRender(oldNode.childNodes[i], newNode.childNodes[i])
@@ -208,12 +236,27 @@ export default class Views {
       }
     }
     md2html()
+    ready()
     // @ts-ignore
     scrollToNewLine && this.outputContainer.scrollBy(0, this.outputContainer.scrollTopMax)
     if (isDone) {
-      outputDiv.innerHTML = ""
-      md2html()
+      // 任何实时预览的错误到最后，应该因为下面这句消失
+      outputDiv.innerHTML = markdown.render(text)
       outputDiv.classList.remove("streaming")
+      if (this.isInNote) {
+        this.container.style.display = "none"
+        const BNEditorApi = Zotero.BetterNotes.api.editor
+        const editor = BNEditorApi.getEditorInstance(Zotero.BetterNotes.data.workspace.mainId);
+        editor._iframeWindow.focus()
+        const from = BNEditorApi.getRangeAtCursor(editor).from
+        BNEditorApi.insert(
+          editor,
+          outputDiv.innerHTML,
+          from,
+          true
+        )
+        editor._iframeWindow.focus()
+      }
     }
   }
 
@@ -247,46 +290,54 @@ export default class Views {
         // 只是结束了setText，而响应还在继续
         return window.clearInterval(id)
       }
-      _textArr = textArr.slice(0, _textArr.length+1)
-      this.setText(_textArr.join(""))
+      _textArr = textArr.slice(0, _textArr.length + 1)
+      const _text = _textArr.join("")
+      _text.length > 0 && this.setText(_text)
     }, deltaTime)
     this._id = id
-    await Zotero.HTTP.request(
-      "POST",
-      `${api}/chat/completions`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${secretKey}`,
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: this.messages,
-          stream: true,
-          temperature: Number(temperature)
-        }),
-        responseType: "text",
-        requestObserver: (xmlhttp: XMLHttpRequest) => {
-          xmlhttp.onprogress = (e: any) => {
-            try {
-              textArr = e.target.response.match(/data: (.+)/g).filter((s: string) => s.indexOf("content")>=0).map((s: string) => {
-                try {
-                  return JSON.parse(s.replace("data: ", "")).choices[0].delta.content.replace(/\n+/g, "\n")
-                } catch {
-                  return false
-                }
-              }).filter(Boolean)
-            } catch {
-              // 出错一般是token超出限制
-              this.setText(e.target.response + "\n\n" + requestText, true)
-            }
-            if (e.target.timeout) {
-              e.target.timeout = 0;
-            }
-          };
-        },
-      }
-    );
+    const url = `${api}/chat/completions`
+    try {
+      await Zotero.HTTP.request(
+        "POST",
+        url,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${secretKey}`,
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: this.messages,
+            stream: true,
+            temperature: Number(temperature)
+          }),
+          responseType: "text",
+          requestObserver: (xmlhttp: XMLHttpRequest) => {
+            xmlhttp.onprogress = (e: any) => {
+              try {
+                textArr = e.target.response.match(/data: (.+)/g).filter((s: string) => s.indexOf("content")>=0).map((s: string) => {
+                  try {
+                    return JSON.parse(s.replace("data: ", "")).choices[0].delta.content.replace(/\n+/g, "\n")
+                  } catch {
+                    return false
+                  }
+                }).filter(Boolean)
+              } catch {
+                // 出错一般是token超出限制
+                this.setText(e.target.response + "\n\n" + requestText, true)
+              }
+              if (e.target.timeout) {
+                e.target.timeout = 0;
+              }
+            };
+          },
+        }
+      );
+    } catch (error: any) {
+      new ztoolkit.ProgressWindow(url, { closeOtherProgressWindows: true })
+        .createLine({ text: error.message, type: "fail" })
+      .show()
+    }
     const responseText = textArr.join("")
     window.clearInterval(id)
     window.setTimeout(() => {
@@ -615,7 +666,7 @@ export default class Views {
       const newStyle = (value: string) => parseFloat(value) * scale + 'px';
   
       for (const key in styleAttributes) {
-        child.style[key as StyleAttributeKeys] = newStyle(style[key as StyleAttributeKeys]);
+        child.style && (child.style[key as StyleAttributeKeys] = newStyle(style[key as StyleAttributeKeys]))
       }
     };
     // 为指定的div绑定wheel事件
@@ -1214,12 +1265,25 @@ export default class Views {
         if (
           Zotero_Tabs.selectedIndex == 1 &&
           event.explicitOriginalTarget.baseURI.indexOf("note-editor") >= 0 &&
-          event.code == "Space"
+          event.code == "Space" &&
+          Zotero.BetterNotes.api.editor
         ) {
+          this.isInNote = true
+          const BNEditorApi = Zotero.BetterNotes.api.editor
+          const editor = BNEditorApi.getEditorInstance(Zotero.BetterNotes.data.workspace.mainId);
+          let lines = [...editor._iframeWindow.document.querySelector(".primary-editor").childNodes]
           const doc = event.explicitOriginalTarget.ownerDocument
           const selection = doc.getSelection()
           const range = selection.getRangeAt(0);
           const span = range.endContainer
+          ztoolkit.log(span)
+          lines = lines.slice(0, lines.indexOf(span))
+          const context = await Zotero.BetterNotes.api.convert.html2md(lines.map(e => e.outerHTML).join("\n"))
+          ztoolkit.log(context)
+          this.messages = [{
+            role: "user",
+            content: context
+          }]
           if (/[\n ]+/.test(span.innerText)) {
             let { x, y } = span.getBoundingClientRect();
             const leftPanel = document.querySelector("#betternotes-workspace-outline-container")!
@@ -1241,6 +1305,7 @@ export default class Views {
           ) {
             return;
           }
+          this.isInNote = false
           if (Zotero_Tabs.selectedIndex == 0) {
             const div = document.querySelector("#item-tree-main-default .row.selected")!
             if (div) {
