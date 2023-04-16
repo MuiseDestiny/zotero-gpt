@@ -88,11 +88,18 @@ export default class Utils {
         styles: {
           margin: ".3em",
           fontSize: "0.8em",
-          color: "rgba(89, 192, 188, 1)",
-          cursor: "pointer"
+          cursor: "pointer",
+          borderRadius: "3px",
+          backgroundColor: "rgba(89, 192, 188, .43)",
+          width: "1.5em",
+          height: "1.5em",
+          textAlign: "center",
+          color: "white",
+          fontWeight: "bold"
         },
         properties: {
-          innerText: `[${index + 1}]`
+          innerText:index + 1
+          // innerText: `[${index + 1}]`
         },
         listeners: [ 
           {
