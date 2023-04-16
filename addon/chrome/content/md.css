@@ -242,7 +242,6 @@
     width: max-content;
     max-width: 100%;
     overflow: auto;
-    margin: 0.25em 0 !important;
 }
 
 .markdown-body td,
@@ -422,11 +421,11 @@
 }
 
 .markdown-body>*:first-child {
-    margin-top: 0 !important
+    margin-top: 0.25em !important
 }
 
 .markdown-body>*:last-child {
-    margin-bottom: 0 !important
+    margin-bottom: 0.25em !important
 }
 
 .markdown-body a:not([href]) {
@@ -823,6 +822,27 @@
 
 .markdown-body [data-footnote-ref]::before {
     content: "["
+}
+@-webkit-keyframes blink {
+    to {
+        visibility: hidden;
+    }
+}
+@keyframes blink {
+    to {
+        visibility: hidden;
+    }
+}
+.streaming>span:after,
+.streaming>ul:last-child li:last-child:after,
+.streaming>pre:last-child code:after,
+.streaming>ol:last-child li:last-child:after,
+.streaming>:not(ol):not(ul):not(pre):last-child:after {
+    -webkit-animation: blink 1s steps(5, start) infinite !important;
+    animation: blink 1s steps(5, start) infinite !important;
+    content: "▋";
+    margin-left: .25rem;
+    vertical-align: baseline
 }
 
 .markdown-body [data-footnote-ref]::after {

@@ -1,6 +1,10 @@
 import { config } from "../../package.json";
-
-const markdown = require("markdown-it")();
+const markdown = require("markdown-it")({
+  breaks: true, // 将行结束符\n转换为 <br> 标签
+  xhtmlOut: true, // 使用 /> 关闭标签，而不是 >
+  typographer: true,
+  
+});
 const mathjax3 = require('markdown-it-mathjax3');
 markdown.use(mathjax3);
 
@@ -12,7 +16,7 @@ const help = `
 \`/help\` Show all commands.
 \`/clear\` Clear history conversation.
 \`/secretKey sk-xxx\` Set GPT secret key.
-\`/api https://xxx/v1\` Set API.
+\`/api https://api.openai.com/v1\` Set API.
 \`/model gpt-4/gpt-3.5-turbo\` Set GPT model.
 \`/temperature 1.0\` Set GPT temperature.
 \`/autoShow true/false\` Automatically showed when Zotero is opened.
@@ -45,7 +49,7 @@ You can press \`Shift + Enter\` to enter long text editing mode and press \`Ctrl
 `
 export default class Views {
   private id = "zotero-GPT-container";
-  private freeAPI: "ChatPDF" = "ChatPDF"
+  private freeAPI: "ChatPDF" | "Anoyi" = "Anoyi"
   /**
    * OpenAI接口历史消息记录
    */
@@ -83,7 +87,7 @@ export default class Views {
     if (Zotero.Prefs.get(`${config.addonRef}.autoShow`)) {
       this.container = this.buildContainer()
       this.container.style.display = "flex"
-      this.setText(help, true)
+      this.setText(help, true, false)
       this.inputContainer!.querySelector("input")!.value = "/help"
       this.show(-1, -1, false)
     }
@@ -125,18 +129,6 @@ export default class Views {
             background: rgba(89, 192, 188, .8); 
             color: #fff;
           }
-
-          @keyframes blink {
-              to {
-                  visibility: hidden
-              }
-          }
-          #output-container div.streaming span:after {
-            animation: blink 1s steps(5,start) infinite;
-            content: "▋";
-            margin-left: .25rem;
-            vertical-align: baseline
-          }
           #output-container * {
             font-family: ${fontFamily} !important;
           }
@@ -147,6 +139,7 @@ export default class Views {
           }
         `
       },
+      // #output-container div.streaming span:after,  
     }, document.documentElement);
 
     ztoolkit.UI.appendElement({
@@ -165,45 +158,65 @@ export default class Views {
    * @param text 
    * @param isDone 
    */
-  private setText(text: string, isDone: boolean = false) {
+  private setText(text: string, isDone: boolean = false, scrollToNewLine : boolean = true) {
     this.outputContainer.style.display = ""
     const outputDiv = this.outputContainer.querySelector(".markdown-body")!
     outputDiv.classList.add("streaming");
     outputDiv.setAttribute("pureText", text);
-    let textSpan
-    if (!(textSpan = outputDiv.querySelector(".text") as HTMLSpanElement)) {
-      ztoolkit.UI.appendElement({
-        tag: "span",
-        classList: ["text"],
-        properties: {
-          innerText: text
-        }
-      }, outputDiv)
-    } else {
-      textSpan.innerText = text
+    if (outputDiv.innerHTML == "") {
+      outputDiv.innerHTML = "<span></span>"
     }
-    if (isDone) {
-      outputDiv.classList.remove("streaming")
-      let result = markdown.render(
-        text
-          .replace(/\n/g, "  \n")  // 让换行生效
-          .replace(/```markdown\n([\s\S]+?)\n```/g, (_, s)=>`\n${s}\n`)
-      )
-        .replace(/<mjx-assistive-mml[^>]*>.*?<\/mjx-assistive-mml>/g, "")
-        .replace(/<br>/g, "<br />")
-      // 纯文本本身不需要MD渲染，防止样式不一致出现变形
-      const tags = result.match(/<(.+)>[\s\S]+?<\/\1>/g)
-      if (!(tags.length == 1 && tags[0].startsWith("<p>"))) {
-        const _old = outputDiv.innerHTML
-        try {
-          outputDiv.innerHTML = result;
-        } catch {
-          ztoolkit.log(result)
-          outputDiv.innerHTML = _old;
+    let md2html = () => {
+      let result = markdown.render(text)
+      let diffRender = (oldNode: any, newNode: any) => {
+        if (oldNode.nodeName == "#text" && newNode.nodeName == "#text") { 
+          oldNode.data = newNode.data
+          return
+        } else {
+          if (oldNode.outerHTML == newNode.outerHTML &&
+            oldNode.innerHTML == newNode.innerHTML) { return }
+        }
+        for (let i = 0; i < newNode.childNodes.length; i++) {
+          if (i < oldNode.childNodes.length) {
+            if (oldNode.childNodes[i].tagName != newNode.childNodes[i].tagName) {
+              oldNode.replaceChild(newNode.childNodes[i], oldNode.childNodes[i])
+              continue
+            } else {
+              diffRender(oldNode.childNodes[i], newNode.childNodes[i])
+            }
+          } else {
+            oldNode.appendChild(newNode.childNodes[i])
+          }
         }
       }
+
+      // 纯文本本身不需要MD渲染，防止样式不一致出现变形
+      let _outputDiv = outputDiv.cloneNode(true) as HTMLDivElement
+      _outputDiv.innerHTML = result
+      if (outputDiv.childNodes.length == 0) {
+        outputDiv.innerHTML = result
+      } else {
+        diffRender(outputDiv, _outputDiv)
+      }
+      const tags = result.match(/<(.+)>[\s\S]+?<\/\1>/g)
+      if (tags && !(tags.every((s: string) => s.startsWith("<p>")))) {
+        // const _old = outputDiv.innerHTML
+        // try {
+        //   outputDiv.innerHTML = result;
+        // } catch {
+        //   console.log(result)
+        //   outputDiv.innerHTML = _old;
+        // }
+      }
     }
-    
+    md2html()
+    // @ts-ignore
+    scrollToNewLine && this.outputContainer.scrollBy(0, this.outputContainer.scrollTopMax)
+    if (isDone) {
+      outputDiv.innerHTML = ""
+      md2html()
+      outputDiv.classList.remove("streaming")
+    }
   }
 
   /**
@@ -230,67 +243,57 @@ export default class Views {
     // 激活输出
     window.clearInterval(this._id)
     this.setText("")
-    let isDone = false
     const id = window.setInterval(() => {
       if (id != this._id) {
         // 可能用户打断输入
         // 只是结束了setText，而响应还在继续
         return window.clearInterval(id)
       }
-      if (_textArr.length == textArr.length && isDone) {
-        window.clearInterval(id)
-        window.setTimeout(() => {
-          this.setText(textArr.join(""), true)
-        }, deltaTime * 5)
-        return
-      }
       _textArr = textArr.slice(0, _textArr.length+1)
       this.setText(_textArr.join(""))
     }, deltaTime)
     this._id = id
-    try{
-      await Zotero.HTTP.request(
-        "POST",
-        `${api}/chat/completions`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${secretKey}`,
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: this.messages,
-            stream: true,
-            temperature: Number(temperature)
-          }),
-          responseType: "text",
-          requestObserver: (xmlhttp: XMLHttpRequest) => {
-            xmlhttp.onprogress = (e: any) => {
-              try {
-                textArr = e.target.response.match(/data: (.+)/g).filter((s: string) => s.indexOf("content")>=0).map((s: string) => {
-                  try {
-                    return JSON.parse(s.replace("data: ", "")).choices[0].delta.content.replace(/\n+/g, "\n")
-                  } catch {
-                    return false
-                  }
-                }).filter(Boolean)
-              } catch {
-                // 出错一般是JSON解析错误，因为返回的是报错信息
-                textArr = [e.target.response, "\n\n", requestText]
-              }
-              if (e.target.timeout) {
-                e.target.timeout = 0;
-              }
-            };
-          },
-        }
-      );
-    } catch (e : any) {
-      // 出错一般是token超出限制
-      // Zotero.debug(`exception name: ${e.name}, message: ${e.message}`)
-    }
-    isDone = true
+    await Zotero.HTTP.request(
+      "POST",
+      `${api}/chat/completions`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${secretKey}`,
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: this.messages,
+          stream: true,
+          temperature: Number(temperature)
+        }),
+        responseType: "text",
+        requestObserver: (xmlhttp: XMLHttpRequest) => {
+          xmlhttp.onprogress = (e: any) => {
+            try {
+              textArr = e.target.response.match(/data: (.+)/g).filter((s: string) => s.indexOf("content")>=0).map((s: string) => {
+                try {
+                  return JSON.parse(s.replace("data: ", "")).choices[0].delta.content.replace(/\n+/g, "\n")
+                } catch {
+                  return false
+                }
+              }).filter(Boolean)
+            } catch {
+              // 出错一般是token超出限制
+              this.setText(e.target.response + "\n\n" + requestText, true)
+            }
+            if (e.target.timeout) {
+              e.target.timeout = 0;
+            }
+          };
+        },
+      }
+    );
     const responseText = textArr.join("")
+    window.clearInterval(id)
+    window.setTimeout(() => {
+      this.setText(responseText, true)
+    }, deltaTime * 5)
     this.messages.push({
       role: "assistant",
       content: responseText
@@ -403,6 +406,74 @@ export default class Views {
     }
     this.history.push({ author: 'AI', msg: responseText });
     this.setText(responseText, true)
+    return responseText
+  }
+
+  /**
+   * 
+   * @param requestText 
+   * @returns 
+   */
+  private async getGPTResponseTextByAnoyi(requestText: string) {
+    const temperature = Zotero.Prefs.get(`${config.addonRef}.temperature`) as string
+    const deltaTime = Zotero.Prefs.get(`${config.addonRef}.deltaTime`) as number
+
+    let responseText = ""
+    this.messages.push({
+      role: "user",
+      content: requestText
+    })
+    // 储存上一次的结果
+    // 激活输出
+    this.setText("")
+    window.clearInterval(this._id)
+    const id = window.setInterval(() => {
+      if (id != this._id) {
+        // 可能用户打断输入
+        // 只是结束了setText，而响应还在继续
+        return window.clearInterval(id)
+      }
+      this.setText(responseText)
+    }, deltaTime)
+    this._id = id
+    await Zotero.HTTP.request(
+      "POST",
+      `https://gpt.anoyi.com/api/chat`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+        },
+        body: JSON.stringify({
+          "model": {
+            "id": "gpt-3.5-turbo",
+            "name": "GPT-3.5",
+            "maxLength": 12000,
+            "tokenLimit": 4000
+          },
+          messages: this.messages,
+          // stream: true,
+          "key": "",
+          "prompt": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+          "temperature": Number(temperature)
+        }),
+        responseType: "text",
+        requestObserver: (xmlhttp: XMLHttpRequest) => {
+          xmlhttp.onprogress = (e: any) => {
+            responseText = e.target.response
+            if (e.target.timeout) {
+              e.target.timeout = 0;
+            }
+          };
+        },
+      }
+    );
+    window.clearInterval(id)
+    this.setText(responseText, true)
+    this.messages.push({
+      role: "assistant",
+      content: responseText
+    })
     return responseText
   }
 
@@ -748,10 +819,9 @@ export default class Views {
             that.messages = []
             // @ts-ignore
             this.value = ""
-            outputContainer.style.display = ""
-            outputContainer.querySelector("div")!.innerHTML = `success`
+            that.setText("success", true, false)
           } else if (key == "help"){ 
-            that.setText(help, true)
+            that.setText(help, true, false)
           } else if (["secretKey", "model", "autoShow", "api", "temperature", "deltaTime", "width", "tagsMore"].indexOf(key) != -1) {  
             if (value?.length > 0) {
               if (key == "autoShow") {
@@ -780,7 +850,7 @@ export default class Views {
             } else {
               value = Zotero.Prefs.get(`${config.addonRef}.${key}`)
             }
-            that.setText(`${key} = ${value}`, true)
+            that.setText(`${key} = ${value}`, true, false)
             // @ts-ignore
             this.value = ""
           }
