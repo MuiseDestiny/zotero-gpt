@@ -166,8 +166,17 @@ export default class Views {
     if (outputDiv.innerHTML == "") {
       outputDiv.innerHTML = "<span></span>"
     }
+    /**
+     * 根据差异渲染，只为保全光标闪烁
+     */
     let md2html = () => {
       let result = markdown.render(text)
+      /**
+       * 监测差异，替换节点或文字
+       * @param oldNode 
+       * @param newNode 
+       * @returns 
+       */
       let diffRender = (oldNode: any, newNode: any) => {
         if (oldNode.nodeName == "#text" && newNode.nodeName == "#text") { 
           oldNode.data = newNode.data
@@ -189,7 +198,6 @@ export default class Views {
           }
         }
       }
-
       // 纯文本本身不需要MD渲染，防止样式不一致出现变形
       let _outputDiv = outputDiv.cloneNode(true) as HTMLDivElement
       _outputDiv.innerHTML = result
@@ -197,16 +205,6 @@ export default class Views {
         outputDiv.innerHTML = result
       } else {
         diffRender(outputDiv, _outputDiv)
-      }
-      const tags = result.match(/<(.+)>[\s\S]+?<\/\1>/g)
-      if (tags && !(tags.every((s: string) => s.startsWith("<p>")))) {
-        // const _old = outputDiv.innerHTML
-        // try {
-        //   outputDiv.innerHTML = result;
-        // } catch {
-        //   console.log(result)
-        //   outputDiv.innerHTML = _old;
-        // }
       }
     }
     md2html()
@@ -330,7 +328,7 @@ export default class Views {
     addToHistory(requestText, this.history)
     let responseText = ""
     let preResponseText = ""
-    console.log(this.history)
+    ztoolkit.log(this.history)
     let joinPre = (lastIndex: number): any => {
       if (this.history[lastIndex].author == "uplaceholder" && this.history[lastIndex].msg == "continue") {
         let i = lastIndex - 1
@@ -345,7 +343,7 @@ export default class Views {
       }
     }
     joinPre(this.history.length - 1)
-    console.log(this.history)
+    ztoolkit.log(this.history)
     // 文本突破限制
     const outputDiv = this.outputContainer.querySelector("div")!
     const errorMsg = "<Service Error 331>"
@@ -770,13 +768,13 @@ export default class Views {
         }
       }
       if (event.key == "Enter") { 
-        console.log(event)
+        ztoolkit.log(event)
         outputContainer.querySelector(".reference")?.remove()
 
         // 同时按Ctrl，会点击第一个标签
         if (event.ctrlKey) {
           // 查找第一个点击
-          console.log("Ctrl + Enter")
+          ztoolkit.log("Ctrl + Enter")
           let tag = that._tag || that.getTags()[0]
           return that.execTag(tag)
         }
@@ -1106,24 +1104,25 @@ export default class Views {
       let codeString = rawString.match(/```j(?:ava)?s(?:cript)?\n([\s\S]+?)\n```/)![1]
       text = text.replace(rawString, await window.eval(`${codeString}`))
     }
-    // text = text.replace(/```j[ava]?s[cript]?\n([\s\S]+?)\n```/, (_, codeString) => window.eval(`
-    //   ${codeString}
-    // `))
-    console.log(text)
+    ztoolkit.log(text)
     popunWin.createLine({text: `Text total length is ${text.length}`, type: "success"})
     popunWin.createLine({ text: "GPT is answering...", type: "default" })
     // 运行替换其中js代码
     text = await this.getGPTResponseText(text) as string
     this.dotsContainer?.classList.remove("loading")
-    try {
-      window.eval(`
-        setTimeout(async () => {
-          ${text}
-        })
-      `)
-      popunWin.createLine({ text: "Code is executed", type: "success" })
-    } catch { }
-    popunWin.createLine({ text: "Done", type: "success" })
+    if (text.trim().length) {
+      try {
+        window.eval(`
+          setTimeout(async () => {
+            ${text}
+          })
+        `)
+        popunWin.createLine({ text: "Code is executed", type: "success" })
+      } catch { }
+      popunWin.createLine({ text: "Done", type: "success" })
+    } else {
+      popunWin.createLine({ text: "Done", type: "fail" })
+    }
     popunWin.startCloseTimer(3000)
   }
 
@@ -1148,7 +1147,7 @@ export default class Views {
    * 按照position顺序排序后返回
    */
   private getTags() {
-    let defaultTags = [{ "tag": "🌸AskClipboard", "color": "#dc4334", "position": 9, "text": "#🌸AskClipboard[position=9][color=#dc4334]\nRead this:\n\n```js\n\nZotero.ZoteroGPT.utils.getClipboardText()\n\n```\n\n---\n\nplease answer this question based on above content (use 简体中文). In the end, you need repeat above content：```js\nZotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\n```" }, { "tag": "🎈Translate", "color": "#21a2f1", "position": 1, "text": "#🎈Translate[position=1][color=#21a2f1]\n\ntranslate these from English to 简体中文:\n```js\nZotero.ZoteroGPT.utils.getPDFSelection()\n```" }, { "tag": "✨ToEnglish", "color": "#42BA99", "position": 2, "text": "#✨ToEnglish[position=2][color=#42BA99]\nPlease help me translate these to English:\n\n```js\nZotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\n```" }, { "tag": "✍️Abs2Sum", "color": "#E11299", "position": 4, "text": "#✍️Abs2Sum[position=4][color=#E11299]\n下面是一篇论文的摘要：\n```js\n// 确保你选择的是PDF的摘要部分\nZotero.ZoteroGPT.utils.getPDFSelection()\n```\n\n---\n\n请问它的主要工作是什么，在什么地区，时间范围是什么，使用的数据是什么，创新点在哪？\n\n请你用下列示例格式回答我：\n主要工作：反演AOD；\n地区：四川盆地；\n时间：2017~2021；\n数据：Sentinel-2卫星数据；\n创新：考虑了BRDF效应。\n\n" }, { "tag": "🪐AskPDF", "color": "#009FBD", "position": 0, "text": "#🪐AskPDF[position=0][color=#009FBD]\n\nYou are a helpful assistant. Context information is below.\n\n---\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\nwindow.gptInputString \n)\n\n```\n---\n\nCurrent date: ```js\nString(new Date())\n```\nUsing the provided context information, write a comprehensive reply to the given query. Make sure to cite results using [number] notation after the reference. If the provided context information refer to multiple subjects with the same name, write separate answers for each subject. Use prior knowledge only if the given context didn't provide enough information. \n\nAnswer the question:\n```js\nwindow.gptInputString \n```\n\nReply in 简体中文\n" }, { "tag": "🔍SearchItems", "color": "#ED5629", "position": 9, "text": "#🔍SearchItems[position=9][color=#ED5629]\n\n现在你是一个数据库系统，下面是一些JSON信息，每个JSON对应Zotero一篇文献：\n\n---\n\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\nwindow.gptInputString \n)\n\n```\n\n---\n\n我现在在寻找一篇文献，它很可能就在我上面给你的文献之中。下面是对我想找的文献的描述：\n```js\nwindow.gptInputString \n```\n\n请你回答最有可能是哪几篇文献，请同时给出最可能的一篇。\n\nReply in 简体中文" }]
+    let defaultTags = [{ "tag": "🪐AskPDF", "color": "#009FBD", "position": 0, "text": "#🪐AskPDF[position=0][color=#009FBD]\n\nYou are a helpful assistant. Context information is below.\n\n---\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\nwindow.gptInputString \n)\n\n```\n---\n\nCurrent date: ```js\nString(new Date())\n```\nUsing the provided context information, write a comprehensive reply to the given query. Make sure to cite results using [number] notation after the reference. If the provided context information refer to multiple subjects with the same name, write separate answers for each subject. Use prior knowledge only if the given context didn't provide enough information. \n\nAnswer the question:\n```js\nwindow.gptInputString \n```\n\nReply in 简体中文\n" }, { "tag": "🎈Translate", "color": "#21a2f1", "position": 1, "text": "#🎈Translate[position=1][color=#21a2f1]\n\ntranslate these from English to 简体中文:\n```js\nZotero.ZoteroGPT.utils.getPDFSelection()\n```" }, { "tag": "✍️Abs2Sum", "color": "#E11299", "position": 4, "text": "#✍️Abs2Sum[position=4][color=#E11299]\n下面是一篇论文的摘要：\n```js\n// 确保你选择的是PDF的摘要部分\nZotero.ZoteroGPT.utils.getPDFSelection()\n```\n\n---\n\n请问它的主要工作是什么，在什么地区，时间范围是什么，使用的数据是什么，创新点在哪？\n\n请你用下列示例格式回答我：\n主要工作：反演AOD；\n地区：四川盆地；\n时间：2017~2021；\n数据：Sentinel-2卫星数据；\n创新：考虑了BRDF效应。\n\n" }, { "tag": "🌸AskClipboard", "color": "#dc4334", "position": 9, "text": "#🌸AskClipboard[position=9][color=#dc4334]\nRead this:\n\n```js\n\nZotero.ZoteroGPT.utils.getClipboardText()\n\n```\n\n---\n\nplease answer this question based on above content (use 简体中文). In the end, you need repeat above content：```js\nZotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\n```" }, { "tag": "🔍SearchItems", "color": "#ED5629", "position": 9, "text": "#🔍SearchItems[position=9][color=#ED5629]\n\n现在你是一个数据库系统，下面是一些JSON信息，每个JSON对应Zotero一篇文献：\n\n---\n\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\nwindow.gptInputString \n)\n\n```\n\n---\n\n我现在在寻找一篇文献，它很可能就在我上面给你的文献之中。下面是对我想找的文献的描述：\n```js\nwindow.gptInputString \n```\n\n请你回答最有可能是哪几篇文献，请同时给出最可能的一篇，并给出原因。\n\nReply in 简体中文" }, { "tag": "✨ToEnglish", "color": "#42BA99", "position": 2, "text": "#✨ToEnglish[position=2][color=#42BA99]\nPlease help me translate these to English:\n\n```js\nZotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\n```\n\nYour answer is:" }]
     // 进行一个简单的处理，应该是中文/表情写入prefs.js导致的bug
     let tagString = Zotero.Prefs.get(`${config.addonRef}.tags`) as string
     if (!tagString) {
