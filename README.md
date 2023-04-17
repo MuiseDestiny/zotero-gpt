@@ -27,6 +27,27 @@ Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-
 
 ![AskPDF](imgs/AskPDF.gif)
 
+## 🚀 Main Features
+Features about GPT:  
+- [x] 🔗 **Integrate with Zotero**: You can use the plugin to search and ask items in the library based on the selected text or the PDF file.
+- [x] 🧠 Use GPT to generate reply text: support `gpt-3.5-turbo` and `gpt-4`
+- [x] 🏷️ [Command tags](/README.md#command-tags): **Click once** to accelerate your research.  
+  - [x] 💬 Ask questions about current **PDF file** (full-text or selected text).
+  - [x] 💬 Ask questions about **selected paper** (Abstract).
+  - [x] 📝 **Summarize the selected paper** into several highly condensed sentences.
+  - [x] 🔍 **Search items** in the library based on the selected text.
+  - [x] ... ...
+- [x] ⚙️ **Advanced settings for GPT**: You can set the [api key](https://platform.openai.com/account/api-keys), [model name](https://platform.openai.com/docs/api-reference/chat/create#chat/create-model), [api url](https://platform.openai.com/docs/api-reference/chat/create), [temperature](https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature).
+- [x] 📚 **Integrate with Better Notes**: You can directly open this plugin when using [Better Notes](https://github.com/windingwind/zotero-better-notes).
+
+Features about UI:
+- [x] 🎨 **Real-time markdown rendering** for reply text: Latex and mathjax are supported.
+- [x] 🔍 **Zoom in and out** of the reply text or the size of the plugin window.
+- [x] 🖱️ **Move the plugin window to any position** on the screen.
+- [x] 📋 **Copy the reply text** to the clipboard.
+- [x] ⚠️ Detailed **error message** will be displayed when the request fails.
+- [x] 🔧 Compatible with **Zotero 6** and **Zotero 7**.
+- [x] 🎉 Discover more exciting features that are not listed here.
 
 ## Quick Start
 
