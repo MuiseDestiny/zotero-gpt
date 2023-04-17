@@ -838,7 +838,8 @@
     display: none;
 }
 .markdown-body svg {
-    margin-left: 2em;
+    margin-left: 0.25em;
+    margin-right: 0.25em;
 }
 
 .streaming>span:after,
