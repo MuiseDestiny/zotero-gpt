@@ -48,7 +48,7 @@
     "highlight": "^0.2.4",
     "highlight.js": "^11.7.0",
     "htmldiff-js": "^1.0.5",
-    "langchain": "^0.0.53",
+    "langchain": "^0.0.56",
     "lighten-darken-color": "^1.0.0",
     "markdown-it": "^13.0.1",
     "markdown-it-mathjax3": "^4.3.2",
