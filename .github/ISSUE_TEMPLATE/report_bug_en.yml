@@ -1,0 +1,59 @@
+name: Plugin Issue Report
+description: "Report issues with this plugin, and you believe that it is a plugin issue rather than your own issue"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting feedback! Please fill in the information below as completely as possible to help us better locate the issue and resolve it quickly.
+        **Before everything starts, make sure you have read the [wiki](https://github.com/MuiseDestiny/zotero-gpt/wiki) page**
+        Even after **restarting** your `Zotero`, the issue still persists
+        ------
+  - type: checkboxes
+    attributes:
+      label: Has this issue been reported before?
+      description: Please search all issues and the [wiki](https://github.com/MuiseDestiny/zotero-gpt/wiki) to see if the issue you want to report already exists or has been resolved
+      options:
+      - label: I confirm that there is no existing issue, and I have read the **FAQ**
+        required: true
+  - type: textarea
+    attributes:
+      label: Operating Environment
+      description: |
+        Please provide detailed information about your environment, here is an example:
+        - **OS**: Windows11 22H2
+        - **Zotero version**: 6.0.23
+        - **Plugin version**: 0.2.3
+      value: |
+        - **OS**: 
+        - **Zotero version**: 
+        - **Plugin version**: 
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Current Configuration Information
+      description: If you can open the plugin, please run the `/report` command, and **double-click** to copy and paste the output here
+      placeholder: |
+        `api` https://api.openai.com
+        `secretKey` sk-...D6vr
+        `model` gpt-3.5-turbo
+        `temperature` 1.0
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Issue Details
+      description: Please provide a detailed description of the issue you encountered. If possible, please also provide a screenshot of the error
+      placeholder: |
+        Describe the issue you encountered
+        Explain the difference between your expected results and the actual results
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional Information
+      description: Links? References? Any more background information!
+      placeholder: |
+        Is the issue occurring randomly or can it be reproduced?
+        Is it related to different Papers or PDF files?

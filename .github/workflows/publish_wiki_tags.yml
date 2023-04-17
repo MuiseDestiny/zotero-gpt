@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - bootstrap
+    paths:
+      - 'tags/*.txt'
 
 jobs:
   release:

@@ -1,0 +1,61 @@
+name: 插件问题反馈
+description: "报告本插件存在的问题，且您确信这是插件问题而不是您的问题"
+#title: ""
+#labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢提交反馈！请尽可能完整填写以下信息，帮助我们更好地定位问题和快速解决问题
+        **在一切开始之前，请确保您已经阅读过 [wiki](https://github.com/MuiseDestiny/zotero-gpt/wiki) 页面**
+        即使**重启**您的`Zotero`之后，该问题依然存在
+        ------
+  - type: checkboxes
+    attributes:
+      label: 这个问题是否已有issue
+      description: 请搜索全部 issue 和 [wiki](https://github.com/MuiseDestiny/zotero-gpt/wiki) 以查看您想反馈的问题是否已存在或已解决
+      options:
+      - label: 我确认没有已有issue，且已阅读**常见问题**
+        required: true
+  - type: textarea
+    attributes:
+      label: 运行环境
+      description: |
+        请详细填写您的运行环境，以下是一个例子：
+        - **OS**: Windows11 22H2
+        - **Zotero version**: 6.0.23
+        - **Plugin version**: 0.2.3
+      value: |
+        - **OS**: 
+        - **Zotero version**: 
+        - **Plugin version**: 
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 当前配置信息
+      description: 如果能打开插件，请执行 `/report` 命令，将输出的信息**左键双击**复制粘贴到这里
+      placeholder: |
+        `api` https://api.openai.com
+        `secretKey` sk-...D6vr
+        `model` gpt-3.5-turbo
+        `temperature` 1.0
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题详情
+      description: 请详细描述您遇到的问题。提示：如果可以，也请提供错误的截图
+      placeholder: |
+        描述您遇到的问题
+        说明您的预期结果和实际结果之间的差异
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 补充说明
+      description: 链接？参考资料？任何更多背景信息！
+      placeholder: |
+        该问题是偶然发生的还是可以稳定复现？
+        是否与不同的Paper或PDF文件有关？

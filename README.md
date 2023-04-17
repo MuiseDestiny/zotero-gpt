@@ -29,7 +29,7 @@ Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-
 Features about GPT:  
 - [x] 🔗 **Integrate with Zotero**: You can use the plugin to search and ask items in the library based on the selected text or the PDF file.
 - [x] 🧠 Use GPT to generate reply text: support `gpt-3.5-turbo` and `gpt-4`
-- [x] 🏷️ [Command tags](/README.md#command-tags): **Click once** to accelerate your research.  
+- [x] 🏷️ [Command tags](https://github.com/MuiseDestiny/zotero-gpt#command-tags): **Click once** to accelerate your research.  
   - [x] 💬 Ask questions about current **PDF file** (full-text or selected text).
   - [x] 💬 Ask questions about **selected paper** (Abstract).
   - [x] 📝 **Summarize the selected paper** into several highly condensed sentences.
