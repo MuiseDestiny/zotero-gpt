@@ -19,6 +19,7 @@ const requestArgs: RequestArg[] = [
         "presence_penalty": 0
       }`
   },
+  // 一天十次
   {
     api: "https://chatforai.com/api/generate",
     headers: {
@@ -66,11 +67,18 @@ class OpenAIEmbeddings {
   constructor() {
   }
   private async request(input: string[]) {
+    const views = Zotero.ZoteroGPT.views as Views
     let api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
     api = api.replace(/\/(?:v1)?\/?$/, "")
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
     let res
     const url = `${api}/v1/embeddings`
+    if (!secretKey) {
+      new ztoolkit.ProgressWindow(url, { closeOtherProgressWindows: true })
+        .createLine({ text: "Your secretKey is not configured.", type: "default" })
+        .show()
+      return
+    }
     try {
       res = await Zotero.HTTP.request(
         "POST",
@@ -83,17 +91,20 @@ class OpenAIEmbeddings {
           },
           body: JSON.stringify({
             model: "text-embedding-ada-002",
-            input: input
-          })
+            input
+          }),
         }
       )
-    } catch (error: any) {
-      // 这里用户可能会截图反馈到Github，所以显示URL，可能URl就写错了
-      new ztoolkit.ProgressWindow(url, { closeOtherProgressWindows: true })
+    } catch(error: any) {
+      error = error.xmlhttp.response.error
+      views.setText(`# ${error.code}\n> ${url}\n\n**${error.type}**\n${error.message}`, true)
+      new ztoolkit.ProgressWindow(error.code, { closeOtherProgressWindows: true })
         .createLine({ text: error.message, type: "default" })
         .show()
     }
-    return res.response.data.map((i: any) => i.embedding)
+    if (res?.response?.data) {
+      return res.response.data.map((i: any) => i.embedding)
+    }
   }
 
   public async embedDocuments(texts: string[]) {
@@ -101,16 +112,16 @@ class OpenAIEmbeddings {
   }
 
   public async embedQuery(text: string) {
-    return (await this.request([text]))![0]
+    return (await this.request([text]))?.[0]
   }
 }
 
 
-export async function getGPTResponse(requestText: string, views: Views) {
+export async function getGPTResponse(requestText: string) {
   const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
   // 这里可以补充很多免费API，然后用户设置用哪个
-  if (!secretKey || true) { return await getGPTResponseBy(requestArgs[0], requestText, views) }
-  else { return await getGPTResponseByOpenAI(requestText, views) }
+  if (!secretKey) { return await getGPTResponseBy(requestArgs[0], requestText) }
+  else { return await getGPTResponseByOpenAI(requestText) }
 }
 
 /**
@@ -119,7 +130,8 @@ export async function getGPTResponse(requestText: string, views: Views) {
  * @param requestText 
  * @returns 
  */
-export async function getGPTResponseByOpenAI(requestText: string, views: Views) {
+export async function getGPTResponseByOpenAI(requestText: string) {
+  const views = Zotero.ZoteroGPT.views as Views
   const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
   const temperature = Zotero.Prefs.get(`${config.addonRef}.temperature`)
   let api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
@@ -178,7 +190,7 @@ export async function getGPTResponseByOpenAI(requestText: string, views: Views) 
               }).filter(Boolean)
             } catch {
               // 出错一般是token超出限制
-              views.setText(e.target.response + "\n\n" + requestText, true)
+              ztoolkit.log(e.target.response)
             }
             if (e.target.timeout) {
               e.target.timeout = 0;
@@ -188,7 +200,9 @@ export async function getGPTResponseByOpenAI(requestText: string, views: Views) 
       }
     );
   } catch (error: any) {
-    new ztoolkit.ProgressWindow(url, { closeOtherProgressWindows: true })
+    error = JSON.parse(error.xmlhttp.response).error
+    textArr = [`# ${error.code}\n> ${url}\n\n**${error.type}**\n${error.message}`]
+    new ztoolkit.ProgressWindow(error.code, { closeOtherProgressWindows: true })
       .createLine({ text: error.message, type: "default" })
       .show()
   }
@@ -214,8 +228,8 @@ export async function getGPTResponseByOpenAI(requestText: string, views: Views) 
 export async function getGPTResponseBy(
   requestArg: RequestArg,
   requestText: string,
-  views: Views
 ) {
+  const views = Zotero.ZoteroGPT.views as Views
   const deltaTime = Zotero.Prefs.get(`${config.addonRef}.deltaTime`) as number
   let responseText = ""
   views.messages.push({

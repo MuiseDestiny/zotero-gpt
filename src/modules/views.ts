@@ -43,23 +43,10 @@ export default class Views {
     this.utils = new Utils()
     this.registerKey()
     this.addStyle()
-    window.setTimeout(() => {
-      this.init()
-    }, 1000)
     // @ts-ignore
     window.Meet = Meet
   }
 
-  private init() {
-    if (Zotero.Prefs.get(`${config.addonRef}.autoShow`)) {
-      this.container = this.buildContainer()
-      this.container.style.display = "flex"
-      this.setText(help, true, false)
-      this.inputContainer!.querySelector("input")!.value = "/help"
-      this.show(-1, -1, false)
-    }
-  }
-  
   private addStyle() {
     ztoolkit.UI.appendElement({
       tag: "style",
@@ -203,7 +190,10 @@ export default class Views {
       outputDiv.classList.remove("streaming")
       if (this.isInNote) {
         this.container.style.display = "none"
-        Meet.BetterNotes.insertEditorText(outputDiv.innerHTML)
+        // Meet.BetterNotes.insertEditorText(outputDiv.innerHTML)
+        window.setTimeout(async () => {
+          Meet.BetterNotes.insertEditorText(await Zotero.BetterNotes.api.convert.md2html(text))
+        })
       }
     }
   }
@@ -553,37 +543,56 @@ export default class Views {
             that.setText("success", true, false)
           } else if (key == "help"){ 
             that.setText(help, true, false)
-          } else if (["secretKey", "model", "autoShow", "api", "temperature", "deltaTime", "width", "tagsMore"].indexOf(key) != -1) {  
+          } else if (key == "report") { 
+            const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`) as string
+            window.setTimeout(() => {
+              Zotero.launchURL("https://platform.openai.com/account/usage")
+            }, 1000)
+            return that.setText(`\`api\` ${Zotero.Prefs.get(`${config.addonRef}.api`)}\n\`secretKey\` ${secretKey.slice(0, 3) + "..." + secretKey.slice(-4)}\n\`model\` ${Zotero.Prefs.get(`${config.addonRef}.model`)}\n\`temperature\` ${Zotero.Prefs.get(`${config.addonRef}.temperature`)}`, true, false)
+          } else if (["secretKey", "model", "api", "temperature", "deltaTime", "width", "tagsMore"].indexOf(key) >= 0) {  
             if (value?.length > 0) {
-              if (key == "autoShow") {
-                if (value == "true") {
-                  value = true
-                } else if (value == "false") {
-                  value = false
-                } else return
+              if (value == "default") {
+                Zotero.Prefs.clear(`${config.addonRef}.${key}`)
+                value = Zotero.Prefs.get(`${config.addonRef}.${key}`)
+                that.setText(`${key} = ${value}`, true, false)
+                return 
               }
-              if (key == "deltaTime") {
-                if (value) {
-                  value = Number(value)
-                }
+              switch (key) {
+                case "deltaTime":
+                  Zotero.Prefs.set(`${config.addonRef}.${key}`, Number(value))
+                  break;
+                case "width":
+                  ztoolkit.log("width", value.match(/^[\d\.]+%$/))
+                  if (value.match(/^[\d\.]+%$/)) {
+                    that.container.style.width = value
+                    Zotero.Prefs.set(`${config.addonRef}.${key}`, value)
+                    break;
+                  } else {
+                    ztoolkit.log("width Error")
+                    return that.setText(`Invalid value, ${value}, please enter a percentage, for example \`32 %\`.`, true, false)
+                  }
+                case "tagsMore":
+                  if (["scroll", "expand"].indexOf(value) >= 0) {
+                    Zotero.Prefs.set(`${config.addonRef}.${key}`, value)
+                    break;
+                  } else {
+                    ztoolkit.log("tagsMore Error")
+                    return that.setText(`Invalid value, ${value}, please enter \`expand\` or \`scroll\`.`, true, false)
+                  }
+                default: 
+                  Zotero.Prefs.set(`${config.addonRef}.${key}`, value)
+                  break
               }
-              if (key == "width") {
-                if (value && value.match(/[\d\.]+%/)) {
-                  that.container.style.width = value
-                }
-              }
-              if (key == "tagsMore") {
-                if (["scroll", "expand"].indexOf(value) == -1) {
-                  return
-                }
-              }
-              Zotero.Prefs.set(`${config.addonRef}.${key}`, value)
             } else {
               value = Zotero.Prefs.get(`${config.addonRef}.${key}`)
             }
             that.setText(`${key} = ${value}`, true, false)
             // @ts-ignore
             this.value = ""
+          } else {
+            that.setText(help, true, false)
+            const mdbody = that.outputContainer.querySelector(".markdown-body") as HTMLDivElement
+            mdbody.innerHTML = `<center><span style="color: #D14D72;font-weight:bold;font-size:20px;">Invalid Command, Please Read this.</span></center>` + mdbody.innerHTML
           }
         } else {
           that.execText(text)
@@ -840,7 +849,7 @@ export default class Views {
     popunWin.createLine({text: `Text total length is ${text.length}`, type: "success"})
     popunWin.createLine({ text: "GPT is answering...", type: "default" })
     // 运行替换其中js代码
-    text = await Meet.OpenAI.getGPTResponse(text, this) as string
+    text = await Meet.OpenAI.getGPTResponse(text) as string
     this.dotsContainer?.classList.remove("loading")
     if (text.trim().length) {
       try {
@@ -870,7 +879,7 @@ export default class Views {
     outputDiv.setAttribute("pureText", "");
     if (text.trim().length == 0) { return }
     this.dotsContainer?.classList.add("loading")
-    await Meet.OpenAI.getGPTResponse(text, this)
+    await Meet.OpenAI.getGPTResponse(text)
     this.dotsContainer?.classList.remove("loading")
   }
 
@@ -880,12 +889,15 @@ export default class Views {
    */
   private getTags() {
     // 进行一个简单的处理，应该是中文/表情写入prefs.js导致的bug
-    let tagString = Zotero.Prefs.get(`${config.addonRef}.tags`) as string
-    if (!tagString) {
-      tagString = "[]"
-      Zotero.Prefs.set(`${config.addonRef}.tags`, tagString)
+    let tagsJson
+    try {
+      tagsJson = Zotero.Prefs.get(`${config.addonRef}.tags`) as string
+    } catch {}
+    if (!tagsJson) {
+      tagsJson = "[]"
+      Zotero.Prefs.set(`${config.addonRef}.tags`, tagsJson)
     }
-    let tags = JSON.parse(tagString)
+    let tags = JSON.parse(tagsJson)
     return (tags.length > 0 ? tags : defaultTags).sort((a: Tag, b: Tag) => a.position - b.position)
   }
 

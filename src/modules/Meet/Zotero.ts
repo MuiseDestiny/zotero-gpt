@@ -312,6 +312,7 @@ async function pdf2documents(itemkey: string) {
       let line, nextLine
       for (let j = 0; j < paragraphs[i].length; j++) {
         line = paragraphs[i][j]
+        if (!line) { continue }
         nextLine = paragraphs[i]?.[j + 1]
         // 更新边界
         box ??= { page: pageNum, left: line.x, right: line.x + line.width, top: line.y + line.height, bottom: line.y }
