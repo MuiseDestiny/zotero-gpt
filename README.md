@@ -25,7 +25,11 @@ Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-
 ---
 
 
-![AskPDF](imgs/AskPDF.gif)
+<div align="center">
+
+https://user-images.githubusercontent.com/51939531/232497591-9f78e65e-3c4b-4519-987c-f1c3a277a209.mp4
+
+</div>
 
 ## 🚀 Main Features
 Features about GPT:  
