@@ -25,12 +25,6 @@ Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-
 ---
 
 
-<div align="center">
-
-https://user-images.githubusercontent.com/51939531/232497591-9f78e65e-3c4b-4519-987c-f1c3a277a209.mp4
-
-</div>
-
 ## 🚀 Main Features
 Features about GPT:  
 - [x] 🔗 **Integrate with Zotero**: You can use the plugin to search and ask items in the library based on the selected text or the PDF file.
@@ -92,7 +86,11 @@ You can click and hold on each label after installing the plugin to see the inte
 
 ## Ask PDF [build-in tag]
 
-![image](https://user-images.githubusercontent.com/51939531/230595730-54c984f1-d2c1-45a0-adbd-8792a5afa175.png)
+<div align="center">
+
+https://user-images.githubusercontent.com/51939531/232497591-9f78e65e-3c4b-4519-987c-f1c3a277a209.mp4
+
+</div>
 
 Implementation method:
 
