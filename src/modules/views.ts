@@ -132,7 +132,7 @@ export default class Views {
     outputDiv.classList.add("streaming");
     let ready = () => {
       if (outputDiv.innerHTML.trim() == "") {
-        outputDiv.innerHTML = `<span></span>`
+        outputDiv.innerHTML = `<p></p>`
       }
     }
     ready()

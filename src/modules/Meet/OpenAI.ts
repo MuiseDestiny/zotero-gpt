@@ -4,7 +4,7 @@ import { Document } from "langchain/document";
 import LocalStorage from "../localStorage";
 import Views from "../views";
 const similarity = require('compute-cosine-similarity');
-declare type RequestArg = { headers: any, api: string, body: string }
+declare type RequestArg = { headers: any, api: string, body: string, remove?: string | RegExp }
 const requestArgs: RequestArg[] = [
   {
     api: "https://aigpt.one/api/chat-stream",
@@ -18,6 +18,16 @@ const requestArgs: RequestArg[] = [
         "max_tokens": 2000,
         "presence_penalty": 0
       }`
+  },
+  {
+    api: "https://chatforai.com/api/generate",
+    headers: {
+      "referer": "https://chatforai.com/",
+    },
+    body: `{
+      "messages": ___messages___,
+    }`,
+    remove: "请访问 [https://chatforai.site](https://chatforai.site/?r=17) 使用 AI 聊天"
   }
 ]
 
@@ -196,13 +206,13 @@ export async function getGPTResponseByOpenAI(requestText: string, views: Views) 
 
 /**
  * 返回值要是纯文本
- * @param requestArgs 
+ * @param requestArg
  * @param requestText 
  * @param views 
  * @returns 
  */
 export async function getGPTResponseBy(
-  requestArgs: RequestArg,
+  requestArg: RequestArg,
   requestText: string,
   views: Views
 ) {
@@ -227,22 +237,26 @@ export async function getGPTResponseBy(
   views._id = id
   const body = JSON.stringify(window.eval(
     `
-      _ = ${requestArgs.body.replace("___messages___", JSON.stringify(views.messages))}
+      _ = ${
+    requestArg.body
+      .replace("___messages___", JSON.stringify(views.messages))
+      .replace("___requestText___", requestText)
+    }
     `
   ))
   await Zotero.HTTP.request(
     "POST",
-    requestArgs.api,
+    requestArg.api,
     {
       headers: {
         "Content-Type": "application/json",
-        ...requestArgs.headers
+        ...requestArg.headers
       }, 
       body,
       responseType: "text",
       requestObserver: (xmlhttp: XMLHttpRequest) => {
         xmlhttp.onprogress = (e: any) => {
-          responseText = e.target.response
+          responseText = e.target.response.replace(requestArg.remove, "")
           if (e.target.timeout) {
             e.target.timeout = 0;
           }
