@@ -1,0 +1,44 @@
+const help = `
+### Quick Commands
+
+\`/help\` Show all commands.
+\`/clear\` Clear history conversation.
+\`/secretKey sk-xxx\` Set GPT secret key.
+\`/api https://api.openai.com/v1\` Set API.
+\`/model gpt-4/gpt-3.5-turbo\` Set GPT model.
+\`/temperature 1.0\` Set GPT temperature.
+\`/autoShow true/false\` Automatically showed when Zotero is opened.
+\`/deltaTime 100\` Control GPT smoothness (ms).
+\`/width 32%\` Control GPT UI width (pct).
+\`/tagsMore expand/scroll\` Set mode to display more tags.
+
+### About UI
+
+You can hold down \`Ctrl\` and scroll the mouse wheel to zoom the entire UI.
+And when your mouse is in the output box, the size of any content in the output box will be adjusted.
+
+### About Tag
+
+You can \`long click\` on the tag below to see its internal pseudo-code.
+You can type \`#xxx\` and press \`Enter\` to create a tag. And save it with \`Ctrl + S\`, during which you can execute it with \`Ctrl + R\`.
+You can \`right-long-click\` a tag to delete it.
+
+### About Output Text
+
+You can \`double click\` on this text to copy GPT's answer.
+You can \`long press\` me without releasing, then move me to a suitable position before releasing.
+
+### About Input Text
+
+You can exit me by pressing \`Esc\` above my head and wake me up by pressing \`Shift + /\` in the Zotero main window.
+You can type the question in my header, then press \`Enter\` to ask me.
+You can press \`Ctrl + Enter\` to execute last executed command tag again.
+You can press \`Shift + Enter\` to enter long text editing mode and press \`Ctrl + R\` to execute long text.
+`
+
+const fontFamily = `Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji`
+
+const defaultTags = [{ "tag": "🪐AskPDF", "color": "#009FBD", "position": 0, "text": "#🪐AskPDF[position=0][color=#009FBD]\n\nYou are a helpful assistant. Context information is below.\n\n---\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\nwindow.gptInputString \n)\n\n```\n---\n\nCurrent date: ```js\nString(new Date())\n```\nUsing the provided context information, write a comprehensive reply to the given query. Make sure to cite results using [number] notation after the reference. If the provided context information refer to multiple subjects with the same name, write separate answers for each subject. Use prior knowledge only if the given context didn't provide enough information. \n\nAnswer the question:\n```js\nwindow.gptInputString \n```\n\nReply in 简体中文\n" }, { "tag": "🎈Translate", "color": "#21a2f1", "position": 1, "text": "#🎈Translate[position=1][color=#21a2f1]\n\ntranslate these from English to 简体中文:\n```js\nZotero.ZoteroGPT.utils.getPDFSelection()\n```" }, { "tag": "✍️Abs2Sum", "color": "#E11299", "position": 4, "text": "#✍️Abs2Sum[position=4][color=#E11299]\n下面是一篇论文的摘要：\n```js\n// 确保你选择的是PDF的摘要部分\nZotero.ZoteroGPT.utils.getPDFSelection()\n```\n\n---\n\n请问它的主要工作是什么，在什么地区，时间范围是什么，使用的数据是什么，创新点在哪？\n\n请你用下列示例格式回答我：\n主要工作：反演AOD；\n地区：四川盆地；\n时间：2017~2021；\n数据：Sentinel-2卫星数据；\n创新：考虑了BRDF效应。\n\n" }, { "tag": "🌸AskClipboard", "color": "#dc4334", "position": 9, "text": "#🌸AskClipboard[position=9][color=#dc4334]\nRead this:\n\n```js\n\nZotero.ZoteroGPT.utils.getClipboardText()\n\n```\n\n---\n\nplease answer this question based on above content (use 简体中文). In the end, you need repeat above content：```js\nZotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\n```" }, { "tag": "🔍SearchItems", "color": "#ED5629", "position": 9, "text": "#🔍SearchItems[position=9][color=#ED5629]\n\n现在你是一个数据库系统，下面是一些JSON信息，每个JSON对应Zotero一篇文献：\n\n---\n\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\nwindow.gptInputString \n)\n\n```\n\n---\n\n我现在在寻找一篇文献，它很可能就在我上面给你的文献之中。下面是对我想找的文献的描述：\n```js\nwindow.gptInputString \n```\n\n请你回答最有可能是哪几篇文献，请同时给出最可能的一篇，并给出原因。\n\nReply in 简体中文" }, { "tag": "✨ToEnglish", "color": "#42BA99", "position": 2, "text": "#✨ToEnglish[position=2][color=#42BA99]\nPlease help me translate these to English:\n\n```js\nZotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\n```\n\nYour answer is:" }]
+
+
+export { help, fontFamily, defaultTags }

@@ -4,7 +4,22 @@ import { Document } from "langchain/document";
 import LocalStorage from "../localStorage";
 import Views from "../views";
 const similarity = require('compute-cosine-similarity');
-
+declare type RequestArg = { headers: any, api: string, body: string }
+const requestArgs: RequestArg[] = [
+  {
+    api: "https://aigpt.one/api/chat-stream",
+    headers: {
+      "path": "v1/chat/completions"
+    },
+    body: `{
+        "model": "gpt-3.5-turbo",
+        messages: ___messages___,
+        stream: true,
+        "max_tokens": 2000,
+        "presence_penalty": 0
+      }`
+  }
+]
 
 /**
  * 给定文本和文档，返回文档列表，返回最相似的几个
@@ -41,10 +56,11 @@ class OpenAIEmbeddings {
   constructor() {
   }
   private async request(input: string[]) {
-    const api = Zotero.Prefs.get(`${config.addonRef}.api`)
+    let api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
+    api = api.replace(/\/(?:v1)?\/?$/, "")
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
     let res
-    const url = `${api}/embeddings`
+    const url = `${api}/v1/embeddings`
     try {
       res = await Zotero.HTTP.request(
         "POST",
@@ -83,7 +99,7 @@ class OpenAIEmbeddings {
 export async function getGPTResponse(requestText: string, views: Views) {
   const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
   // 这里可以补充很多免费API，然后用户设置用哪个
-  if (!secretKey) { return await getGPTResponseByAnoyi(requestText, views) }
+  if (!secretKey || true) { return await getGPTResponseBy(requestArgs[0], requestText, views) }
   else { return await getGPTResponseByOpenAI(requestText, views) }
 }
 
@@ -97,10 +113,8 @@ export async function getGPTResponseByOpenAI(requestText: string, views: Views) 
   const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
   const temperature = Zotero.Prefs.get(`${config.addonRef}.temperature`)
   let api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
+  api = api.replace(/\/(?:v1)?\/?$/, "")
   const model = Zotero.Prefs.get(`${config.addonRef}.model`)
-  if (!secretKey) {
-    return await getGPTResponseTextByAnoyi(requestText, views)
-  }
   views.messages.push({
     role: "user",
     content: requestText
@@ -125,7 +139,7 @@ export async function getGPTResponseByOpenAI(requestText: string, views: Views) 
     _text.length > 0 && views.setText(_text)
   }, deltaTime)
   views._id = id
-  const url = `${api}/chat/completions`
+  const url = `${api}/v1/chat/completions`
   try {
     await Zotero.HTTP.request(
       "POST",
@@ -181,15 +195,18 @@ export async function getGPTResponseByOpenAI(requestText: string, views: Views) 
 }
 
 /**
- * https://gpt.anoyi.com/zh
+ * 返回值要是纯文本
+ * @param requestArgs 
  * @param requestText 
  * @param views 
  * @returns 
  */
-export async function getGPTResponseByAnoyi(requestText: string, views: Views) {
-  const temperature = Zotero.Prefs.get(`${config.addonRef}.temperature`) as string
+export async function getGPTResponseBy(
+  requestArgs: RequestArg,
+  requestText: string,
+  views: Views
+) {
   const deltaTime = Zotero.Prefs.get(`${config.addonRef}.deltaTime`) as number
-
   let responseText = ""
   views.messages.push({
     role: "user",
@@ -205,30 +222,23 @@ export async function getGPTResponseByAnoyi(requestText: string, views: Views) {
       // 只是结束了setText，而响应还在继续
       return window.clearInterval(id)
     }
-    views.setText(responseText)
+    responseText.trim().length > 0 && views.setText(responseText)
   }, deltaTime)
   views._id = id
+  const body = JSON.stringify(window.eval(
+    `
+      _ = ${requestArgs.body.replace("___messages___", JSON.stringify(views.messages))}
+    `
+  ))
   await Zotero.HTTP.request(
     "POST",
-    `https://gpt.anoyi.com/api/chat`,
+    requestArgs.api,
     {
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
-      },
-      body: JSON.stringify({
-        "model": {
-          "id": "gpt-3.5-turbo",
-          "name": "GPT-3.5",
-          "maxLength": 12000,
-          "tokenLimit": 4000
-        },
-        messages: views.messages,
-        // stream: true,
-        "key": "",
-        "prompt": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
-        "temperature": Number(temperature)
-      }),
+        ...requestArgs.headers
+      }, 
+      body,
       responseType: "text",
       requestObserver: (xmlhttp: XMLHttpRequest) => {
         xmlhttp.onprogress = (e: any) => {

@@ -30,5 +30,4 @@ const Meet = {
   }
 }
 
-
 export default Meet
