@@ -103,6 +103,11 @@ Make sure the plugin version is up-to-date.
 Implementation method: 
 Same as `Ask PDF`
 
+## Ask Annotations [Under development]
+
+![image](https://user-images.githubusercontent.com/51939531/232672386-8f0b929c-13de-4f34-9d75-d3d889ceb316.png)
+
+
 ## Demonstration
 
 ![image](imgs/demo.png)
