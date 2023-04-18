@@ -3,6 +3,7 @@ import { MD5 } from "crypto-js"
 import { Document } from "langchain/document";
 import LocalStorage from "../localStorage";
 import Views from "../views";
+import Meet from "./api";
 const similarity = require('compute-cosine-similarity');
 declare type RequestArg = { headers: any, api: string, body: string, remove?: string | RegExp }
 const requestArgs: RequestArg[] = [
@@ -79,6 +80,7 @@ class OpenAIEmbeddings {
         .show()
       return
     }
+    ztoolkit.log("input", input)
     try {
       res = await Zotero.HTTP.request(
         "POST",
@@ -91,7 +93,7 @@ class OpenAIEmbeddings {
           },
           body: JSON.stringify({
             model: "text-embedding-ada-002",
-            input
+            input: input
           }),
         }
       )
@@ -148,19 +150,19 @@ export async function getGPTResponseByOpenAI(requestText: string) {
   // 随着请求返回实时变化
   let textArr: string[] = []
   // 激活输出
-  window.clearInterval(views._id)
+  views.stopAlloutput()
   views.setText("")
-  const id = window.setInterval(() => {
-    if (id != views._id) {
-      // 可能用户打断输入
-      // 只是结束了setText，而响应还在继续
-      return window.clearInterval(id)
-    }
+  let responseText: string | undefined
+  const id: number = window.setInterval(async () => {
+    if (_textArr.length == textArr.length) { return}
     _textArr = textArr.slice(0, _textArr.length + 1)
-    const _text = _textArr.join("")
-    _text.length > 0 && views.setText(_text)
+    let text = _textArr.join("")
+    text.length > 0 && views.setText(text)
   }, deltaTime)
-  views._id = id
+  views._ids.push({
+    type: "output",
+    id: id
+  })
   const url = `${api}/v1/chat/completions`
   try {
     await Zotero.HTTP.request(
@@ -206,11 +208,14 @@ export async function getGPTResponseByOpenAI(requestText: string) {
       .createLine({ text: error.message, type: "default" })
       .show()
   }
-  const responseText = textArr.join("")
+  responseText = textArr.join("")
+  ztoolkit.log("responseText", responseText)
   window.clearInterval(id)
-  window.setTimeout(() => {
-    views.setText(responseText, true)
-  }, deltaTime * 5)
+  views.setText(responseText, true)
+  Meet.BetterNotes.insertEditorText(
+    // await Zotero.BetterNotes.api.convert.md2html(responseText)
+    views.container.querySelector(".markdown-body")!.innerHTML
+  )
   views.messages.push({
     role: "assistant",
     content: responseText
@@ -238,17 +243,12 @@ export async function getGPTResponseBy(
   })
   // 储存上一次的结果
   // 激活输出
+  views.stopAlloutput()
   views.setText("")
-  window.clearInterval(views._id)
   const id = window.setInterval(() => {
-    if (id != views._id) {
-      // 可能用户打断输入
-      // 只是结束了setText，而响应还在继续
-      return window.clearInterval(id)
-    }
     responseText.trim().length > 0 && views.setText(responseText)
   }, deltaTime)
-  views._id = id
+  views._ids.push({type: "output", id: id})
   const body = JSON.stringify(window.eval(
     `
       _ = ${
@@ -280,6 +280,14 @@ export async function getGPTResponseBy(
   );
   window.clearInterval(id)
   views.setText(responseText, true)
+  if (views.isInNote) {
+    window.setTimeout(async () => {
+      Meet.BetterNotes.replaceEditorText(
+        // await Zotero.BetterNotes.api.convert.md2html(responseText)
+        views.container.querySelector(".markdown-body")!.innerHTML
+      )
+    })
+  }
   views.messages.push({
     role: "assistant",
     content: responseText

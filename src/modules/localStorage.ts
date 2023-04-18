@@ -22,7 +22,6 @@ class LocalStorage {
     try {
       const rawString = await Zotero.File.getContentsAsync(this.filename) as string
       this.cache = JSON.parse(rawString)
-      ztoolkit.log(this.cache)
     } catch {
       this.cache = {}
     }

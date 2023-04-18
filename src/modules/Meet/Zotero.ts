@@ -340,13 +340,15 @@ async function pdf2documents(itemkey: string) {
           }
         }
       }
-      _pageText = _pageText.replace(/\x20+/g, " ");
-      docs.push(
-        new Document({
-          pageContent: _pageText,
-          metadata: { type: "box", box: box!, key: itemkey },
-        })
-      )
+      _pageText = _pageText.replace(/\x20+/g, " ").replace(/^\x20*\n+/g, "").replace(/\x20*\n+/g, "");
+      if (_pageText.length > 0) {
+        docs.push(
+          new Document({
+            pageContent: _pageText,
+            metadata: { type: "box", box: box!, key: itemkey },
+          })
+        )
+      }
     }
   }
   popupWin.changeHeadline("[Done] PDF")

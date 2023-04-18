@@ -7,14 +7,17 @@ import {
 
 import {
   getEditorText,
-  insertEditorText
+  insertEditorText,
+  replaceEditorText,
+  follow,
+  reFocus
 } from "./BetterNotes"
 
 import {
   getGPTResponse
 } from "./OpenAI"
 
-const Meet = {
+const Meet: any = {
   Zotero: {
     getClipboardText,
     getItemField,
@@ -23,10 +26,16 @@ const Meet = {
   },
   BetterNotes: {
     getEditorText,
-    insertEditorText
+    insertEditorText,
+    replaceEditorText,
+    follow,
+    reFocus
   },
   OpenAI: {
     getGPTResponse
+  },
+  Global: {
+    lock: undefined,
   }
 }
 

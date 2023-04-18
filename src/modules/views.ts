@@ -6,7 +6,6 @@ const markdown = require("markdown-it")({
   breaks: true, // 将行结束符\n转换为 <br> 标签
   xhtmlOut: true, // 使用 /> 关闭标签，而不是 >
   typographer: true,
-  
 });
 const mathjax3 = require('markdown-it-mathjax3');
 markdown.use(mathjax3);
@@ -28,12 +27,12 @@ export default class Views {
   /**
    * 记录当前GPT输出流setInterval的id，防止终止后仍有输出，需要暴露给GPT响应函数
    */
-  public _id: number | undefined
+  public _ids: {type: "follow"| "output", id: number}[] = []
   /**
    * 是否在笔记环境下
    */
-  private isInNote: boolean = true
-  private container!: HTMLDivElement;
+  public isInNote: boolean = true
+  public container!: HTMLDivElement;
   private inputContainer!: HTMLDivElement;
   private outputContainer!: HTMLDivElement;
   private dotsContainer!: HTMLDivElement;
@@ -45,6 +44,7 @@ export default class Views {
     this.addStyle()
     // @ts-ignore
     window.Meet = Meet
+
   }
 
   private addStyle() {
@@ -189,11 +189,11 @@ export default class Views {
       outputDiv.innerHTML = markdown.render(text)
       outputDiv.classList.remove("streaming")
       if (this.isInNote) {
-        this.container.style.display = "none"
+        this.hide()
         // Meet.BetterNotes.insertEditorText(outputDiv.innerHTML)
-        window.setTimeout(async () => {
-          Meet.BetterNotes.insertEditorText(await Zotero.BetterNotes.api.convert.md2html(text))
-        })
+        // window.setTimeout(async () => {
+        //   Meet.BetterNotes.insertEditorText(await Zotero.BetterNotes.api.convert.md2html(text))
+        // })
       }
     }
   }
@@ -239,6 +239,7 @@ export default class Views {
     node.addEventListener("mouseup", handleMouseUp)
     node.addEventListener("mousemove", handleMouseMove)
   }
+
 
   /**
    * GPT写的
@@ -533,7 +534,8 @@ export default class Views {
         } else if (text.startsWith("/")) {
           that._history.push(text)
           // 尝试结束其它stream的生命
-          that._id = undefined
+          // that._id = undefined
+          that.stopAlloutput()
           text = text.slice(1)
           let [key, value] = text.split(" ")
           if (key == "clear") {
@@ -613,7 +615,9 @@ export default class Views {
           return
         }
         // 退出container
+        that.hide()
         that.container!.remove()
+        Meet.BetterNotes.reFocus()
       }
       lastInputText = text
     }
@@ -910,12 +914,13 @@ export default class Views {
    * @param x 
    * @param y 
    */
-  private show(x: number = -1, y: number = -1, reBuild: boolean = true) {
+  public show(x: number = -1, y: number = -1, reBuild: boolean = true) {
+    reBuild = reBuild || !this.container
     if (reBuild) {
       document.querySelectorAll(`#${this.id}`).forEach(e=>e.remove())
       this.container = this.buildContainer()
-      this.container.style.display = "flex"
     }
+    this.container.setAttribute("follow", "")
     if (x + y < 0) {
       const rect = document.documentElement.getBoundingClientRect()
       x = rect.width / 2 - this.container.offsetWidth / 2;
@@ -941,11 +946,24 @@ export default class Views {
     if (y < 0) {
       y = 0
     }
-
+    // this.container.style.display = "flex"
     this.container.style.left = `${x}px`
     this.container.style.top = `${y}px`
+    reBuild && (this.container.style.display = "flex")
   }
 
+  /**
+   * 关闭界面清除所有setInterval
+   */
+  public hide() {
+    this.container.style.display = "none"
+    ztoolkit.log(this._ids)
+    this._ids.map(id=>id.id).forEach(window.clearInterval)
+  }
+
+  public stopAlloutput() {
+    this._ids.filter(id => id.type == "output").map(i => i.id).forEach(window.clearInterval)
+  }
   /**
    * 绑定快捷键
    */
@@ -972,13 +990,7 @@ export default class Views {
             content: text
           }]
           if (/[\n ]+/.test(span.innerText)) {
-            let { x, y } = span.getBoundingClientRect();
-            const leftPanel = document.querySelector("#betternotes-workspace-outline-container")!
-            x = leftPanel.getAttribute("collapsed") ?
-              0
-              :
-              Number(leftPanel.getAttribute("width") as string)
-            this.show(x + 30, y + 38)
+            Meet.BetterNotes.follow(span)
             event.preventDefault();
           }
           return 
