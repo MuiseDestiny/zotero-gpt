@@ -4,7 +4,8 @@
 
 # Zotero GPT
 
-This plugin is for users with some basic programming skills
+
+👋
 
 Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-gpt/discussions/3) by using [Meet API](src/modules/Meet/api.ts).
 
