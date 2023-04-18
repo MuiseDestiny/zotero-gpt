@@ -190,7 +190,8 @@ export default class Views {
       outputDiv.classList.remove("streaming")
       if (this.isInNote) {
         this.hide()
-        // Meet.BetterNotes.insertEditorText(outputDiv.innerHTML)
+        // 下面是完成回答后写入 Better Notes 主笔记的两种方案
+        Meet.BetterNotes.insertEditorText(outputDiv.innerHTML)
         // window.setTimeout(async () => {
         //   Meet.BetterNotes.insertEditorText(await Zotero.BetterNotes.api.convert.md2html(text))
         // })

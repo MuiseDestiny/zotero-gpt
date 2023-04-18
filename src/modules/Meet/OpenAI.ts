@@ -212,10 +212,6 @@ export async function getGPTResponseByOpenAI(requestText: string) {
   ztoolkit.log("responseText", responseText)
   window.clearInterval(id)
   views.setText(responseText, true)
-  Meet.BetterNotes.insertEditorText(
-    // await Zotero.BetterNotes.api.convert.md2html(responseText)
-    views.container.querySelector(".markdown-body")!.innerHTML
-  )
   views.messages.push({
     role: "assistant",
     content: responseText
@@ -280,14 +276,14 @@ export async function getGPTResponseBy(
   );
   window.clearInterval(id)
   views.setText(responseText, true)
-  if (views.isInNote) {
-    window.setTimeout(async () => {
-      Meet.BetterNotes.replaceEditorText(
-        // await Zotero.BetterNotes.api.convert.md2html(responseText)
-        views.container.querySelector(".markdown-body")!.innerHTML
-      )
-    })
-  }
+  // if (views.isInNote) {
+  //   window.setTimeout(async () => {
+  //     Meet.BetterNotes.replaceEditorText(
+  //       // await Zotero.BetterNotes.api.convert.md2html(responseText)
+  //       views.container.querySelector(".markdown-body")!.innerHTML
+  //     )
+  //   })
+  // }
   views.messages.push({
     role: "assistant",
     content: responseText
