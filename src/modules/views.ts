@@ -619,7 +619,7 @@ export default class Views {
         const rect = that.container.querySelector("input")!.getBoundingClientRect()
         const commands = ["clear", "help", "report", "secretKey", "model", "api", "temperature", "chatNumber", "relatedNumber" , "deltaTime", "tagsMore", "width"]
         that.createMenuNode(
-          { x: rect.left, y: rect.top + rect.height, width: 200, height: 200 / 7 * commands.length  },
+          { x: rect.left, y: rect.top + rect.height, width: 200, height: 350 / 12 * commands.length  },
           commands.map(name => {
             return {
               name,
