@@ -383,61 +383,8 @@ export async function getRelatedText(queryText: string) {
   }
   cache[key] = docs
   docs = await similaritySearch(queryText, docs, { key }) as Document[]
-  ztoolkit.log("docs", docs)
-  const outputContainer = Zotero[config.addonInstance].views.outputContainer
-  outputContainer.querySelector(".reference")?.remove()
-  const refDiv = ztoolkit.UI.appendElement({
-    namespace: "html",
-    classList: ["reference"],
-    tag: "div",
-    styles: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    }
-  }, outputContainer)
-  docs.forEach((doc: Document, index: number) => {
-    ztoolkit.UI.appendElement({
-      namespace: "html",
-      tag: "a",
-      styles: {
-        margin: ".3em",
-        fontSize: "0.8em",
-        cursor: "pointer",
-        borderRadius: "3px",
-        backgroundColor: "rgba(89, 192, 188, .43)",
-        width: "1.5em",
-        height: "1.5em",
-        textAlign: "center",
-        color: "white",
-        fontWeight: "bold"
-      },
-      properties: {
-        innerText: index + 1
-        // innerText: `[${index + 1}]`
-      },
-      listeners: [
-        {
-          type: "click",
-          listener: async () => {
-            if (doc.metadata.type == "box") {
-              const reader = await ztoolkit.Reader.getReader();
-              (reader!._iframeWindow as any).wrappedJSObject.eval(`
-                  PDFViewerApplication.pdfViewer.scrollPageIntoView({
-                    pageNumber: ${doc.metadata.box.page + 1},
-                    destArray: ${JSON.stringify([null, { name: "XYZ" }, doc.metadata.box.left, doc.metadata.box.top, 3.5])},
-                    allowNegativeOffset: false,
-                    ignoreDestinationZoom: false
-                  })
-                `)
-            } else if (doc.metadata.type == "id") {
-              await ZoteroPane.selectItem(doc.metadata.id as number)
-            }
-          }
-        }
-      ]
-    }, refDiv)
-  })
+  ztoolkit.log("docs", docs.length)
+  Zotero[config.addonInstance].views.insertAuxiliary(docs)
   return docs.map((doc: Document, index: number) => `[${index + 1}]${doc.pageContent}`).join("\n\n")
 }
 
@@ -462,4 +409,38 @@ export function getPDFSelection() {
   } catch {
     return ""
   }
+}
+
+export async function getPDFAnnotations(select: boolean = false) {
+  let keys: string[]
+  if (select) {
+    // try {
+      const reader = await ztoolkit.Reader.getReader() as _ZoteroTypes.ReaderInstance
+      const nodes = reader._iframeWindow?.document.querySelectorAll("[id^=annotation-].selected") as any
+      ztoolkit.log(nodes)
+      keys = [...nodes].map(i => i.id.split("-")[1])
+      ztoolkit.log(keys)
+    // } catch {}
+  }
+  const pdfItem = Zotero.Items.get(
+    Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)!.itemID as number
+  )
+  const docs: Document[] = [] 
+  pdfItem.getAnnotations().forEach((anno: any) => {
+    if (select && keys.indexOf(anno.key) == -1) { return }
+    const pos = JSON.parse(anno.annotationPosition)
+    const rect = pos.rects[0]
+    docs.push(
+      new Document({
+        pageContent: anno.annotationText,
+        metadata: {
+          type: "box",
+          box: { page: pos.pageIndex, left: rect[0], right: rect[2], top: rect[3], bottom: rect[1] },
+          key: pdfItem.key
+        }
+      })
+    )
+  })
+  Zotero[config.addonInstance].views.insertAuxiliary(docs)
+  return docs.map((doc: Document, index: number) => `[${index + 1}]${doc.pageContent}`).join("\n\n")
 }

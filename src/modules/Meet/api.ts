@@ -2,7 +2,8 @@ import {
   getClipboardText,
   getItemField,
   getPDFSelection,
-  getRelatedText
+  getRelatedText,
+  getPDFAnnotations
 } from "./Zotero"
 
 import {
@@ -16,6 +17,7 @@ import {
 import {
   getGPTResponse
 } from "./OpenAI"
+import Views from "../views"
 
 const Meet: any = {
   /**
@@ -41,7 +43,11 @@ const Meet: any = {
      * 如果你在PDF中则会读取整个PDF，返回与问题最相关的5个段落
      * Meet.Zotero.getItemField("本文提到的XXX是什么意思？")
      */
-    getRelatedText
+    getRelatedText,
+    /**
+     * 获取PDF注释内容
+     */
+    getPDFAnnotations,
   },
   /**
    * 部分开放
@@ -59,6 +65,8 @@ const Meet: any = {
   },
   Global: {
     lock: undefined,
+    input: undefined,
+    views: undefined,
   }
 }
 

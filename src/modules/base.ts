@@ -1,3 +1,6 @@
+import { config } from "../../package.json";
+
+
 const help = `
 ### Quick Commands
 
@@ -8,11 +11,12 @@ const help = `
 \`/api https://api.openai.com\` Set API. 
 \`/model gpt-4/gpt-3.5-turbo\` Set GPT model. For example, \`/model gpt-3.5-turbo\`.
 \`/temperature 1.0\` Set GPT temperature. Controls the randomness and diversity of generated text, specified within a range of 0 to 1.
+\`/chatNumber 3\` Set the number of saved historical conversations.
+\`/relatedNumber 5\` Set the number of most relevant text. For example, the number of paragraphs referenced while using askPDF.
 \`/deltaTime 100\` Control GPT smoothness (ms).
 \`/width 32%\` Control GPT UI width (pct).
 \`/tagsMore expand/scroll\` Set mode to display more tags.
 \`/key default\` Restore the variable values above to their default values (if have).
-
 
 ### About UI
 
@@ -40,6 +44,114 @@ You can press \`Shift + Enter\` to enter long text editing mode and press \`Ctrl
 // 这是 OpenAI ChatGPT 的字体
 const fontFamily = `Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji`
 
-const defaultTags = [{ "tag": "🪐AskPDF", "color": "#009FBD", "position": 0, "text": "#🪐AskPDF[position=0][color=#009FBD]\n\nYou are a helpful assistant. Context information is below.\n\n---\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nZotero.ZoteroGPT.utils.getRelatedText(\nwindow.gptInputString \n)\n\n```\n---\n\nCurrent date: ```js\nString(new Date())\n```\nUsing the provided context information, write a comprehensive reply to the given query. Make sure to cite results using [number] notation after the reference. If the provided context information refer to multiple subjects with the same name, write separate answers for each subject. Use prior knowledge only if the given context didn't provide enough information. \n\nAnswer the question using the language as same as this question:\n```js\nwindow.gptInputString \n```\n" }, { "tag": "🎈Translate", "color": "#21a2f1", "position": 1, "text": "#🎈Translate[position=1][color=#21a2f1]\n\ntranslate these from English to 简体中文:\n```js\nMeet.Zotero.getPDFSelection()\n```" }, { "tag": "✨ToEnglish", "color": "#42BA99", "position": 2, "text": "#✨ToEnglish[position=2][color=#42BA99]\nPlease help me translate these to English:\n\n```js\nZotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\n```\n\nYour answer is:" }, { "tag": "✍️Abs2Sum", "color": "#E11299", "position": 4, "text": "#✍️Abs2Sum[position=4][color=#E11299]\n下面是一篇论文的摘要：\n```js\n// 确保你选择的是PDF的摘要部分\nMeet.Zotero.getPDFSelection()\n```\n\n---\n\n请问它的主要工作是什么，在什么地区，时间范围是什么，使用的数据是什么，创新点在哪？\n\n请你用下列示例格式回答我：\n主要工作：反演AOD；\n地区：四川盆地；\n时间：2017~2021；\n数据：Sentinel-2卫星数据；\n创新：考虑了BRDF效应。" }, { "tag": "🔍SearchItems", "color": "#ED5629", "position": 9, "text": "#🔍SearchItems[position=9][color=#ED5629]\n\nNow you are a database, these JSON represent Zotero item：\n\n---\n\n```js\nwindow.gptInputString = Zotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\nZotero.ZoteroGPT.views.messages = [];\n\nMeet.Zotero.getRelatedText(\nwindow.gptInputString \n)\n\n```\n\n---\n\nPlease answer me using the lanaguage as same as my question. Make sure to cite results using [number] notation after the reference. \n\nThis is my question：\n\n```js\nwindow.gptInputString \n```\n\n--\n" }, { "tag": "🌸AskClipboard", "color": "#dc4334", "position": 9, "text": "#🌸AskClipboard[position=9][color=#dc4334]\nRead this:\n\n```js\n\nMeet.Zotero.getClipboardText()\n\n```\n\n---\n\nplease answer this question based on above content:\n```js\nZotero.ZoteroGPT.views.inputContainer.querySelector(\"input\").value\n```" }]
+function parseTag(text: string) {
+  text = text.replace(/^\n/, "").replace(/\n$/, "")
+  let tagString = text.match(/^#(.+)\n/) as any
+  function randomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+  let tag: Tag = {
+    tag: config.addonName,
+    color: randomColor(),
+    position: 9,
+    text: text,
+    trigger: "",
+  }
+  if (tagString) {
+    tagString = tagString[0]
+    tag.tag = tagString.match(/^#([^\[\n]+)/)[1]
+    // 解析颜色
+    let color = tagString.match(/\[c(?:olor)?="?(#.+?)"?\]/)
+    tag.color = color?.[1] || tag.color
+    // 解析位置
+    let position = tagString.match(/\[pos(?:ition)?="?(\d+?)"?\]/)
+    tag.position = Number(position?.[1] || tag.position)
+    // 解析关键词
+    let trigger = tagString.match(/\[tr(?:igger)?="?(.+)"?\]/)
+    tag.trigger = trigger?.[1] || tag.trigger
+    tag.text = `#${tag.tag}[position=${tag.position}][color=${tag.color}][trigger=${tag.trigger}]` + "\n" + text.replace(/^#.+\n/, "")
+  }
+  return tag
+}
 
-export { help, fontFamily, defaultTags }
+/**
+ * 这里默认标签无法删除，但可以更改里面的内容，比如颜色位置，内部prompt
+ */
+let defaultTags: any = [
+`
+#🪐AskPDF[color=#1abc9c][position=10][trigger=/^(本文|这篇文章|论文)/]
+You are a helpful assistant. Context information is below.
+$\{
+Meet.Global.views.messages = [];
+Meet.Zotero.getRelatedText(Meet.Global.input)
+\}
+Using the provided context information, write a comprehensive reply to the given query. Make sure to cite results using [number] notation after the reference. If the provided context information refer to multiple subjects with the same name, write separate answers for each subject. Use prior knowledge only if the given context didn't provide enough information.
+
+Answer the question: $\{Meet.Global.input\}
+
+Reply in ${Zotero.locale}
+`,
+`
+#🎈Translate[c=#27ae60][pos=11][trigger=/^翻译/]
+Translate these content to 简体中文:
+$\{
+Meet.Global.input.replace("翻译", "") ||
+Meet.Zotero.getPDFSelection() ||
+Meet.Global.views.messages[0].content
+\}
+`,
+`
+#✨Improve writing[color=#2980b9][pos=12][trigger=/^润色/]
+Below is a paragraph from an academic paper. Polish the writing to meet the academic style, improve the spelling, grammar, clarity, concision and overall readability. When necessary, rewrite the whole sentence. Furthermore, list all modification and explain the reasons to do so in markdown table. Paragraph: "$\{
+Meet.Global.input.replace("润色", "") ||
+Meet.Global.views.messages[0].content
+\}"
+`,
+`
+#Clipboard[c=#8e44ad][pos=13][trigger=/(剪贴板|复制内容)/]
+This is the content in my clipboard:
+$\{Meet.Zotero.getClipboardText()\}
+---
+$\{Meet.Global.input\}
+`,
+`
+#Item[c=#e67e22][pos=14][trigger=/这篇(文献|论文|文章)/]
+This is a Zotero item presented in JSON format:
+$\{
+JSON.stringify(ZoteroPane.getSelectedItems()[0].toJSON())
+\}
+
+Base on this JSON: $\{Meet.Global.input\}
+`,
+`
+#Items[c=#e67e22][pos=15][trigger=/这些(文献|论文)/]
+These are Zotero items presented in JSON format:
+$\{
+Meet.Zotero.getRelatedText(Meet.Global.input)
+\}
+
+Please answer me using the lanaguage as same as my question. Make sure to cite results using [number] notation after the reference. 
+My question is: $\{Meet.Global.input\}
+`,
+`
+#Annotations[c=#12aa9c][pos=16][trigger=/(选中|选择的|选择|所选)?(注释|高亮|标注)/]
+These are PDF Annotation contents:
+$\{
+Meet.Zotero.getPDFAnnotations(Meet.Global.input.match(/(选中|选择的|选择|所选)/))
+\}
+
+Please answer me using the lanaguage as same as my question. Make sure to cite results using [number] notation after the reference. 
+My question is: $\{Meet.Global.input\}
+`
+
+]
+defaultTags = defaultTags.map(parseTag)
+
+
+
+export { help, fontFamily, defaultTags, parseTag }

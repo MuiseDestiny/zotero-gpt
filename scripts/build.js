@@ -108,6 +108,8 @@ async function main() {
       // Don't turn minify on
       // minify: true,
       target: "firefox60"
+      // target: "es5"
+
     })
     .catch(() => process.exit(1));
 

@@ -1,11 +1,15 @@
 import { config } from "../../package.json";
 import Meet from "./Meet/api"
 import Utils from "./utils";
-import { help, fontFamily, defaultTags } from "./base"
+import { Document } from "langchain/document";
+import { help, fontFamily, defaultTags, parseTag } from "./base"
+// 不支持ES5
+// const hljs = require('./highlight.js')
 const markdown = require("markdown-it")({
   breaks: true, // 将行结束符\n转换为 <br> 标签
   xhtmlOut: true, // 使用 /> 关闭标签，而不是 >
   typographer: true,
+  html: true,
 });
 const mathjax3 = require('markdown-it-mathjax3');
 markdown.use(mathjax3);
@@ -44,6 +48,8 @@ export default class Views {
     this.addStyle()
     // @ts-ignore
     window.Meet = Meet
+    Meet.Global.views = this
+
 
   }
 
@@ -91,6 +97,9 @@ export default class Views {
             padding: 0;
             text-align: justify;
           }
+          .gpt-menu-box .menu-item:hover, .gpt-menu-box .menu-item.selected{
+            background-color: rgba(89, 192, 188, .23) !important;
+          }
         `
       },
       // #output-container div.streaming span:after,  
@@ -114,7 +123,7 @@ export default class Views {
    */
   public setText(text: string, isDone: boolean = false, scrollToNewLine : boolean = true) {
     this.outputContainer.style.display = ""
-    const outputDiv = this.outputContainer.querySelector(".markdown-body")!
+    const outputDiv = this.outputContainer.querySelector(".markdown-body")! as HTMLDivElement
     outputDiv.setAttribute("pureText", text);
     outputDiv.classList.add("streaming");
     let ready = () => {
@@ -173,11 +182,15 @@ export default class Views {
       }
       // 纯文本本身不需要MD渲染，防止样式不一致出现变形
       let _outputDiv = outputDiv.cloneNode(true) as HTMLDivElement
-      _outputDiv.innerHTML = result
-      if (outputDiv.childNodes.length == 0) {
-        outputDiv.innerHTML = result
-      } else {
-        diffRender(outputDiv, _outputDiv)
+      try {
+        _outputDiv.innerHTML = result
+        if (outputDiv.childNodes.length == 0) {
+          outputDiv.innerHTML = result
+        } else {
+          diffRender(outputDiv, _outputDiv)
+        }
+      } catch {
+        outputDiv.innerText = result
       }
     }
     md2html()
@@ -249,7 +262,7 @@ export default class Views {
   private bindUpDownKeys(inputNode: HTMLInputElement) {
     // let currentIdx = this._history.length;
     inputNode.addEventListener("keydown", (e) => {
-
+      this._history = this._history.filter(Boolean)
       let currentIdx = this._history.indexOf(this.inputContainer!.querySelector("input")!.value)
       currentIdx = currentIdx == -1 ? this._history.length : currentIdx
 
@@ -258,7 +271,7 @@ export default class Views {
         if (currentIdx < 0) {
           currentIdx = 0;
         }
-        inputNode.value = this._history[currentIdx];
+        inputNode.value = this._history[currentIdx] || "";
 
       } else if (e.key === "ArrowDown") {
         currentIdx++;
@@ -266,7 +279,7 @@ export default class Views {
           currentIdx = this._history.length;
           inputNode.value = "";
         } else {
-          inputNode.value = this._history[currentIdx];
+          inputNode.value = this._history[currentIdx] || "";
         }
       }
       if (["ArrowDown", "ArrowUp"].indexOf(e.key) >= 0) {
@@ -434,34 +447,15 @@ export default class Views {
     const that = this;
     let lastInputText = ""
     let inputListener = function (event: KeyboardEvent) {
+      ztoolkit.log(event)
       // @ts-ignore
       if(this.style.display == "none") { return }
       // @ts-ignore
-      let text = this.value
+      let text = Meet.Global.input = this.value
       if (event.ctrlKey && ["s", "r"].indexOf(event.key) >= 0 && textareaNode.style.display != "none") {
-        const tagString = text.match(/^#(.+)\n/)
-        function randomColor() {
-          var letters = '0123456789ABCDEF';
-          var color = '#';
-          for (var i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-          }
-          return color;
-        }
-        let tag = {
-          tag: Zotero.randomString(),
-          color: randomColor(),
-          position: 9,
-          text: text
-        }
-        // 标签文本
-        if (tagString) {
-          tag.tag = tagString[0].match(/^#([^\[\n]+)/)[1]
-          let color = tagString[0].match(/\[c(?:olor)?="?(#.+?)"?\]/)
-          tag.color = color?.[1] || tag.color
-          let position = tagString[0].match(/\[pos(?:ition)?="?(\d+?)"?\]/)
-          tag.position = Number(position?.[1] || tag.position)
-          tag.text = `#${tag.tag}[position=${tag.position}][color=${tag.color}]` + "\n" + text.replace(/^#.+\n/, "")
+        // 必定保存，但未必运行
+        const tag = parseTag(text)
+        if (tag) {
           // @ts-ignore
           this.value = tag.text
           let tags = that.getTags()
@@ -488,13 +482,13 @@ export default class Views {
           // 运行文本呢
           if (event.key == "r") {
             // 长文本当作未保存的命令标签执行，长文本里可以写js
-            return that.execTag({tag: "Untitled", position: -1, color: "", text})
+            return that.execTag({tag: "Untitled", position: -1, color: "", trigger: "", text})
           }
         }
       }
       if (event.key == "Enter") { 
         ztoolkit.log(event)
-        outputContainer.querySelector(".reference")?.remove()
+        outputContainer.querySelector(".auxiliary")?.remove()
 
         // 同时按Ctrl，会点击第一个标签
         if (event.ctrlKey) {
@@ -548,11 +542,11 @@ export default class Views {
             that.setText(help, true, false)
           } else if (key == "report") { 
             const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`) as string
-            window.setTimeout(() => {
-              Zotero.launchURL("https://platform.openai.com/account/usage")
-            }, 1000)
+            // window.setTimeout(() => {
+            //   Zotero.launchURL("https://platform.openai.com/account/usage")
+            // }, 1000)
             return that.setText(`\`api\` ${Zotero.Prefs.get(`${config.addonRef}.api`)}\n\`secretKey\` ${secretKey.slice(0, 3) + "..." + secretKey.slice(-4)}\n\`model\` ${Zotero.Prefs.get(`${config.addonRef}.model`)}\n\`temperature\` ${Zotero.Prefs.get(`${config.addonRef}.temperature`)}`, true, false)
-          } else if (["secretKey", "model", "api", "temperature", "deltaTime", "width", "tagsMore"].indexOf(key) >= 0) {  
+          } else if (["secretKey", "model", "api", "temperature", "deltaTime", "width", "tagsMore", "chatNumber", "relatedNumber"].indexOf(key) >= 0) {  
             if (value?.length > 0) {
               if (value == "default") {
                 Zotero.Prefs.clear(`${config.addonRef}.${key}`)
@@ -562,6 +556,8 @@ export default class Views {
               }
               switch (key) {
                 case "deltaTime":
+                case "relatedNumber":
+                case "chatNumber":
                   Zotero.Prefs.set(`${config.addonRef}.${key}`, Number(value))
                   break;
                 case "width":
@@ -618,7 +614,22 @@ export default class Views {
         // 退出container
         that.hide()
         that.container!.remove()
-        Meet.BetterNotes.reFocus()
+        that.isInNote && Meet.BetterNotes.reFocus()
+      } else if (event.key == "/" && text == "/" && that.container.querySelector("input")?.style.display != "none") {
+        const rect = that.container.querySelector("input")!.getBoundingClientRect()
+        const commands = ["clear", "help", "report", "secretKey", "model", "api", "temperature", "chatNumber", "relatedNumber" , "deltaTime", "tagsMore", "width"]
+        that.createMenuNode(
+          { x: rect.left, y: rect.top + rect.height, width: 200, height: 200 / 7 * commands.length  },
+          commands.map(name => {
+            return {
+              name,
+              listener: () => {
+                // @ts-ignore
+                this.value = `/${name}`
+              }
+            }
+          }), [2, 6, 8]
+        )
       }
       lastInputText = text
     }
@@ -656,15 +667,47 @@ export default class Views {
       ],
       listeners: [
         {
+          /**
+           * 双击是插件的输出，可能是插入笔记
+           */
           type: "dblclick",
           listener: () => {
+            const div = outputContainer.cloneNode(true) as HTMLDivElement
+            div.querySelector(".auxiliary")?.remove()
+            const htmlString = div.innerHTML
+            if (Zotero_Tabs.selectedIndex == 1 && Zotero.BetterNotes) {
+              Meet.BetterNotes.insertEditorText(htmlString)
+              this.hide()
+              new ztoolkit.ProgressWindow(config.addonName)
+                .createLine({ text: "Insert To Main Note", type: "success" })
+                .show()
+              return
+            }
+            if (Zotero_Tabs.selectedIndex > 0) {
+              const parentID = Zotero.Items.get(
+                Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)!.itemID as number
+              ).parentID
+              
+              const editor = Zotero.Notes._editorInstances.find(
+                (e) =>
+                  e._item.parentID === parentID && !Components.utils.isDeadWrapper(e._iframeWindow)
+              );
+              ztoolkit.log(editor)
+              // 笔记被打开，且打开笔记视图，才触发向当前条目笔记插入
+              if (editor && document.querySelector("#zotero-tb-toggle-notes-pane.toggled")) {
+                Meet.BetterNotes.insertEditorText(htmlString, editor)
+                new ztoolkit.ProgressWindow(config.addonName)
+                  .createLine({ text: "Insert To Note", type: "success" })
+                  .show()
+                return
+              }
+            }
             const text = outputContainer.querySelector("[pureText]")!.getAttribute("pureText") || ""
             new ztoolkit.Clipboard()
               .addText(text, "text/unicode")
               .copy()
-            
-            new ztoolkit.ProgressWindow("Copy Text")
-              .createLine({ text, type: "success" })
+            new ztoolkit.ProgressWindow(config.addonName)
+              .createLine({ text: "Copy Plain Text", type: "success" })
               .show()
           }
         }
@@ -822,7 +865,7 @@ export default class Views {
             if (timer) {
               window.clearTimeout(timer)
               timer = undefined
-              this.outputContainer.querySelector(".reference")?.remove()
+              this.outputContainer.querySelector(".auxiliary")?.remove()
               await this.execTag(tag)
             }
           }
@@ -835,6 +878,9 @@ export default class Views {
    * 执行标签
    */
   private async execTag(tag: Tag) {
+    this._history.push(
+      this.inputContainer.querySelector("input")?.value as string
+    )
     this._tag = tag
     const popunWin = new ztoolkit.ProgressWindow(tag.tag, { closeTime: -1, closeOtherProgressWindows: true })
       .show()
@@ -846,8 +892,15 @@ export default class Views {
     outputDiv.innerHTML = ""
     outputDiv.setAttribute("pureText", "");
     let text = tag.text.replace(/^#.+\n/, "")
+    // 旧版语法不宜传播，MD语法会被转义
     for (let rawString of text.match(/```j(?:ava)?s(?:cript)?\n([\s\S]+?)\n```/g)! || []) {
       let codeString = rawString.match(/```j(?:ava)?s(?:cript)?\n([\s\S]+?)\n```/)![1]
+      text = text.replace(rawString, await window.eval(`${codeString}`))
+    }
+    // 新版语法容易分享传播
+    for (let rawString of text.match(/\$\{[\s\S]+?\}/g)! || []) {
+      let codeString = rawString.match(/\$\{([\s\S]+?)\}/)![1]
+      ztoolkit.log(codeString)
       text = text.replace(rawString, await window.eval(`${codeString}`))
     }
     ztoolkit.log(text)
@@ -878,6 +931,21 @@ export default class Views {
    * @returns 
    */
   private async execText(text: string) {
+    // 如果文本中存在某一标签预设的关键词|正则表达式，则转为执行该标签
+    const tag = this.getTags()
+      .filter((tag: Tag) => tag.trigger?.length > 0)
+      .find((tag: Tag) => {
+      const trigger = tag.trigger
+      if (trigger.startsWith("/") && trigger.endsWith("/")) {
+        return (window.eval(trigger) as RegExp).test(text)
+      } else {
+        return text.indexOf(trigger as string) >= 0
+      }
+    })
+    if (tag) { return this.execTag(tag) }
+
+    // 没有匹配执行文本
+    this._history.push(text)
     this.outputContainer.style.display = "none"
     const outputDiv = this.outputContainer.querySelector("div")!
     outputDiv.innerHTML = ""
@@ -903,6 +971,11 @@ export default class Views {
       Zotero.Prefs.set(`${config.addonRef}.tags`, tagsJson)
     }
     let tags = JSON.parse(tagsJson)
+    for (let defaultTag of defaultTags) {
+      if (!tags.find((tag: Tag) => tag.tag == defaultTag.tag)) {
+        tags.push(defaultTag)
+      }
+    }
     return (tags.length > 0 ? tags : defaultTags).sort((a: Tag, b: Tag) => a.position - b.position)
   }
 
@@ -920,6 +993,7 @@ export default class Views {
     if (reBuild) {
       document.querySelectorAll(`#${this.id}`).forEach(e=>e.remove())
       this.container = this.buildContainer()
+      this.container.style.display = "flex"
     }
     this.container.setAttribute("follow", "")
     if (x + y < 0) {
@@ -950,7 +1024,7 @@ export default class Views {
     // this.container.style.display = "flex"
     this.container.style.left = `${x}px`
     this.container.style.top = `${y}px`
-    reBuild && (this.container.style.display = "flex")
+    // reBuild && (this.container.style.display = "flex")
   }
 
   /**
@@ -964,6 +1038,207 @@ export default class Views {
 
   public stopAlloutput() {
     this._ids.filter(id => id.type == "output").map(i => i.id).forEach(window.clearInterval)
+  }
+
+  /**
+   * 在输出界面插入辅助按钮
+   * 这是一个极具扩展性的函数
+   * 帮助定位，比如定位条目，PDF段落，PDF注释
+   */
+  public insertAuxiliary(docs: Document[]) {
+    this.outputContainer.querySelector(".auxiliary")?.remove()
+    const auxDiv = ztoolkit.UI.appendElement({
+      namespace: "html",
+      classList: ["auxiliary"],
+      tag: "div",
+      styles: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }
+    }, this.outputContainer)
+    docs.forEach((doc: Document, index: number) => {
+      ztoolkit.UI.appendElement({
+        namespace: "html",
+        tag: "a",
+        styles: {
+          margin: ".3em",
+          fontSize: "0.8em",
+          cursor: "pointer",
+          borderRadius: "3px",
+          backgroundColor: "rgba(89, 192, 188, .43)",
+          width: "1.5em",
+          height: "1.5em",
+          textAlign: "center",
+          color: "white",
+          fontWeight: "bold"
+        },
+        properties: {
+          innerText: index + 1
+        },
+        listeners: [
+          {
+            type: "click",
+            listener: async () => {
+              if (doc.metadata.type == "box") {
+                const reader = await ztoolkit.Reader.getReader();
+                (reader!._iframeWindow as any).wrappedJSObject.eval(`
+                  PDFViewerApplication.pdfViewer.scrollPageIntoView({
+                    pageNumber: ${doc.metadata.box.page + 1},
+                    destArray: ${JSON.stringify([null, { name: "XYZ" }, doc.metadata.box.left, doc.metadata.box.top, 3.5])},
+                    allowNegativeOffset: false,
+                    ignoreDestinationZoom: false
+                  })
+                `)
+              } else if (doc.metadata.type == "id") {
+                await ZoteroPane.selectItem(doc.metadata.id as number)
+              }
+            }
+          }
+        ]
+      }, auxDiv)
+    })
+  }
+
+  /**
+   * 创建选项
+   */
+  public createMenuNode(
+    rect: { x: number, y: number, width: number, height: number },
+    items: { name: string, listener: Function }[],
+    separators: number[]
+  ) {
+    document.querySelector(".gpt-menu-box")?.remove()
+    const removeNode = () => {
+      document.removeEventListener("mousedown", removeNode)
+      document.removeEventListener("keydown", keyDownHandler)
+      window.setTimeout(() => {
+        menuNode.remove()
+      }, 0)
+      this.inputContainer.querySelector("input")?.focus()
+    }
+    document.addEventListener("mousedown", removeNode)
+    let menuNode = ztoolkit.UI.appendElement({
+      tag: "div",
+      classList: ["gpt-menu-box"],
+      styles: {
+        position: "fixed",
+        left: `${rect.x}px`,
+        top: `${rect.y}px`,
+        width: `${rect.width}px`,
+        display: "flex",
+        height: `${rect.height}px`,
+        justifyContent: "space-around",
+        flexDirection: "column",
+        padding: "6px",
+        border: "1px solid #d4d4d4",
+        backgroundColor: "#ffffff",
+        borderRadius: "8px",
+        boxShadow: `0px 1px 2px rgba(0, 0, 0, 0.028),
+                                0px 3.4px 6.7px rgba(0, 0, 0, .042),
+                                0px 15px 30px rgba(0, 0, 0, .07)`,
+        overflow: "hidden",
+        userSelect: "none",
+      },
+      children: (() => {
+        let arr = [];
+        for (let i = 0; i < items.length; i++) {
+          arr.push({
+            tag: "div",
+            classList: ["menu-item"],
+            styles: {
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "4px 8px",
+              cursor: "default",
+              fontSize: "13px",
+              borderRadius: "4px",
+              whiteSpace: "nowrap",
+            },
+            listeners: [
+              {
+                type: "mousedown",
+                listener: async (event: any) => {
+                  await items[i].listener()
+                }
+              },
+              {
+                type: "mouseenter",
+                listener: function () {
+                  nodes.forEach(e => e.classList.remove("selected"))
+                  // @ts-ignore
+                  this.classList.add("selected")
+                  currentIndex = i
+                }
+              },
+            ],
+            children: [
+              {
+                tag: "div",
+                classList: ["menu-item-name"],
+                styles: {
+                  paddingLeft: "0.5em",
+                },
+                properties: {
+                  innerText: items[i].name
+                }
+              }
+            ]
+          })
+          if (separators.indexOf(i) != -1) {
+            arr.push({
+              tag: "div",
+              styles: {
+                height: "0",
+                margin: "6px -6px",
+                borderTop: ".5px solid #e0e0e0",
+                borderBottom: ".5px solid #e0e0e0",
+              }
+            })
+          }
+
+        }
+        return arr
+      })() as any
+    }, document.documentElement)
+    
+    const winRect = document.documentElement.getBoundingClientRect()
+    const nodeRect = menuNode.getBoundingClientRect()
+    // 避免溢出
+    if (nodeRect.bottom > winRect.bottom) {
+      menuNode.style.top = ""
+      menuNode.style.bottom = "0px"
+    }
+    // menuNode.querySelector(".menu-item:first-child")?.classList.add("selected")
+    const nodes = menuNode.querySelectorAll(".menu-item")
+    nodes[0].classList.add("selected")
+    let currentIndex = 0
+    this.inputContainer.querySelector("input")?.blur()
+    let keyDownHandler = (event: any) => {
+      ztoolkit.log(event)
+      if (event.code == "ArrowDown") {
+        currentIndex += 1
+        if (currentIndex >= nodes.length) {
+          currentIndex = 0
+        }
+      } else if (event.code == "ArrowUp") {
+        currentIndex -= 1
+        if (currentIndex < 0) {
+          currentIndex = nodes.length - 1
+        }
+      } else if (event.code == "Enter") {
+        items[currentIndex].listener()
+        
+        removeNode()
+      } else if (event.code == "Escape") {
+        removeNode()
+      }
+      nodes.forEach(e => e.classList.remove("selected"))
+      nodes[currentIndex].classList.add("selected")
+    }
+    document.addEventListener("keydown", keyDownHandler)
+    return menuNode
   }
   /**
    * 绑定快捷键
@@ -1031,4 +1306,3 @@ export default class Views {
   }
 }
 
-interface Tag { tag: string; color: string; position: number, text: string }

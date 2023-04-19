@@ -55,12 +55,13 @@ export async function similaritySearch(queryText: string, docs: Document[], obj:
   })
   const v0 = await embeddings.embedQuery(queryText)
   // 从20个里面找出文本最长的几个，防止出现较短但相似度高的段落影响回答准确度
-  const k = 20
+  const relatedNumber = Zotero.Prefs.get(`${config.addonRef}.relatedNumber`) as number
+  const k = relatedNumber * 5
   const pp = vv.map((v: any) => similarity(v0, v));
   docs = [...pp].sort((a, b) => b - a).slice(0, k).map((p: number) => {
     return docs[pp.indexOf(p)]
   })
-  return docs.sort((a, b) => b.pageContent.length - a.pageContent.length).slice(0, 5)
+  return docs.sort((a, b) => b.pageContent.length - a.pageContent.length).slice(0, relatedNumber)
 }
 
 
@@ -97,12 +98,18 @@ class OpenAIEmbeddings {
           }),
         }
       )
-    } catch(error: any) {
-      error = error.xmlhttp.response.error
-      views.setText(`# ${error.code}\n> ${url}\n\n**${error.type}**\n${error.message}`, true)
-      new ztoolkit.ProgressWindow(error.code, { closeOtherProgressWindows: true })
-        .createLine({ text: error.message, type: "default" })
-        .show()
+    } catch (error: any) {
+      try {
+        error = error.xmlhttp.response?.error
+        views.setText(`# ${error.code}\n> ${url}\n\n**${error.type}**\n${error.message}`, true)
+        new ztoolkit.ProgressWindow(error.code, { closeOtherProgressWindows: true })
+          .createLine({ text: error.message, type: "default" })
+          .show()
+      } catch {
+        new ztoolkit.ProgressWindow("Error", { closeOtherProgressWindows: true })
+          .createLine({ text: error.message, type: "default" })
+          .show()
+      }
     }
     if (res?.response?.data) {
       return res.response.data.map((i: any) => i.embedding)
@@ -158,11 +165,16 @@ export async function getGPTResponseByOpenAI(requestText: string) {
     _textArr = textArr.slice(0, _textArr.length + 1)
     let text = _textArr.join("")
     text.length > 0 && views.setText(text)
+    if (responseText && responseText == text) {
+      views.setText(text, true)
+      window.clearInterval(id)
+    }
   }, deltaTime)
   views._ids.push({
     type: "output",
     id: id
   })
+  const chatNumber = Zotero.Prefs.get(`${config.addonRef}.chatNumber`) as number
   const url = `${api}/v1/chat/completions`
   try {
     await Zotero.HTTP.request(
@@ -175,7 +187,7 @@ export async function getGPTResponseByOpenAI(requestText: string) {
         },
         body: JSON.stringify({
           model: model,
-          messages: views.messages,
+          messages: views.messages.slice(-chatNumber),
           stream: true,
           temperature: Number(temperature)
         }),
@@ -202,16 +214,24 @@ export async function getGPTResponseByOpenAI(requestText: string) {
       }
     );
   } catch (error: any) {
-    error = JSON.parse(error.xmlhttp.response).error
-    textArr = [`# ${error.code}\n> ${url}\n\n**${error.type}**\n${error.message}`]
-    new ztoolkit.ProgressWindow(error.code, { closeOtherProgressWindows: true })
-      .createLine({ text: error.message, type: "default" })
-      .show()
+    try {
+      error = JSON.parse(error?.xmlhttp?.response).error
+      textArr = [`# ${error.code}\n> ${url}\n\n**${error.type}**\n${error.message}`]
+      new ztoolkit.ProgressWindow(error.code, { closeOtherProgressWindows: true })
+        .createLine({ text: error.message, type: "default" })
+        .show()
+    } catch {
+      new ztoolkit.ProgressWindow("Error", { closeOtherProgressWindows: true })
+        .createLine({ text: error.message, type: "default" })
+        .show()
+    }
   }
   responseText = textArr.join("")
   ztoolkit.log("responseText", responseText)
-  window.clearInterval(id)
-  views.setText(responseText, true)
+  // if (views._ids.map(i=>i.id).indexOf(id) >= 0 ) {
+  //   views.setText(responseText, true)
+  // }
+  // window.clearInterval(id)
   views.messages.push({
     role: "assistant",
     content: responseText
@@ -232,7 +252,8 @@ export async function getGPTResponseBy(
 ) {
   const views = Zotero.ZoteroGPT.views as Views
   const deltaTime = Zotero.Prefs.get(`${config.addonRef}.deltaTime`) as number
-  let responseText = ""
+  let responseText: string | undefined
+  let _responseText = ""
   views.messages.push({
     role: "user",
     content: requestText
@@ -242,14 +263,19 @@ export async function getGPTResponseBy(
   views.stopAlloutput()
   views.setText("")
   const id = window.setInterval(() => {
-    responseText.trim().length > 0 && views.setText(responseText)
+    _responseText.trim().length > 0 && views.setText(_responseText)
+    if (responseText && responseText == _responseText) {
+      views.setText(_responseText, true)
+      window.clearInterval(id)
+    }
   }, deltaTime)
-  views._ids.push({type: "output", id: id})
+  views._ids.push({ type: "output", id: id })
+  const chatNumber = Zotero.Prefs.get(`${config.addonRef}.chatNumber`) as number
   const body = JSON.stringify(window.eval(
     `
       _ = ${
     requestArg.body
-      .replace("___messages___", JSON.stringify(views.messages))
+      .replace("___messages___", JSON.stringify(views.messages.slice(-chatNumber)))
       .replace("___requestText___", requestText)
     }
     `
@@ -266,7 +292,7 @@ export async function getGPTResponseBy(
       responseType: "text",
       requestObserver: (xmlhttp: XMLHttpRequest) => {
         xmlhttp.onprogress = (e: any) => {
-          responseText = e.target.response.replace(requestArg.remove, "")
+          _responseText = e.target.response.replace(requestArg.remove, "")
           if (e.target.timeout) {
             e.target.timeout = 0;
           }
@@ -274,8 +300,10 @@ export async function getGPTResponseBy(
       },
     }
   );
-  window.clearInterval(id)
-  views.setText(responseText, true)
+  // if (views._ids.map(i => i.id).indexOf(id) >= 0) {
+  //   views.setText(responseText, true)
+  // }
+  // window.clearInterval(id)
   // if (views.isInNote) {
   //   window.setTimeout(async () => {
   //     Meet.BetterNotes.replaceEditorText(
@@ -284,6 +312,7 @@ export async function getGPTResponseBy(
   //     )
   //   })
   // }
+  responseText = _responseText
   views.messages.push({
     role: "assistant",
     content: responseText

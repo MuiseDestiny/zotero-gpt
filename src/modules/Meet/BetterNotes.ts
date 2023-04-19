@@ -24,10 +24,12 @@ export async function getEditorText(span: HTMLSpanElement) {
   }
 }
 
-export function reFocus() {
-  const BNEditorApi = Zotero.BetterNotes.api.editor
-  const editor = BNEditorApi.getEditorInstance(Zotero.BetterNotes.data.workspace.mainId);
-  editor._iframeWindow.focus()
+export function reFocus(editor?: any) {
+  if (!editor) {
+    const BNEditorApi = Zotero.BetterNotes.api.editor
+    editor = BNEditorApi.getEditorInstance(Zotero.BetterNotes.data.workspace.mainId);
+  }
+  editor && editor._iframeWindow.focus()
 }
 
 
@@ -50,18 +52,20 @@ export function replaceEditorText(htmlString: string) {
  * 在编辑器光标处插入文本
  * @param htmlString 
  */
-export function insertEditorText(htmlString: string) {
+export function insertEditorText(htmlString: string, editor?: any) {
   const BNEditorApi = Zotero.BetterNotes.api.editor
-  const editor = BNEditorApi.getEditorInstance(Zotero.BetterNotes.data.workspace.mainId);
+  if (!editor) {
+    editor = BNEditorApi.getEditorInstance(Zotero.BetterNotes.data.workspace.mainId);
+  }
   const to = BNEditorApi.getRangeAtCursor(editor).to
-  reFocus()
+  reFocus(editor)
   BNEditorApi.insert(
     editor,
     htmlString,
     to,
     true
   )
-  reFocus()
+  reFocus(editor)
 }
 
 /**
