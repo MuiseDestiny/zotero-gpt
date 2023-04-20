@@ -3,8 +3,6 @@ import Meet from "./Meet/api"
 import Utils from "./utils";
 import { Document } from "langchain/document";
 import { help, fontFamily, defaultTags, parseTag } from "./base"
-// 不支持ES5
-// const hljs = require('./highlight.js')
 const markdown = require("markdown-it")({
   breaks: true, // 将行结束符\n转换为 <br> 标签
   xhtmlOut: true, // 使用 /> 关闭标签，而不是 >
@@ -99,6 +97,32 @@ export default class Views {
           }
           .gpt-menu-box .menu-item:hover, .gpt-menu-box .menu-item.selected{
             background-color: rgba(89, 192, 188, .23) !important;
+          }
+          #${this.id} .tag {
+            position: relative;
+            overflow: hidden;
+          }
+          #${this.id} .ripple {
+            left: 0;
+            top: 50%;
+            position: absolute;
+            background: #fff;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            border-radius: 50%;
+            animation: ripple 1.5s linear;
+          }
+          @keyframes ripple {
+            from {
+              width: 0px;
+              height: 0px;
+              opacity: 0.5;
+            }
+            to {
+              width: 500px;
+              height: 500px;
+              opacity: 0;
+            }
           }
         `
       },
@@ -400,6 +424,7 @@ export default class Views {
     // 输入
     const inputContainer = this.inputContainer = ztoolkit.UI.appendElement({
       tag: "div",
+      id: "input-container",
       styles: {
         borderBottom: "1px solid #f6f6f6",
         width: "100%",
@@ -447,7 +472,6 @@ export default class Views {
     const that = this;
     let lastInputText = ""
     let inputListener = function (event: KeyboardEvent) {
-      ztoolkit.log(event)
       // @ts-ignore
       if(this.style.display == "none") { return }
       // @ts-ignore
@@ -488,6 +512,7 @@ export default class Views {
       }
       if (event.key == "Enter") { 
         ztoolkit.log(event)
+        
         outputContainer.querySelector(".auxiliary")?.remove()
 
         // 同时按Ctrl，会点击第一个标签
@@ -806,19 +831,20 @@ export default class Views {
   private renderTags() {
     this.tagsContainer!?.querySelectorAll("div").forEach(e=>e.remove())
     let tags = this.getTags() as Tag[]
-    tags.forEach(tag => {
-      this.addTag(tag)
+    tags.forEach((tag: Tag, index: number) => {
+      this.addTag(tag, index)
     })
   }
 
   /**
    * 添加一个标签
    */
-  private addTag(tag: Tag) {
+  private addTag(tag: Tag, index: number) {
     let [red, green, blue] = this.utils.getRGB(tag.color)
     let timer: undefined | number;
     ztoolkit.UI.appendElement({
       tag: "div",
+      id: `tag-${index}`,
       classList: ["tag"],
       styles: {
         display: "inline-block",
@@ -874,20 +900,36 @@ export default class Views {
     }, this.tagsContainer!) as HTMLDivElement
   }
 
+  private rippleEffect(div: HTMLDivElement, color: string) {
+    let [red, green, blue] = this.utils.getRGB(color)
+    ztoolkit.UI.appendElement({
+      tag: "div",
+      styles: {
+        backgroundColor: `rgba(${red}, ${green}, ${blue}, 0.5)`
+      },
+      classList: ["ripple"]
+    }, div)
+  }
   /**
    * 执行标签
    */
   private async execTag(tag: Tag) {
-    this._history.push(
-      this.inputContainer.querySelector("input")?.value as string
-    )
+    Meet.Global.input = this.inputContainer.querySelector("input")?.value as string
+    this._history.push(Meet.Global.input)
     this._tag = tag
     const popunWin = new ztoolkit.ProgressWindow(tag.tag, { closeTime: -1, closeOtherProgressWindows: true })
       .show()
+    Meet.Global.popupWin = popunWin
     popunWin
-      .createLine({ text: "Plugin is generating content...", type: "default" })
+      .createLine({ text: "Generating input content...", type: "default" })
     this.dotsContainer?.classList.add("loading")
     this.outputContainer.style.display = "none"
+    ztoolkit.log(tag, this.getTags())
+    const tagIndex = this.getTags().map(JSON.stringify).indexOf(JSON.stringify(tag)) as number
+    this.rippleEffect(
+      this.container.querySelector(`#tag-${tagIndex}`)!,
+      tag.color
+    )
     const outputDiv = this.outputContainer.querySelector("div")!
     outputDiv.innerHTML = ""
     outputDiv.setAttribute("pureText", "");
@@ -903,9 +945,8 @@ export default class Views {
       ztoolkit.log(codeString)
       text = text.replace(rawString, await window.eval(`${codeString}`))
     }
-    ztoolkit.log(text)
-    popunWin.createLine({text: `Text total length is ${text.length}`, type: "success"})
-    popunWin.createLine({ text: "GPT is answering...", type: "default" })
+    popunWin.createLine({ text: `Characters ${text.length}`, type: "success" })
+    popunWin.createLine({ text: "Answering...", type: "default" })
     // 运行替换其中js代码
     text = await Meet.OpenAI.getGPTResponse(text) as string
     this.dotsContainer?.classList.remove("loading")

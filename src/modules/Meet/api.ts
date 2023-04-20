@@ -67,6 +67,8 @@ const Meet: any = {
     lock: undefined,
     input: undefined,
     views: undefined,
+    popupWin: undefined,
+    storage: undefined
   }
 }
 

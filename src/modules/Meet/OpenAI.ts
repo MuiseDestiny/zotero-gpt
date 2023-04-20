@@ -41,21 +41,32 @@ const requestArgs: RequestArg[] = [
  * @returns 
  */
 export async function similaritySearch(queryText: string, docs: Document[], obj: { key: string }) {
-  const storage = new LocalStorage(config.addonRef)
+  const storage = Meet.Global.storage = Meet.Global.storage || new LocalStorage(config.addonRef)
+  await storage.lock.promise;
   const embeddings = new OpenAIEmbeddings() as any
   // 查找本地，为节省空间，只储存向量
   // 因为随着插件更新，解析出的PDF可能会有优化，因此再此进行提取MD5值作为验证
   // 但可以预测，本地JSON文件可能会越来越大
   const id = MD5(docs.map((i: any) => i.pageContent).join("\n\n")).toString()
   await storage.lock
-  const vv = storage.get(obj, id) ||
-    await embeddings.embedDocuments(docs.map((i: any) => i.pageContent))
-  window.setTimeout(async () => {
-    await storage.set(obj, id, vv)
-  })
+  const _vv = storage.get(obj, id)
+  ztoolkit.log(_vv)
+  let vv: any
+  if (_vv) {
+    Meet.Global.popupWin.createLine({ text: "Reading embeddings...", type: "default" })
+    vv = _vv
+  } else {
+    Meet.Global.popupWin.createLine({ text: "Generating embeddings...", type: "default" })
+    vv = await embeddings.embedDocuments(docs.map((i: any) => i.pageContent))
+    window.setTimeout(async () => {
+      await storage.set(obj, id, vv)
+    })
+  }
+
   const v0 = await embeddings.embedQuery(queryText)
   // 从20个里面找出文本最长的几个，防止出现较短但相似度高的段落影响回答准确度
   const relatedNumber = Zotero.Prefs.get(`${config.addonRef}.relatedNumber`) as number
+  Meet.Global.popupWin.createLine({ text: `Searching ${relatedNumber} related content...`, type: "default" })
   const k = relatedNumber * 5
   const pp = vv.map((v: any) => similarity(v0, v));
   docs = [...pp].sort((a, b) => b - a).slice(0, k).map((p: number) => {

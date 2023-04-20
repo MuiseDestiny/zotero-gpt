@@ -84,7 +84,7 @@ function parseTag(text: string) {
  */
 let defaultTags: any = [
 `
-#🪐AskPDF[color=#1abc9c][position=10][trigger=/^(本文|这篇文章|论文)/]
+#🪐AskPDF[color=#0EA293][position=10][trigger=/^(本文|这篇文章|论文)/]
 You are a helpful assistant. Context information is below.
 $\{
 Meet.Global.views.messages = [];
@@ -97,7 +97,7 @@ Answer the question: $\{Meet.Global.input\}
 Reply in ${Zotero.locale}
 `,
 `
-#🎈Translate[c=#27ae60][pos=11][trigger=/^翻译/]
+#🌟Translate[c=#D14D72][pos=11][trigger=/^翻译/]
 Translate these content to 简体中文:
 $\{
 Meet.Global.input.replace("翻译", "") ||
@@ -106,21 +106,41 @@ Meet.Global.views.messages[0].content
 \}
 `,
 `
-#✨Improve writing[color=#2980b9][pos=12][trigger=/^润色/]
+#✨Improve writing[color=#8e44ad][pos=12][trigger=/^润色/]
 Below is a paragraph from an academic paper. Polish the writing to meet the academic style, improve the spelling, grammar, clarity, concision and overall readability. When necessary, rewrite the whole sentence. Furthermore, list all modification and explain the reasons to do so in markdown table. Paragraph: "$\{
 Meet.Global.input.replace("润色", "") ||
 Meet.Global.views.messages[0].content
 \}"
 `,
 `
-#Clipboard[c=#8e44ad][pos=13][trigger=/(剪贴板|复制内容)/]
+#Clipboard[c=#576CBC][pos=13][trigger=/(剪贴板|复制内容)/]
 This is the content in my clipboard:
 $\{Meet.Zotero.getClipboardText()\}
 ---
 $\{Meet.Global.input\}
 `,
 `
-#Item[c=#e67e22][pos=14][trigger=/这篇(文献|论文|文章)/]
+#Annotations[c=#F49D1A][pos=14][trigger=/(选中|选择的|选择|所选)?(注释|高亮|标注)/]
+These are PDF Annotation contents:
+$\{
+Meet.Zotero.getPDFAnnotations(Meet.Global.input.match(/(选中|选择的|选择|所选)/))
+\}
+
+Please answer me in the language of my question. Make sure to cite results using [number] notation after the reference. 
+My question is: $\{Meet.Global.input\}
+`,
+`
+#Selection[c=#D14D72][pos=15][trigger=/^(这段|选中)(文本|话|文字|描述)/]
+Read these content:
+$\{
+Meet.Zotero.getPDFSelection() ||
+Meet.Global.views.messages[0].content
+\}
+---
+Answer me in the language of my question. This is my question: $\{Meet.Global.input\}
+`,
+  `
+#Item[c=#159895][pos=16][trigger=/这篇(文献|论文|文章)/]
 This is a Zotero item presented in JSON format:
 $\{
 JSON.stringify(ZoteroPane.getSelectedItems()[0].toJSON())
@@ -128,8 +148,8 @@ JSON.stringify(ZoteroPane.getSelectedItems()[0].toJSON())
 
 Base on this JSON: $\{Meet.Global.input\}
 `,
-`
-#Items[c=#e67e22][pos=15][trigger=/这些(文献|论文)/]
+  `
+#Items[c=#159895][pos=17][trigger=/这些(文献|论文)/]
 These are Zotero items presented in JSON format:
 $\{
 Meet.Zotero.getRelatedText(Meet.Global.input)
@@ -138,20 +158,8 @@ Meet.Zotero.getRelatedText(Meet.Global.input)
 Please answer me using the lanaguage as same as my question. Make sure to cite results using [number] notation after the reference. 
 My question is: $\{Meet.Global.input\}
 `,
-`
-#Annotations[c=#12aa9c][pos=16][trigger=/(选中|选择的|选择|所选)?(注释|高亮|标注)/]
-These are PDF Annotation contents:
-$\{
-Meet.Zotero.getPDFAnnotations(Meet.Global.input.match(/(选中|选择的|选择|所选)/))
-\}
-
-Please answer me using the lanaguage as same as my question. Make sure to cite results using [number] notation after the reference. 
-My question is: $\{Meet.Global.input\}
-`
-
 ]
 defaultTags = defaultTags.map(parseTag)
-
 
 
 export { help, fontFamily, defaultTags, parseTag }
