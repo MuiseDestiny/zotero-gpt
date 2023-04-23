@@ -7,7 +7,7 @@
 
 👋
 
-Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-gpt/discussions/3) by using [Meet API](src/modules/Meet/api.ts).
+Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-gpt/discussions/3) using [Meet API](src/modules/Meet/api.ts).
 
 [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-round&logo=github)](https://github.com/windingwind/zotero-plugin-template)
 [![Latest release](https://img.shields.io/github/v/release/MuiseDestiny/zotero-gpt)](https://github.com/MuiseDestiny/zotero-gpt/releases)
