@@ -5,31 +5,36 @@ import LocalStorage from "../localStorage";
 import Views from "../views";
 import Meet from "./api";
 const similarity = require('compute-cosine-similarity');
-declare type RequestArg = { headers: any, api: string, body: string, remove?: string | RegExp }
+declare type RequestArg = { headers: any, api: string, body: Function, remove?: string | RegExp, process?: Function }
+let chatID: string
 const requestArgs: RequestArg[] = [
   {
     api: "https://aigpt.one/api/chat-stream",
     headers: {
       "path": "v1/chat/completions"
     },
-    body: `{
+    body: (requestText: string, messages: any) => { 
+      return {
         "model": "gpt-3.5-turbo",
-        messages: ___messages___,
+        messages: messages,
         stream: true,
         "max_tokens": 2000,
         "presence_penalty": 0
-      }`
+      }
+    } 
   },
-  // 一天十次
   {
-    api: "https://chatforai.com/api/generate",
+    api: "https://chatbot.theb.ai/api/chat-process",
     headers: {
-      "referer": "https://chatforai.com/",
     },
-    body: `{
-      "messages": ___messages___,
-    }`,
-    remove: "请访问 [https://chatforai.site](https://chatforai.site/?r=17) 使用 AI 聊天"
+    body: (requestText: string, messages: any) => {
+      return { "prompt": requestText, "options": { "parentMessageId": chatID }}
+    },
+    process: (text: string) => {
+      const res = JSON.parse(text.split("\n").slice(-1)[0])
+      chatID = res.id
+      return res.text
+    }
   }
 ]
 
@@ -140,7 +145,7 @@ class OpenAIEmbeddings {
 export async function getGPTResponse(requestText: string) {
   const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
   // 这里可以补充很多免费API，然后用户设置用哪个
-  if (!secretKey) { return await getGPTResponseBy(requestArgs[0], requestText) }
+  if (!secretKey) { return await getGPTResponseBy(requestArgs[1], requestText) }
   else { return await getGPTResponseByOpenAI(requestText) }
 }
 
@@ -172,7 +177,7 @@ export async function getGPTResponseByOpenAI(requestText: string) {
   views.setText("")
   let responseText: string | undefined
   const id: number = window.setInterval(async () => {
-    if (_textArr.length == textArr.length) { return}
+    if (!responseText && _textArr.length == textArr.length) { return}
     _textArr = textArr.slice(0, _textArr.length + 1)
     let text = _textArr.join("")
     text.length > 0 && views.setText(text)
@@ -282,15 +287,7 @@ export async function getGPTResponseBy(
   }, deltaTime)
   views._ids.push({ type: "output", id: id })
   const chatNumber = Zotero.Prefs.get(`${config.addonRef}.chatNumber`) as number
-  const body = JSON.stringify(window.eval(
-    `
-      _ = ${
-    requestArg.body
-      .replace("___messages___", JSON.stringify(views.messages.slice(-chatNumber)))
-      .replace("___requestText___", requestText)
-    }
-    `
-  ))
+  const body = JSON.stringify(requestArg.body(requestText, views.messages.slice(-chatNumber)))
   await Zotero.HTTP.request(
     "POST",
     requestArg.api,
@@ -304,6 +301,9 @@ export async function getGPTResponseBy(
       requestObserver: (xmlhttp: XMLHttpRequest) => {
         xmlhttp.onprogress = (e: any) => {
           _responseText = e.target.response.replace(requestArg.remove, "")
+          if (requestArg.process) {
+            _responseText = requestArg.process(_responseText)
+          }
           if (e.target.timeout) {
             e.target.timeout = 0;
           }
