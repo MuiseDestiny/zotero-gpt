@@ -1288,50 +1288,57 @@ export default class Views {
    * 绑定快捷键
    */
   private registerKey() {
+    const callback = async () => {
+      this.isInNote = false
+      if (Zotero_Tabs.selectedIndex == 0) {
+        const div = document.querySelector("#item-tree-main-default .row.selected")!
+        if (div) {
+          const rect = div.getBoundingClientRect()
+          this.show(rect.x, rect.y + rect.height)
+        } else {
+          this.show()
+        }
+      } else {
+        const reader = await ztoolkit.Reader.getReader()
+        // const div = reader?._iframeWindow?.document.querySelector("#selection-menu")!
+        const div = reader?._iframeWindow?.document.querySelector(".selection-popup")!
+        if (div) {
+          window.setTimeout(() => {
+            this.messages = this.messages.concat(
+              [
+                {
+                  role: "user",
+                  content: `I am reading a PDF, and the following text is a part of the PDF. Please read it first, and I will ask you some question later: \n${Meet.Zotero.getPDFSelection()}`
+                },
+                {
+                  role: "assistant",
+                  content: "OK."
+                }
+              ]
+            )
+            const rect = div?.getBoundingClientRect()
+            const windRect = document.documentElement.getBoundingClientRect()
+            const ww = windRect.width *
+              0.01 * Number((Zotero.Prefs.get(`${config.addonRef}.width`) as string).slice(0, -1))
+            ww
+            this.show(rect.left + rect.width * .5 - ww * .5, rect.bottom)
+          }, 233)
+        } else {
+          this.show()
+        }
+      }
+    }
     ztoolkit.Shortcut.register("event", {
       id: config.addonRef,
       modifiers: "control",
       key: "/",
-      callback: async () => {
-        this.isInNote = false
-        if (Zotero_Tabs.selectedIndex == 0) {
-          const div = document.querySelector("#item-tree-main-default .row.selected")!
-          if (div) {
-            const rect = div.getBoundingClientRect()
-            this.show(rect.x, rect.y + rect.height)
-          } else {
-            this.show()
-          }
-        } else {
-          const reader = await ztoolkit.Reader.getReader()
-          // const div = reader?._iframeWindow?.document.querySelector("#selection-menu")!
-          const div = reader?._iframeWindow?.document.querySelector(".selection-popup")!
-          if (div) {
-            window.setTimeout(() => {
-              this.messages = this.messages.concat(
-                [
-                  {
-                    role: "user",
-                    content: `I am reading a PDF, and the following text is a part of the PDF. Please read it first, and I will ask you some question later: \n${Meet.Zotero.getPDFSelection()}`
-                  },
-                  {
-                    role: "assistant",
-                    content: "OK."
-                  }
-                ]
-              )
-              const rect = div?.getBoundingClientRect()
-              const windRect = document.documentElement.getBoundingClientRect()
-              const ww = windRect.width *
-                0.01 * Number((Zotero.Prefs.get(`${config.addonRef}.width`) as string).slice(0, -1))
-              ww
-              this.show(rect.left + rect.width * .5 - ww * .5, rect.bottom)
-            }, 233)
-          } else {
-            this.show()
-          }
-        }
-      }
+      callback: callback
+    })
+    ztoolkit.Shortcut.register("event", {
+      id: config.addonRef,
+      modifiers: "shift",
+      key: "?",
+      callback: callback
     })
     document.addEventListener(
       "keydown",
