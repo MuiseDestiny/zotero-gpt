@@ -48,13 +48,31 @@ Features about UI:
 - [x] 🔧 Compatible with **Zotero 6** and **Zotero 7**.
 - [x] 🎉 Discover more exciting features that are not listed here.
 
+## How to install
+To install the extension, you need to first build this project to generate a `.xpi` file, install this file as an extension in Zotero, and insert your Open-AI API key. 
+### Build the project
+Here is an example on how to install and build this project. For more information on how to build, please visit this project: [https://github.com/windingwind/zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template)
+```bash
+git clone https://github.com/MuiseDestiny/zotero-gpt.git
+cd zotero-gpt
+npm install
+npm run build
+```
+The generated `.xpi` file in the build directory is the extension that you can install in Zotero.
+
+### Install the extension in Zotero
+Open Zotero. In the top menu bar, click on `Tools > Add-ons`.
+Click on the gear icon at the top right of the window. Click on `Install Add-on From File` and open the generated `.xpi` file in the build directory from the previous step.
+
+### Set up the API key
+In this step, you need to set the secret key to the Open-AI [API key](https://platform.openai.com/account/api-keys). Go to the `Preferences` > `Advanced` > `General` tab > `Advanced Configuration` section > `Config Editor`.  
+
+Search for `secretkey` and insert your api key as the value section.
+
+![image](imgs/apikey.png)
 ## Quick Start
 
 Use `Shift + /` to call this plug-in，select the text in a PDF file and then press`Shift + Tab + /` to enter the prompt input. Use `Esc` to exit.
-
-API-key：
-
-![image](imgs/apikey.png)
 
 ## Command Tags
 
