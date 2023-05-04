@@ -49,7 +49,7 @@ Features about UI:
 - [x] 🎉 Discover more exciting features that are not listed here.
 
 ## How to install
-To install the extension, you need to first build this project to generate a `.xpi` file or [download](https://github.com/MuiseDestiny/zotero-gpt/releases) the release `.xpi`, install this file as an extension in Zotero, and insert your Open-AI API key. 
+To install the extension, you need to first build this project to generate a `.xpi` file or [download](https://github.com/MuiseDestiny/zotero-gpt/releases) the release `.xpi` file, install this file as an extension in Zotero, and insert your Open-AI API key. 
 ### Build the project
 Here is an example on how to install and build this project. For more information on how to build, please visit this project: [https://github.com/windingwind/zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template)
 ```bash
