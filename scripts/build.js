@@ -117,7 +117,7 @@ async function main() {
   console.log("[Build] Run esbuild OK");
 
   const indexJsContent = fs.readFileSync(outfile, "utf-8")
-  const result = UglifyJS.minify(indexJsContent)
+  const result = UglifyJS.minify(indexJsContent, { output: { ascii_only: true } })
   if (result.error) {
     console.log("UglifyJS error", result.error)
     process.exit(1)
