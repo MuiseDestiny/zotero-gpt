@@ -98,7 +98,7 @@ async function main() {
   copyFileSync("update-template.json", "update.json");
   copyFileSync("update-template.rdf", "update.rdf");
 
-  const outfile = path.join(buildDir, "addon/chrome/content/scripts/index.js")
+  const outfile = path.join(buildDir, "addon/chrome/content/scripts/index.js");
   await esbuild
     .build({
       entryPoints: ["src/index.ts"],
@@ -109,21 +109,22 @@ async function main() {
       outfile,
       // Don't turn minify on
       // minify: true,
-      target: "firefox60"
-
+      target: "firefox60",
     })
     .catch(() => process.exit(1));
 
   console.log("[Build] Run esbuild OK");
 
-  const indexJsContent = fs.readFileSync(outfile, "utf-8")
-  const result = await UglifyJS.minify(indexJsContent, { output: { ascii_only: true } })
+  const indexJsContent = fs.readFileSync(outfile, "utf-8");
+  const result = UglifyJS.minify(indexJsContent, {
+    output: { ascii_only: true },
+  });
   if (result.error) {
-    console.log("UglifyJS error", result.error)
-    process.exit(1)
+    console.log("UglifyJS error", result.error);
+    process.exit(1);
   }
-  fs.writeFileSync(outfile, result.code, "utf-8")
-  
+  fs.writeFileSync(outfile, result.code, "utf-8");
+
   const replaceFrom = [
     /__author__/g,
     /__description__/g,
@@ -170,7 +171,7 @@ async function main() {
 
   console.log("[Build] Addon prepare OK");
 
-  compressing.zip.compressDir(
+  await compressing.zip.compressDir(
     path.join(buildDir, "addon"),
     path.join(buildDir, `${name}.xpi`),
     {

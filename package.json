@@ -59,8 +59,6 @@
     "react-markdown": "^8.0.6",
     "showdown": "^2.1.0",
     "terser": "^5.17.1",
-    "uglify-js": "^3.17.4",
-    "zotero-adv-installer": "file:..",
     "zotero-plugin-toolkit": "^2.0.1"
   },
   "devDependencies": {
@@ -73,10 +71,11 @@
     "esbuild": "^0.17.4",
     "esbuild-plugin-wasm": "^1.0.0",
     "minimist": "^1.2.7",
-    "punycode": "^2.1.1",
+    "punycode": "^2.3.0",
     "release-it": "^15.6.0",
     "replace-in-file": "^6.3.5",
     "typescript": "^5.0.4",
+    "uglify-js": "^3.17.4",
     "zotero-types": "^1.0.12"
   }
 }
