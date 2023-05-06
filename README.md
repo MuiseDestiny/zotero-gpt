@@ -48,31 +48,28 @@ Features about UI:
 - [x] 🔧 Compatible with **Zotero 6** and **Zotero 7**.
 - [x] 🎉 Discover more exciting features that are not listed here.
 
-## How to install
-To install the extension, you need to build this project to generate a `.xpi` file **or** to [download](https://github.com/MuiseDestiny/zotero-gpt/releases) the release `.xpi` file, install this file as an extension in Zotero, and insert your Open-AI API key. 
-### Build the project
-Here is an example on how to install and build this project. For more information on how to build, please visit this project: [https://github.com/windingwind/zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template)
-```bash
-git clone https://github.com/MuiseDestiny/zotero-gpt.git
-cd zotero-gpt
-npm install
-npm run build
-```
-The generated `.xpi` file in the build directory is the extension that you can install in Zotero.
+## How to Use
+### For User
 
-### Install the extension in Zotero
-Open Zotero. In the top menu bar, click on `Tools > Add-ons`.
-Click on the gear icon at the top right of the window. Click on `Install Add-on From File` and open the generated `.xpi` file in the build directory from the previous step.
+| Step | Desp | Screenshot |
+| -- | -- | -- |
+|1| Download the latest [xpi file](https://github.com/muisedestiny/zotero-style/releases/latest/download/zotero-style.xpi). | ![image](https://user-images.githubusercontent.com/51939531/236629181-0514d0b8-6f2f-46d3-9387-0bdbdea8245b.png)|
+|2|Open Zotero, click `Tools`-`Add-ons`, and drag xpi file to `Add-ons` window. |![image](https://user-images.githubusercontent.com/51939531/236629000-f2d0e027-70e0-4f5c-84a5-60cff5d1246f.png)|
+|3| Press `Ctrl + /` or `Shift + /` to wake up Zotero GPT window. | https://github.com/MuiseDestiny/zotero-gpt/issues/102 |
 
-### Set up the API key
-In this step, you need to set the secret key to the Open-AI [API key](https://platform.openai.com/account/api-keys). Go to the `Preferences` > `Advanced` > `General` tab > `Advanced Configuration` section > `Config Editor`.  
+### For Developer
 
-Search for `secretkey` and insert your api key as the value section.
+|Step|Desp|
+|--|--|
+|1|`git clone https://github.com/MuiseDestiny/zotero-gpt.git`|
+|2|`cd zotero-gpt`|
+|3|`npm i -s`|
+|4|`npm run build` to generate xpi file. |
 
-![image](imgs/apikey.png)
-## Quick Start
+### Set up the API secret key
 
-Use `Shift + /` to call this plug-in，select the text in a PDF file and then press`Shift + Tab + /` to enter the prompt input. Use `Esc` to exit.
+Enter `/secretKey sk-xxxx` and press `Enter`.
+![image](https://user-images.githubusercontent.com/51939531/236629699-f4cc70f0-7bb7-46ac-a528-df555643ff80.png)
 
 ## Command Tags
 
