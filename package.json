@@ -58,6 +58,7 @@
     "proxy-agent": "^5.0.0",
     "react-markdown": "^8.0.6",
     "showdown": "^2.1.0",
+    "terser": "^5.17.1",
     "uglify-js": "^3.17.4",
     "zotero-adv-installer": "file:..",
     "zotero-plugin-toolkit": "^2.0.1"
