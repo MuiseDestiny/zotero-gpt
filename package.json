@@ -58,8 +58,6 @@
     "proxy-agent": "^5.0.0",
     "react-markdown": "^8.0.6",
     "showdown": "^2.1.0",
-    "uglify-js": "^3.17.4",
-    "zotero-adv-installer": "file:..",
     "zotero-plugin-toolkit": "^2.0.1"
   },
   "devDependencies": {
@@ -76,6 +74,7 @@
     "release-it": "^15.6.0",
     "replace-in-file": "^6.3.5",
     "typescript": "^5.0.4",
+    "uglify-js": "^3.17.4",
     "zotero-types": "^1.0.12"
   }
 }
