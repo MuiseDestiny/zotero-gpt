@@ -53,7 +53,7 @@ Features about UI:
 
 | Step | Desp | Screenshot |
 | -- | -- | -- |
-|1| Download the latest [xpi file](https://github.com/muisedestiny/zotero-style/releases/latest/download/zotero-style.xpi). | ![image](https://user-images.githubusercontent.com/51939531/236629181-0514d0b8-6f2f-46d3-9387-0bdbdea8245b.png)|
+|1| Download the latest [xpi file](https://github.com/muisedestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi). | ![image](https://user-images.githubusercontent.com/51939531/236629181-0514d0b8-6f2f-46d3-9387-0bdbdea8245b.png)|
 |2|Open Zotero, click `Tools`-`Add-ons`, and drag xpi file to `Add-ons` window. |![image](https://user-images.githubusercontent.com/51939531/236629000-f2d0e027-70e0-4f5c-84a5-60cff5d1246f.png)|
 |3| Press `Ctrl + /` or `Shift + /` to wake up Zotero GPT window. | https://github.com/MuiseDestiny/zotero-gpt/issues/102 |
 
