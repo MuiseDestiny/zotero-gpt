@@ -7,8 +7,8 @@
     "addonID": "zoterogpt@polygon.org",
     "addonRef": "zoterogpt",
     "addonInstance": "ZoteroGPT",
-    "releasepage": "https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi",
-    "updaterdf": "https://raw.githubusercontent.com/MuiseDestiny/zotero-gpt/bootstrap/update.json"
+    "releasepage": "",
+    "updaterdf": ""
   },
   "main": "src/index.ts",
   "scripts": {
@@ -35,7 +35,7 @@
   "bugs": {
     "url": "https://github.com/MuiseDestiny/zotero-gpt/issues"
   },
-  "homepage": "https://github.com/MuiseDestiny/zotero-gpt#readme",
+  "homepage": "",
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.6",
     "@iktakahiro/markdown-it-katex": "^4.0.1",
