@@ -4,7 +4,7 @@
       "updates": [
         {
           "version": "0.2.6",
-          "update_link": "https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi",
+          "update_link": "",
           "applications": {
             "gecko": {
               "strict_min_version": "60.0"
@@ -13,7 +13,7 @@
         },
         {
           "version": "0.2.6",
-          "update_link": "https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi",
+          "update_link": "",
           "applications": {
             "zotero": {
               "strict_min_version": "6.999"
