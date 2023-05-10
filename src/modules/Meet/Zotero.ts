@@ -197,7 +197,8 @@ async function pdf2documents(itemkey: string) {
     }
     pageLines[pageNum] = lines
     popupWin.changeLine({ idx: popupWin.lines.length - 1, text: `[${pageNum + 1}/${totalPageNum}] Reading PDF`, progress: (pageNum + 1) / totalPageNum * 100})
-    if (index != -1) {
+    // 防止误杀
+    if (index != -1 && pageNum / totalPageNum >= .9) {
       break
     }
   }
@@ -356,6 +357,7 @@ async function pdf2documents(itemkey: string) {
   }
   // popupWin.changeHeadline("[Done] PDF")
   // popupWin.startCloseTimer(1000)
+  console.log("pdf2documents", docs)
   return docs
 }
 
@@ -386,7 +388,7 @@ export async function getRelatedText(queryText: string) {
   }
   cache[key] = docs
   docs = await similaritySearch(queryText, docs, { key }) as Document[]
-  ztoolkit.log("docs", docs.length)
+  ztoolkit.log("docs", docs)
   Zotero[config.addonInstance].views.insertAuxiliary(docs)
   return docs.map((doc: Document, index: number) => `[${index + 1}]${doc.pageContent}`).join("\n\n")
 }

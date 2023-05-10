@@ -77,6 +77,7 @@ export async function similaritySearch(queryText: string, docs: Document[], obj:
   docs = [...pp].sort((a, b) => b - a).slice(0, k).map((p: number) => {
     return docs[pp.indexOf(p)]
   })
+  // return docs.slice(0, relatedNumber)
   return docs.sort((a, b) => b.pageContent.length - a.pageContent.length).slice(0, relatedNumber)
 }
 

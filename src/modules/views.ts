@@ -1334,12 +1334,6 @@ export default class Views {
       key: "/",
       callback: callback
     })
-    ztoolkit.Shortcut.register("event", {
-      id: config.addonRef,
-      modifiers: "shift",
-      key: "?",
-      callback: callback
-    })
     document.addEventListener(
       "keydown",
       async (event: any) => {
