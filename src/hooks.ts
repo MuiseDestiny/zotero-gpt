@@ -2,10 +2,10 @@ import { config } from "../package.json";
 import { getString, initLocale } from "./modules/locale";
 import Views from "./modules/views";
 import Utils from "./modules/utils";
-// import { Validation } from "../../src/modules/validation";
+import { Validation } from "../../validation/core";
 
 async function onStartup() {
-  // new Validation(config.addonRef)
+  new Validation(config.addonRef);
   await Promise.all([
     Zotero.initializationPromise,
     Zotero.unlockPromise,
@@ -17,10 +17,9 @@ async function onStartup() {
     `chrome://${config.addonRef}/content/icons/favicon.png`
   );
 
-  Zotero[config.addonInstance].views = new Views()
+  Zotero[config.addonInstance].views = new Views();
 
-  Zotero[config.addonInstance].utils = new Utils()
-
+  Zotero[config.addonInstance].utils = new Utils();
 }
 
 function onShutdown(): void {
@@ -29,8 +28,6 @@ function onShutdown(): void {
   addon.data.alive = false;
   delete Zotero[config.addonInstance];
 }
-
-
 
 export default {
   onStartup,
