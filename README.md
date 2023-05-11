@@ -49,12 +49,12 @@ Features about UI:
 
 
 ## How to use
-- Get `.xpi` file
-  - [download latest](https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi) release `.xpi` file
-  - or build this project [1] to generate a `.xpi` file
-- Install `.xpi` file in Zotero [2]
-- Open Zotero GPT [3]
-- Set your `OpenAI` secret key [4]
+- [x] Get `.xpi` file
+  - [ ] [download latest](https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi) release `.xpi` file
+  - [ ] or build this project [1] to generate a `.xpi` file
+- [x] Install `.xpi` file in Zotero [2]
+- [x] Open Zotero GPT [3]
+- [x] Set your `OpenAI` secret key [4]
 
 ### [1] Build the project
 Here is an example on how to build this project. For more information on how to build, please visit this project: [https://github.com/windingwind/zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template)
