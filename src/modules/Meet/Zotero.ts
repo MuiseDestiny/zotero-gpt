@@ -285,7 +285,8 @@ async function pdf2documents(itemkey: string) {
       let nextLine = lines[i + 1]
       const isNewParagraph =
         // 达到一定行数阈值
-        paragraphs.slice(-1)[0].length >= 5 && (
+        paragraphs.slice(-1)[0].length >= 5 && 
+        (
           // 当前行存在一个非常大的字体的文字
           currentLine._height.some((h2: number) => lastLine._height.every((h1: number) => h2 > h1)) ||
           // 是摘要自动为一段

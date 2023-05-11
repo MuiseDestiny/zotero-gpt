@@ -55,6 +55,8 @@
     "markdown-it": "^13.0.1",
     "markdown-it-mathjax3": "^4.3.2",
     "node-fetch": "^3.3.1",
+    "pdf-parse": "^1.1.1",
+    "pdfreader": "^3.0.0",
     "proxy-agent": "^5.0.0",
     "react-markdown": "^8.0.6",
     "showdown": "^2.1.0",

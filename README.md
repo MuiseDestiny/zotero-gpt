@@ -25,7 +25,6 @@ Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-
 
 ---
 
-
 ## 🚀 Main Features
 Features about GPT:  
 - [x] 🔗 **Integrate with Zotero**: You can use the plugin to search and ask items in the library based on the selected text or the PDF file.
@@ -48,10 +47,18 @@ Features about UI:
 - [x] 🔧 Compatible with **Zotero 6** and **Zotero 7**.
 - [x] 🎉 Discover more exciting features that are not listed here.
 
-## How to install
-To install the extension, you need to build this project to generate a `.xpi` file **or** to [download](https://github.com/MuiseDestiny/zotero-gpt/releases) the release `.xpi` file, install this file as an extension in Zotero, and insert your Open-AI API key. 
-### Build the project
-Here is an example on how to install and build this project. For more information on how to build, please visit this project: [https://github.com/windingwind/zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template)
+
+## How to use
+- Get `.xpi` file
+  - [download latest](https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi) release `.xpi` file
+  - or build this project [1] to generate a `.xpi` file
+- Install `.xpi` file in Zotero [2]
+- Open Zotero GPT [3]
+- Set your `OpenAI` secret key [4]
+
+### [1] Build the project
+Here is an example on how to build this project. For more information on how to build, please visit this project: [https://github.com/windingwind/zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template)
+
 ```bash
 git clone https://github.com/MuiseDestiny/zotero-gpt.git
 cd zotero-gpt
@@ -60,79 +67,35 @@ npm run build
 ```
 The generated `.xpi` file in the build directory is the extension that you can install in Zotero.
 
-### Install the extension in Zotero
+### [2] Install the extension in Zotero
 Open Zotero. In the top menu bar, click on `Tools > Add-ons`.
 Click on the gear icon at the top right of the window. Click on `Install Add-on From File` and open the generated `.xpi` file in the build directory from the previous step.
 
-### Set up the API key
-In this step, you need to set the secret key to the Open-AI [API key](https://platform.openai.com/account/api-keys). Go to the `Preferences` > `Advanced` > `General` tab > `Advanced Configuration` section > `Config Editor`.  
+### [3] Open/Exit Zotero GPT
 
-Search for `secretkey` and insert your api key as the value section.
+|Action|Shortcut|
+|--|--|
+|Open|<img src="https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/f76b23ee-8c54-47da-823c-8c14faa88a87" width="20%">|
+|Exit|`ESC`|
 
-![image](imgs/apikey.png)
-## Quick Start
+### [4] Set up the API key
 
-Use `Shift + /` to call this plug-in，select the text in a PDF file and then press`Shift + Tab + /` to enter the prompt input. Use `Esc` to exit.
+![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/225c468a-acfc-43be-b5ac-cf6aaaa33e96)
 
-## Command Tags
+## Hi, Command Tag.
+> 👻 Follow the steps below, and you will gain a new understanding of command tags.
 
-The plug-in design concept is to configure command tabs according to different application scenarios, and directly click on the tabs to complete the interaction with GPT.
-
-Type `#label_name[color=#eee][position=1]` and Enter to edit a lable. Save with `Ctrl + S`. Save and Run with `Ctrl + R`.
-
-`color` can be abbreviated to `c`, `position` can be reviated to `pos` and the values can be quoted.
-
-For example, `#test[c=#eee][pos=9]` is a legit input.
-
-Of course `color` and `position` are optional parameters and will have default values if not entered.
-
-In the next step, you can declare an executable code fragment for the current environment like this:
-
-![image](imgs/prompt.png)
-
-It will be executed and the returned result will replace the code snippet here.
-
-You can command GPT to output a code fragment and the plugin can execute it.
-
-Click the left mouse button and hold to enter the edit mode of a label.
-
-**Hold with the right mouse button is to delete the label**.
-
-Single click on a label is to execute it.
-
-You can click and hold on each label after installing the plugin to see the internal statements of the sample tags, and I'm sure you'll be up and running writing a new one in no time.
-
-
-## Ask PDF [build-in tag]
-
-<div align="center">
-
-https://user-images.githubusercontent.com/51939531/232497591-9f78e65e-3c4b-4519-987c-f1c3a277a209.mp4
-
-</div>
-
-Implementation method:
-
-Make sure the plugin version is up-to-date.
-
-## Search Items [build-in tag]
-
-![image](https://user-images.githubusercontent.com/51939531/231054213-427056c2-35dd-48d4-8e0d-e334bb85a46f.png)
-
-Implementation method: 
-Same as `Ask PDF`
-
-## Ask Annotations [Under development]
-
-![image](https://user-images.githubusercontent.com/51939531/232672386-8f0b929c-13de-4f34-9d75-d3d889ceb316.png)
-
-
-## Demonstration
-
-![image](imgs/demo.png)
-
-
-![image](imgs/demo2.png)
+|Step| Description | Supplementary Information |
+|----|-------------|---------------------------|
+|1   | Open Zotero GPT | Refer to [3] Open/Exit Zotero GPT |
+|2   | Type `#Tag Name` and press `Enter` | ![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/52f776fc-5592-4c17-8c36-7769c537ef79) |
+|3   | Input your prompt or code | ![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/6f6d9985-69e5-4d29-ba78-df31e30e9cd1) |
+|4   | Test the tag | Press `Ctrl + R` |
+|5   | Save your tag | Press `Ctrl + S` |
+|6   | Long press a command tag to access the editing interface | ![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/28235117-79ab-43c6-b175-079e609683f4) |
+|7   | Modify the tag's color, position, or trigger; remember to save with `Ctrl + S` | ![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/5261878a-30ce-4ea5-b3be-9c6b9ef29f70) |
+|8   | Press `ESC` to exit the editing interface | Remember to save your changes with `Ctrl + S` before exiting |
+|9   | Long press the right mouse button to delete a tag | Note: Build-in tags do not support deletion |
 
 ## Support the project
 
