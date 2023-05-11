@@ -322,7 +322,7 @@ export default class Views {
       // 为指定的div绑定wheel事件
     div.addEventListener('DOMMouseScroll', (event: any) => {
       // 检查是否按下了ctrl键
-      if (event.ctrlKey) {
+      if (event.ctrlKey || event.metaKey) {
         let _scale = div.style.transform.match(/scale\((.+)\)/)
         let scale = _scale ? parseFloat(_scale[1]) : 1
         let minScale = 0.5, maxScale = 2, step = 0.05
@@ -383,7 +383,7 @@ export default class Views {
     // 为指定的div绑定wheel事件
     div.addEventListener('DOMMouseScroll', (event: any) => {
       const children = div.children[0].children;
-      if (event.ctrlKey) {
+      if (event.ctrlKey || event.metaKey) {
         const step = 0.05;
         event.preventDefault();
         // 阻止事件冒泡
@@ -476,7 +476,7 @@ export default class Views {
       if(this.style.display == "none") { return }
       // @ts-ignore
       let text = Meet.Global.input = this.value
-      if (event.ctrlKey && ["s", "r"].indexOf(event.key) >= 0 && textareaNode.style.display != "none") {
+      if ((event.ctrlKey || event.metaKey) && ["s", "r"].indexOf(event.key) >= 0 && textareaNode.style.display != "none") {
         // 必定保存，但未必运行
         const tag = parseTag(text)
         if (tag) {
@@ -516,7 +516,7 @@ export default class Views {
         outputContainer.querySelector(".auxiliary")?.remove()
 
         // 同时按Ctrl，会点击第一个标签
-        if (event.ctrlKey) {
+        if (event.ctrlKey || event.metaKey) {
           // 查找第一个点击
           ztoolkit.log("Ctrl + Enter")
           let tag = that._tag || that.getTags()[0]
@@ -940,13 +940,16 @@ export default class Views {
     // 旧版语法不宜传播，MD语法会被转义
     for (let rawString of text.match(/```j(?:ava)?s(?:cript)?\n([\s\S]+?)\n```/g)! || []) {
       let codeString = rawString.match(/```j(?:ava)?s(?:cript)?\n([\s\S]+?)\n```/)![1]
-      text = text.replace(rawString, await window.eval(`${codeString}`))
+      try {
+        text = text.replace(rawString, await window.eval(`${codeString}`))
+      } catch { }
     }
     // 新版语法容易分享传播
     for (let rawString of text.match(/\$\{[\s\S]+?\}/g)! || []) {
       let codeString = rawString.match(/\$\{([\s\S]+?)\}/)![1]
-      ztoolkit.log(codeString)
-      text = text.replace(rawString, await window.eval(`${codeString}`))
+      try {
+        text = text.replace(rawString, await window.eval(`${codeString}`))
+      } catch {  }
     }
     popunWin.createLine({ text: `Characters ${text.length}`, type: "success" })
     popunWin.createLine({ text: "Answering...", type: "default" })
@@ -1284,6 +1287,7 @@ export default class Views {
     document.addEventListener("keydown", keyDownHandler)
     return menuNode
   }
+
   /**
    * 绑定快捷键
    */
@@ -1328,12 +1332,22 @@ export default class Views {
         }
       }
     }
-    ztoolkit.Shortcut.register("event", {
-      id: config.addonRef,
-      modifiers: "control",
-      key: "/",
-      callback: callback
-    })
+    if (Zotero.isMac) {
+      ztoolkit.Shortcut.register("event", {
+        id: config.addonRef,
+        modifiers: "meta",
+        key: "/",
+        callback: callback
+      })
+    } else {
+      ztoolkit.Shortcut.register("event", {
+        id: config.addonRef,
+        modifiers: "control",
+        key: "/",
+        callback: callback
+      })
+    }
+    
     document.addEventListener(
       "keydown",
       async (event: any) => {

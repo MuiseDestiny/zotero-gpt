@@ -49,12 +49,12 @@ Features about UI:
 
 
 ## How to use
-- Get `.xpi` file
-  - [download latest](https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi) release `.xpi` file
-  - or build this project [1] to generate a `.xpi` file
-- Install `.xpi` file in Zotero [2]
-- Open Zotero GPT [3]
-- Set your `OpenAI` secret key [4]
+- [x] Get `.xpi` file
+  - [ ] [download latest](https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi) release `.xpi` file
+  - [ ] or build this project [1] to generate a `.xpi` file
+- [x] Install `.xpi` file in Zotero [2]
+- [x] Open Zotero GPT [3]
+- [x] Set your `OpenAI` secret key [4]
 
 ### [1] Build the project
 Here is an example on how to build this project. For more information on how to build, please visit this project: [https://github.com/windingwind/zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template)
@@ -96,6 +96,14 @@ Click on the gear icon at the top right of the window. Click on `Install Add-on 
 |7   | Modify the tag's color, position, or trigger; remember to save with `Ctrl + S` | ![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/5261878a-30ce-4ea5-b3be-9c6b9ef29f70) |
 |8   | Press `ESC` to exit the editing interface | Remember to save your changes with `Ctrl + S` before exiting |
 |9   | Long press the right mouse button to delete a tag | Note: Build-in tags do not support deletion |
+
+### How to run a command tag
+> Trigger is an attribute of a command tag, as are color and position. Long press any label to view/modify its trigger word. It supports both plain text and JS regular expressions.
+
+![How to run a command tag](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/fdfc369a-1e96-478c-a7c2-4a93d2d7a580)
+
+![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/d7f857a4-9ed9-42af-8662-6336ce70a881)
+
 
 ## Support the project
 
