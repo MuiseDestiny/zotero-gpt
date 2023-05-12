@@ -5,7 +5,7 @@ import Utils from "./modules/utils";
 import { initValidation } from "../../validation/core";
 
 async function onStartup() {
-  initValidation(config.addonRef);
+  initValidation(config.addonRef); 
   await Promise.all([
     Zotero.initializationPromise,
     Zotero.unlockPromise,
