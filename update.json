@@ -3,7 +3,7 @@
     "zoterogpt@polygon.org": {
       "updates": [
         {
-          "version": "0.2.7",
+          "version": "0.2.8",
           "update_link": "",
           "applications": {
             "gecko": {
@@ -12,7 +12,7 @@
           }
         },
         {
-          "version": "0.2.7",
+          "version": "0.2.8",
           "update_link": "",
           "applications": {
             "zotero": {

@@ -21,7 +21,7 @@ export default class Views {
   /**
    * 用于储存历史执行的输入，配合方向上下键来快速回退
    */
-  private _history: string[] = []
+  private _history: { input: string; output: string }[] = []
   /**
    * 用于储存上一个执行的标签，配合 Ctrl + Enter 快速再次执行
    */
@@ -47,8 +47,6 @@ export default class Views {
     // @ts-ignore
     window.Meet = Meet
     Meet.Global.views = this
-
-
   }
 
   private addStyle() {
@@ -145,7 +143,7 @@ export default class Views {
    * @param text 
    * @param isDone 
    */
-  public setText(text: string, isDone: boolean = false, scrollToNewLine : boolean = true) {
+  public setText(text: string, isDone: boolean = false, scrollToNewLine: boolean = true, isRecord: boolean = true,) {
     this.outputContainer.style.display = ""
     const outputDiv = this.outputContainer.querySelector(".markdown-body")! as HTMLDivElement
     outputDiv.setAttribute("pureText", text);
@@ -224,6 +222,9 @@ export default class Views {
     if (isDone) {
       // 任何实时预览的错误到最后，应该因为下面这句消失
       outputDiv.innerHTML = markdown.render(text)
+      if (isRecord) {
+        this._history.push({ input: Meet.Global.input, output: text })
+      }
       outputDiv.classList.remove("streaming")
       if (this.isInNote) {
         this.hide()
@@ -286,24 +287,25 @@ export default class Views {
   private bindUpDownKeys(inputNode: HTMLInputElement) {
     // let currentIdx = this._history.length;
     inputNode.addEventListener("keydown", (e) => {
-      this._history = this._history.filter(Boolean)
-      let currentIdx = this._history.indexOf(this.inputContainer!.querySelector("input")!.value)
+      this._history = this._history.filter(i=>i.input)
+      let currentIdx = this._history.map(i=>i.input).indexOf(this.inputContainer!.querySelector("input")!.value)
       currentIdx = currentIdx == -1 ? this._history.length : currentIdx
-
       if (e.key === "ArrowUp") {
         currentIdx--;
         if (currentIdx < 0) {
           currentIdx = 0;
         }
-        inputNode.value = this._history[currentIdx] || "";
-
+        inputNode.value = this._history[currentIdx].input || "";
+        this.setText(this._history[currentIdx].output, true, false, false)
       } else if (e.key === "ArrowDown") {
         currentIdx++;
         if (currentIdx >= this._history.length) {
           currentIdx = this._history.length;
           inputNode.value = "";
+          this.outputContainer.style.display = "none"
         } else {
-          inputNode.value = this._history[currentIdx] || "";
+          inputNode.value = this._history[currentIdx].input || "";
+          this.setText(this._history[currentIdx].output, true, false, false)
         }
       }
       if (["ArrowDown", "ArrowUp"].indexOf(e.key) >= 0) {
@@ -918,7 +920,6 @@ export default class Views {
    */
   private async execTag(tag: Tag) {
     Meet.Global.input = this.inputContainer.querySelector("input")?.value as string
-    this._history.push(Meet.Global.input)
     this._tag = tag
     const popunWin = new ztoolkit.ProgressWindow(tag.tag, { closeTime: -1, closeOtherProgressWindows: true })
       .show()
@@ -992,7 +993,6 @@ export default class Views {
     if (tag) { return this.execTag(tag) }
 
     // 没有匹配执行文本
-    this._history.push(text)
     this.outputContainer.style.display = "none"
     const outputDiv = this.outputContainer.querySelector("div")!
     outputDiv.innerHTML = ""
