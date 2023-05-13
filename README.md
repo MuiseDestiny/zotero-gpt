@@ -7,7 +7,7 @@
 
 👋
 
-Share the tag command you made in [here](https://github.com/MuiseDestiny/zotero-gpt/discussions/3) using [Meet API](src/modules/Meet/api.ts).
+Welcome to share your command tag [here](https://github.com/MuiseDestiny/zotero-gpt/discussions/3) using [Meet API](src/modules/Meet/api.ts).
 
 [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-round&logo=github)](https://github.com/windingwind/zotero-plugin-template)
 [![Latest release](https://img.shields.io/github/v/release/MuiseDestiny/zotero-gpt)](https://github.com/MuiseDestiny/zotero-gpt/releases)
@@ -104,6 +104,19 @@ Click on the gear icon at the top right of the window. Click on `Install Add-on 
 
 ![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/d7f857a4-9ed9-42af-8662-6336ce70a881)
 
+
+### How to write a code block
+
+You can find some build-in APIs [here](https://github.com/MuiseDestiny/zotero-gpt/blob/bootstrap/src/modules/Meet/api.ts).
+
+An simple example:
+```
+Summarize the following paragraph for me:
+
+${Meet.Zotero.getPDFSelection()}
+```
+
+Here, the `Summarize the following paragraph for me:` represents plain text, while "${....}" denotes a code snippet. Undoubtedly, if you are familiar with Zotero APIs, you can develop your own code. The code snippet will be executed, and the text returned by the code snippet will replace the code snippet. Finally, the replaced text will be input to GPT. So, theoretically, you can **accomplish all interactions** between Zotero and GPT using command tags.
 
 ## Support the project
 
