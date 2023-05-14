@@ -118,6 +118,12 @@ ${Meet.Zotero.getPDFSelection()}
 
 Here, the `Summarize the following paragraph for me:` represents plain text, while `${your code}` denotes a code snippet. Undoubtedly, if you are familiar with Zotero APIs, you can develop your own code. The code snippet will be executed, and the text returned by the code snippet will replace the code snippet. Finally, the replaced text will be input to GPT. So, theoretically, you can **accomplish all interactions** between Zotero and GPT using command tags.
 
+### How to navigate historical chats
+
+> Press the up (↑) and down (↓) keys on the keyboard to navigate.
+
+![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/ca2dcfbf-efb4-4ba3-8339-5277a879e3ea)
+
 ## Support the project
 
 [Here](https://github.com/MuiseDestiny/zotero-reference#%E8%B5%9E%E5%8A%A9)
