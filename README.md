@@ -109,7 +109,7 @@ Click on the gear icon at the top right of the window. Click on `Install Add-on 
 
 You can find some build-in APIs [here](https://github.com/MuiseDestiny/zotero-gpt/blob/bootstrap/src/modules/Meet/api.ts).
 
-An simple example:
+A simple example:
 ```
 Summarize the following paragraph for me:
 
