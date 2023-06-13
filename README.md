@@ -77,6 +77,7 @@ Click on the gear icon at the top right of the window. Click on `Install Add-on 
 |--|--|
 |Open|<img src="https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/f76b23ee-8c54-47da-823c-8c14faa88a87" width="20%">|
 |Exit|`ESC`|
+|Multi-line editing| `Shift` + `Enter`|
 
 ### [4] Set up the API key
 
