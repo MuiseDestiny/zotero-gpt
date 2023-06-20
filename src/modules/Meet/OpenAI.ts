@@ -90,6 +90,7 @@ class OpenAIEmbeddings {
     let api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
     api = api.replace(/\/(?:v1)?\/?$/, "")
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
+    const split_len = Zotero.Prefs.get(`${config.addonRef}.embeddingBatchNum`)
     let res
     const url = `${api}/v1/embeddings`
     if (!secretKey) {
@@ -98,39 +99,45 @@ class OpenAIEmbeddings {
         .show()
       return
     }
-    ztoolkit.log("input", input)
-    try {
-      res = await Zotero.HTTP.request(
-        "POST",
-        url,
-        {
-          responseType: "json",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${secretKey}`,
-          },
-          body: JSON.stringify({
-            model: "text-embedding-ada-002",
-            input: input
-          }),
-        }
-      )
-    } catch (error: any) {
+    var final_embeddings=[]
+    for (let i = 0; i < input.length; i += split_len) {
+
+      const chunk = input.slice(i, i + split_len)
+      ztoolkit.log("input", chunk)
       try {
-        error = error.xmlhttp.response?.error
-        views.setText(`# ${error.code}\n> ${url}\n\n**${error.type}**\n${error.message}`, true)
-        new ztoolkit.ProgressWindow(error.code, { closeOtherProgressWindows: true })
-          .createLine({ text: error.message, type: "default" })
-          .show()
-      } catch {
-        new ztoolkit.ProgressWindow("Error", { closeOtherProgressWindows: true })
-          .createLine({ text: error.message, type: "default" })
-          .show()
+        res = await Zotero.HTTP.request(
+          "POST",
+          url,
+          {
+            responseType: "json",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${secretKey}`,
+            },
+            body: JSON.stringify({
+              model: "text-embedding-ada-002",
+              input: chunk
+            }),
+          }
+        )
+      } catch (error: any) {
+        try {
+          error = error.xmlhttp.response?.error
+          views.setText(`# ${error.code}\n> ${url}\n\n**${error.type}**\n${error.message}`, true)
+          new ztoolkit.ProgressWindow(error.code, { closeOtherProgressWindows: true })
+            .createLine({ text: error.message, type: "default" })
+            .show()
+        } catch {
+          new ztoolkit.ProgressWindow("Error", { closeOtherProgressWindows: true })
+            .createLine({ text: error.message, type: "default" })
+            .show()
+        }
       }
-    }
-    if (res?.response?.data) {
-      return res.response.data.map((i: any) => i.embedding)
-    }
+      if (res?.response?.data) {
+        final_embeddings = final_embeddings.concat(res.response.data.map((i: any) => i.embedding))
+      }
+    }
+    return final_embeddings
   }
 
   public async embedDocuments(texts: string[]) {
