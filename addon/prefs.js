@@ -9,7 +9,7 @@ pref("extensions.zotero.__addonRef__.width", "32%");
 pref("extensions.zotero.__addonRef__.tagsMore", "expand");
 pref("extensions.zotero.__addonRef__.chatNumber", 3);
 pref("extensions.zotero.__addonRef__.relatedNumber", 5);
-
+pref("extensions.zotero.__addonRef__.embeddingBatchNum", 10);
 
 
 
