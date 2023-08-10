@@ -2,7 +2,7 @@
   <img src="imgs/background.svg" width="50%" />
 
 
-# Zotero GPT
+# Awesome GPT
 
 
 👋
