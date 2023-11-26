@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="imgs/background.svg" width="50%" />
+  <img src="imgs/background.png" width="50%" />
 
 
 # Awesome GPT
