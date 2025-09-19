@@ -125,6 +125,9 @@ Here, the `Summarize the following paragraph for me:` represents plain text, whi
 
 ![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/ca2dcfbf-efb4-4ba3-8339-5277a879e3ea)
 
+### GPT Tag Recommendation
+Automatically create tags for entries, [click here]().
+
 ## Support the project
 
 [Here](https://github.com/MuiseDestiny/zotero-reference#%E8%B5%9E%E5%8A%A9)
