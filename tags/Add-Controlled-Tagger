@@ -1,3 +1,4 @@
+@Zotero GPT Tag
 #Tags[color=#0EA253][trigger=/^生成标签/]
 ${
 (async () => {
