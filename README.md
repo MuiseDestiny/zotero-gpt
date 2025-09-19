@@ -126,7 +126,7 @@ Here, the `Summarize the following paragraph for me:` represents plain text, whi
 ![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/ca2dcfbf-efb4-4ba3-8339-5277a879e3ea)
 
 ### GPT Tag Recommendation
-Automatically create tags for entries, [click here]().
+Automatically create tags for entries: [open and copy](https://github.com/MuiseDestiny/zotero-gpt/blob/bootstrap/tags/Add-Controlled-Tagger) then open Zotero, this tag will be automatically imported into Zotero.
 
 ## Support the project
 
