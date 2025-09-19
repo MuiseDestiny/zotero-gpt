@@ -1,0 +1,404 @@
+#Tags[color=#0EA253][trigger=/^生成标签/]
+${
+(async () => {
+  // =========================
+  // 0) 受控词表 + 与 zotero-gpt 对接的小工具
+  // =========================
+  const CONTROLLED = new Set([
+    "#Field/BuildingEnergyConsumption",
+    "#Field/IndoorThermalComfort",
+    "#Field/IndoorAirQuality",
+    "#Object/RuralResidence",
+    "#Method/MachineLearning",
+    "#Method/CFD",
+    "#Method/Experiment",
+    "#Type/Review"
+  ]);
+
+  // ========== 新增：ProgressWindow 通知封装（最小侵入） ==========
+  const PW = (() => {
+    let pw = null;
+    let lines = [];
+
+    const iconMap = {
+      info:    "chrome://zotero/skin/information.png",
+      success: "chrome://zotero/skin/tick.png",
+      warning: "chrome://zotero/skin/warning.png",
+      error:   "chrome://zotero/skin/cross.png",
+    };
+
+    function ensure() {
+      try {
+        if (!Zotero?.ProgressWindow) return null;
+        if (!pw) {
+          pw = new Zotero.ProgressWindow();
+          pw.changeHeadline("智能标签生成");
+          pw.setProgress(100);
+        }
+        return pw;
+      } catch { return null; }
+    }
+
+    function showLine(msg, type = "info") {
+      const _pw = ensure();
+      if (_pw) {
+        _pw.addDescription(String(msg), iconMap[type] || iconMap.info);
+        _pw.show();
+      } else {
+        console.log(`[Tags][${type}] ${msg}`);
+      }
+    }
+
+    function startStep(msg) {
+      lines.push(String(msg));
+      const _pw = ensure();
+      if (_pw) {
+        _pw.addDescription(String(msg));
+        _pw.show();
+      } else {
+        console.log(`[Tags][STEP] ${msg}`);
+      }
+    }
+
+    function update(msgOrArray) {
+      const _pw = ensure();
+      if (!_pw) {
+        if (Array.isArray(msgOrArray)) msgOrArray.forEach(m => console.log(`[Tags] ${m}`));
+        else console.log(`[Tags] ${msgOrArray}`);
+        return;
+      }
+      // 简单策略：每次追加一行（避免复杂 diff）
+      const arr = Array.isArray(msgOrArray) ? msgOrArray : [msgOrArray];
+      arr.forEach(m => _pw.addDescription(String(m)));
+      _pw.show();
+    }
+
+    function close(afterMs = 1200) {
+      const _pw = ensure();
+      if (_pw) _pw.startCloseTimer(afterMs);
+    }
+
+    return { showLine, startStep, update, close };
+  })();
+
+  // ---------- 新增：格式规则 ----------
+  const TAXON_PREFIXES = ["#Field/","#Object/","#Method/","#Type/"];
+  const isFormattedTag = (s) => {
+    if (!s) return false;
+    const t = String(s).replace(/\u00A0/g," ").trim();
+    return /^#(Field|Object|Method|Type)\/[A-Za-z0-9_\-\/.]+$/.test(t);
+  };
+  const normalizeTag = (s) => String(s ?? "")
+    .replace(/\u00A0/g," ")
+    .replace(/[“”]/g,'"')
+    .trim();
+
+  // ---------- 更稳健：从任意文本中抽 JSON 数组 ----------
+  const extractJsonArray = (txt) => {
+    if (!txt) return null;
+    let s = String(txt)
+      .replace(/^[\s\S]*?(\[)/, "$1")
+      .replace(/(\])[\s\S]*$/, "$1")
+      .replace(/[“”]/g, '"');
+    const m = s.match(/\[[\s\S]*\]/);
+    if (!m) return null;
+    try {
+      const arr = JSON.parse(m[0]);
+      if (!Array.isArray(arr)) return null;
+      return arr.map(x => normalizeTag(x)).filter(Boolean);
+    } catch(_) { return null; }
+  };
+
+  // ---------- 新增：获取 Zotero 库里“已存在的格式化标签” ----------
+  const getAllFormattedTagsInLibrary = async () => {
+    const out = new Set();
+    const lower2canon = new Map();
+    try {
+      if (Zotero?.Tags?.getAll) {
+        const all = await Zotero.Tags.getAll();
+        for (const t of (all || [])) {
+          const name = normalizeTag(typeof t === "string" ? t : (t?.name || t?.tag || ""));
+          if (isFormattedTag(name)) {
+            out.add(name);
+            lower2canon.set(name.toLowerCase(), name);
+          }
+        }
+      }
+    } catch (_) {}
+
+    try {
+      const ts = ZoteroPane?.tagSelector;
+      const list = (ts?.getTags && ts.getTags()) || ts?._tags || [];
+      for (const t of list) {
+        const name = normalizeTag(typeof t === "string" ? t : (t?.name || t?.tag || ""));
+        if (isFormattedTag(name)) {
+          out.add(name);
+          lower2canon.set(name.toLowerCase(), name);
+        }
+      }
+    } catch (_) {}
+
+    return { formattedSet: out, lower2canon };
+  };
+
+  // ---------- LLM 提示词 ----------
+  const askLLMForTags = async (controlledListString, paperText) => {
+    const prompt = `
+Read the abstract/fulltext below and output 3–5 tags ONLY as a JSON array.
+
+Rules:
+- Each tag MUST strictly follow these namespaces and format:
+  "#Field/<Name>" or "#Object/<Name>" or "#Method/<Name>" or "#Type/<Name>"
+- Use "/" to separate the top-level namespace and the name (e.g., "#Field/IndoorThermalComfort").
+- Prefer concepts in the controlled list when applicable; otherwise generate appropriate custom tags that still follow the format above.
+- Output ONLY the JSON array (no prose, no code fence, no comments).
+
+Controlled list (for reference):
+${controlledListString}
+
+Abstract / Text:
+${paperText}
+
+Example of the ONLY acceptable output format:
+["#Field/IndoorThermalComfort","#Method/CFD","#Object/Furniture"]
+    `.trim();
+
+    PW.startStep("调用 LLM 生成标签…");
+    const res = await Meet?.Global?.views?.ask?.(prompt);
+    const parsed = extractJsonArray(res);
+    if (!parsed) PW.showLine("LLM 未返回有效 JSON 数组，尝试兜底策略", "warning");
+    return parsed;
+  };
+
+  // =========================
+  // 1) 必要的保留函数
+  // =========================
+  const safe = (v, f="") => {
+    if (v===undefined || v===null) return f;
+    return String(v).replace(/\u00A0/g," ").trim();
+  };
+
+  const getTagsSafe = (top) => {
+    try {
+      if (typeof top?.getTags === "function") {
+        const tags = top.getTags() || [];
+        return tags.map(t => safe(t?.tag || t?.name, "")).filter(Boolean);
+      }
+    } catch(e) {}
+    return [];
+  };
+
+  // ---------- 新增：对 LLM 输出做“库中已存在标签优先匹配”的映射 ----------
+  const mapToExistingOrAcceptCustom = (llmTags, existingSet, lower2canon) => {
+    const chosen = [];
+    const seen = new Set();
+    for (const raw of (llmTags || [])) {
+      const t = normalizeTag(raw);
+      if (!isFormattedTag(t)) continue;
+      const lower = t.toLowerCase();
+      const canon = lower2canon.get(lower);
+      const finalTag = canon || t;
+      if (!seen.has(finalTag)) {
+        chosen.push(finalTag);
+        seen.add(finalTag);
+      }
+    }
+    return chosen.slice(0, 5);
+  };
+
+  // ---------- 修改：applyTags 增加进度提示 ----------
+  const applyTagsToZotero = async (topItem, tagList) => {
+    if (!topItem || !Array.isArray(tagList) || !tagList.length) return;
+    try {
+      const existingTags = getTagsSafe(topItem);
+      const existingTagNames = new Set(existingTags.map(normalizeTag));
+
+      const wanted = Array.from(new Set(
+        tagList
+          .map(normalizeTag)
+          .filter(t => isFormattedTag(t) && !existingTagNames.has(t))
+      ));
+
+      if (!wanted.length) {
+        PW.showLine("推荐标签已存在，无需添加", "info");
+        return;
+      }
+
+      PW.startStep(`添加 ${wanted.length} 个标签…`);
+      for (const tagName of wanted) {
+        if (typeof topItem.addTag === "function") topItem.addTag(tagName);
+      }
+
+      if (typeof topItem.saveTx === "function")           await topItem.saveTx();
+      else if (typeof topItem.save === "function")        await topItem.save();
+      else if (typeof topItem.saveChanges === "function") await topItem.saveChanges();
+
+      PW.showLine(`成功添加：${wanted.join(", ")}`, "success");
+    } catch (e) {
+      PW.showLine(`添加标签失败：${e.message}`, "error");
+      console.error("[Tags] Failed to add tags to Zotero:", e);
+    }
+  };
+
+  const stripReferences = (raw) => {
+    if (!raw) return raw;
+    const lines = raw.split(/\r?\n/);
+    const lower = lines.map(l => l.trim().toLowerCase());
+    const refHeadings = ["references","参考文献","bibliography","works cited","literature cited"];
+    const tailHeadings = ["declaration of competing interest","conflict of interest","credit authorship contribution statement","acknowledgements","acknowledgments","作者贡献","致谢","资金支持","funding","appendix","附录"];
+    let cutIdx = -1;
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const s = lower[i];
+      if (!s) continue;
+      if (refHeadings.some(h => s === h || s.startsWith(h))) { cutIdx = i; break; }
+    }
+    if (cutIdx < 0) {
+      const startTail = Math.floor(lines.length * 0.6);
+      for (let i = startTail; i < lines.length; i++) {
+        const s = lower[i];
+        if (tailHeadings.some(h => s === h || s.startsWith(h))) { cutIdx = i; break; }
+      }
+    }
+    const isRefLine = (s) => /^\s*(\[\d+\]|\d+\.)\s+/.test(s) || (/^[A-Z][A-Za-z\-']+(,\s*[A-Z]\.){1,3}.*\(\d{4}\)/.test(s));
+    if (cutIdx < 0) {
+      const start = Math.floor(lines.length * 0.6);
+      let consec = 0, startIdx = -1;
+      for (let i = start; i < lines.length; i++) {
+        if (isRefLine(lines[i])) { if (startIdx < 0) startIdx = i; consec++; }
+        else if (consec > 0) { if (consec >= 5) { cutIdx = startIdx; break; } consec = 0; startIdx = -1; }
+      }
+      if (cutIdx < 0 && consec >= 5) cutIdx = startIdx;
+    }
+    return (cutIdx >= 0) ? lines.slice(0, cutIdx).join("\n").trim() : raw;
+  };
+
+  // ========== 若无法提取文本，则上传 PDF 给 LLM ==========
+  const uploadPdfIfNoText = async (pdfItem, extractedTxt) => {
+    try {
+      if (!pdfItem) return false;
+      const empty = !extractedTxt || String(extractedTxt).trim() === "";
+      if (!empty) return false;
+      const up = window?.Meet?.OpenAI?.uploadFile;
+      if (typeof up !== "function") return false;
+      PW.startStep("未提取到文本，上传 PDF 给 LLM…");
+      await up([pdfItem]);
+      PW.showLine("PDF 已上传至 LLM", "success");
+      return true;
+    } catch (e) {
+      PW.showLine(`PDF 上传失败：${e.message}`, "error");
+      return false;
+    }
+  };
+
+  // =========================
+  // 2) 选取单一 PDF 目标
+  // =========================
+  PW.showLine("开始生成智能标签…", "info");
+
+  const isLibEnv = (typeof Zotero_Tabs !== "undefined");
+  const isLibrary = isLibEnv && (Zotero_Tabs.selectedType === "library");
+  const isReader  = isLibEnv && (Zotero_Tabs.selectedType === "reader");
+
+  let pdfItem = null;
+
+  if (isReader && typeof Zotero?.Reader?.getByTabID === "function") {
+    const reader = Zotero.Reader.getByTabID(Zotero_Tabs.selectedID);
+    pdfItem = reader?._item || reader?.item || null;
+  } else if (isLibrary && typeof ZoteroPane !== "undefined" && typeof ZoteroPane.getSelectedItems === "function") {
+    const items = ZoteroPane.getSelectedItems() || [];
+    if (items.length) {
+      const first = items[0];
+      const isPdf = (() => {
+        try { return first?.isPDFAttachment && first.isPDFAttachment(); } catch (_) { return false; }
+      })();
+
+      if (isPdf) {
+        pdfItem = first;
+      } else {
+        try {
+          if (typeof first?.getBestAttachmentState === "function" && typeof first?.getBestAttachment === "function") {
+            const st = await first.getBestAttachmentState();
+            if (st?.exists) {
+              const best = await first.getBestAttachment();
+              if (best?.isPDFAttachment && best.isPDFAttachment()) {
+                pdfItem = best;
+              }
+            }
+          }
+        } catch (_) {}
+        if (!pdfItem && typeof first?.getAttachments === "function") {
+          try {
+            const childIds = first.getAttachments() || [];
+            for (const cid of childIds) {
+              const ch = Zotero.Items.get(cid);
+              if (ch?.isPDFAttachment && ch.isPDFAttachment()) { pdfItem = ch; break; }
+            }
+          } catch (_) {}
+        }
+      }
+    }
+  }
+
+  if (!pdfItem) {
+    PW.showLine("未找到 PDF 附件，请选择包含 PDF 的文献项", "error");
+    PW.close(3000);
+    return "";
+  }
+
+  const targets = [{ item: pdfItem, number: 1 }];
+  const CONTROLLED_LIST_STRING = Array.from(CONTROLLED).join("\n");
+
+  // 预抓库中格式化标签
+  PW.startStep("读取库内已存在的格式化标签…");
+  const { formattedSet: LIB_FORMATTED_SET, lower2canon: LIB_LC2CANON } = await getAllFormattedTagsInLibrary();
+
+  for (const { item: pdfItem, number } of targets) {
+    try {
+      const top = pdfItem?.topLevelItem || pdfItem;
+
+      // 提取文本
+      PW.startStep("提取 PDF 文本…");
+      let textRaw = "";
+      try {
+        if (typeof Zotero?.PDFWorker?.getFullText === "function") {
+          const ft = await Zotero.PDFWorker.getFullText(pdfItem.id, null);
+          textRaw = safe(ft?.text, "");
+        }
+      } catch (_) { textRaw = ""; }
+
+      await uploadPdfIfNoText(pdfItem, textRaw);
+
+      const text = stripReferences(textRaw);
+      const payload = text || "(no fulltext extracted)";
+
+      // 调 LLM
+      const arr = await askLLMForTags(CONTROLLED_LIST_STRING, payload);
+
+      // 匹配/接受
+      let candidateTags = mapToExistingOrAcceptCustom(arr, LIB_FORMATTED_SET, LIB_LC2CANON);
+
+      if (!candidateTags.length) {
+        candidateTags = ["#Field/BuildingEnergyConsumption","#Method/MachineLearning","#Object/Furniture"]
+          .filter(t => CONTROLLED.has(t))
+          .slice(0, 3);
+        PW.showLine("LLM 未返回有效标签，使用兜底标签", "warning");
+      } else {
+        PW.showLine(`LLM 返回标签：${candidateTags.join(", ")}`, "info");
+      }
+
+      // 写入
+      if (candidateTags.length) {
+        await applyTagsToZotero(top, candidateTags);
+      }
+    } catch (e) {
+      PW.showLine(`处理失败：${e.message}`, "error");
+      console.error("(处理失败)", e);
+    }
+  }
+
+  PW.showLine("标签生成流程完成", "success");
+  PW.close(1800);
+
+  return "";
+})();  // IIFE 结束
+}$
