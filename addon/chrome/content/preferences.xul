@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://__addonRef__/locale/overlay.dtd">
+<prefwindow
+  id="zoterogpt-prefwindow"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  title="&zotero.__addonRef__.pref.title;"
+  style="width: 560px;">
+  <prefpane id="zoterogpt-prefpane" label="&zotero.__addonRef__.pref.title;" orient="vertical">
+    <preferences>
+      <preference id="pref-enable" name="extensions.zotero.__addonRef__.enable" type="bool"/>
+      <preference id="pref-secretKey" name="extensions.zotero.__addonRef__.secretKey" type="string"/>
+      <preference id="pref-api" name="extensions.zotero.__addonRef__.api" type="string"/>
+      <preference id="pref-model" name="extensions.zotero.__addonRef__.model" type="string"/>
+      <preference id="pref-temperature" name="extensions.zotero.__addonRef__.temperature" type="string"/>
+      <preference id="pref-deltaTime" name="extensions.zotero.__addonRef__.deltaTime" type="int"/>
+      <preference id="pref-width" name="extensions.zotero.__addonRef__.width" type="string"/>
+      <preference id="pref-tagsMore" name="extensions.zotero.__addonRef__.tagsMore" type="string"/>
+      <preference id="pref-chatNumber" name="extensions.zotero.__addonRef__.chatNumber" type="int"/>
+      <preference id="pref-relatedNumber" name="extensions.zotero.__addonRef__.relatedNumber" type="int"/>
+      <preference id="pref-embeddingBatchNum" name="extensions.zotero.__addonRef__.embeddingBatchNum" type="int"/>
+    </preferences>
+
+    <groupbox>
+      <caption label="&zotero.__addonRef__.pref.section.general;"/>
+      <checkbox label="&zotero.__addonRef__.pref.enable.label;" preference="pref-enable"/>
+    </groupbox>
+
+    <groupbox>
+      <caption label="&zotero.__addonRef__.pref.section.api;"/>
+      <grid flex="1">
+        <columns>
+          <column flex="1"/>
+          <column flex="3"/>
+        </columns>
+        <rows>
+          <row align="center">
+            <label value="&zotero.__addonRef__.pref.secretKey.label;" control="pref-secretKey-input"/>
+            <textbox id="pref-secretKey-input" preference="pref-secretKey" type="password" flex="1"/>
+          </row>
+          <row align="center">
+            <label value="&zotero.__addonRef__.pref.api.label;" control="pref-api-input"/>
+            <textbox id="pref-api-input" preference="pref-api" flex="1"/>
+          </row>
+          <row align="center">
+            <label value="&zotero.__addonRef__.pref.model.label;" control="pref-model-input"/>
+            <textbox id="pref-model-input" preference="pref-model" flex="1"/>
+          </row>
+          <row align="center">
+            <label value="&zotero.__addonRef__.pref.temperature.label;" control="pref-temperature-input"/>
+            <textbox id="pref-temperature-input" preference="pref-temperature" flex="1"/>
+          </row>
+        </rows>
+      </grid>
+      <description>&zotero.__addonRef__.pref.api.note;</description>
+    </groupbox>
+
+    <groupbox>
+      <caption label="&zotero.__addonRef__.pref.section.behavior;"/>
+      <grid flex="1">
+        <columns>
+          <column flex="1"/>
+          <column flex="3"/>
+        </columns>
+        <rows>
+          <row align="center">
+            <label value="&zotero.__addonRef__.pref.deltaTime.label;" control="pref-deltaTime-input"/>
+            <textbox id="pref-deltaTime-input" preference="pref-deltaTime" type="number" min="0" flex="1"/>
+          </row>
+          <row align="center">
+            <label value="&zotero.__addonRef__.pref.chatNumber.label;" control="pref-chatNumber-input"/>
+            <textbox id="pref-chatNumber-input" preference="pref-chatNumber" type="number" min="1" flex="1"/>
+          </row>
+          <row align="center">
+            <label value="&zotero.__addonRef__.pref.relatedNumber.label;" control="pref-relatedNumber-input"/>
+            <textbox id="pref-relatedNumber-input" preference="pref-relatedNumber" type="number" min="0" flex="1"/>
+          </row>
+          <row align="center">
+            <label value="&zotero.__addonRef__.pref.embeddingBatchNum.label;" control="pref-embeddingBatchNum-input"/>
+            <textbox id="pref-embeddingBatchNum-input" preference="pref-embeddingBatchNum" type="number" min="1" flex="1"/>
+          </row>
+          <row align="center">
+            <label value="&zotero.__addonRef__.pref.width.label;" control="pref-width-input"/>
+            <textbox id="pref-width-input" preference="pref-width" flex="1"/>
+          </row>
+          <row align="center">
+            <label value="&zotero.__addonRef__.pref.tagsMore.label;" control="pref-tagsMore-input"/>
+            <menulist id="pref-tagsMore-input" preference="pref-tagsMore" flex="1">
+              <menupopup>
+                <menuitem label="&zotero.__addonRef__.pref.tagsMore.expand;" value="expand"/>
+                <menuitem label="&zotero.__addonRef__.pref.tagsMore.scroll;" value="scroll"/>
+              </menupopup>
+            </menulist>
+          </row>
+        </rows>
+      </grid>
+      <description>&zotero.__addonRef__.pref.width.note;</description>
+    </groupbox>
+  </prefpane>
+</prefwindow>

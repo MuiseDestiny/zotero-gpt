@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
+    "esModuleInterop": true,
     "module": "commonjs",
     "target": "ES2016",
     "resolveJsonModule": true,

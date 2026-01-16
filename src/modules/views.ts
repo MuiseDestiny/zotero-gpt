@@ -1,15 +1,16 @@
 import { config } from "../../package.json";
 import Meet from "./Meet/api"
 import Utils from "./utils";
-import { Document } from "langchain/document";
+import type { Document } from "langchain/document";
 import { help, fontFamily, defaultTags, parseTag } from "./base"
-const markdown = require("markdown-it")({
+import MarkdownIt from "markdown-it";
+import mathjax3 from "markdown-it-mathjax3";
+const markdown = new MarkdownIt({
   breaks: true, // 将行结束符\n转换为 <br> 标签
   xhtmlOut: true, // 使用 /> 关闭标签，而不是 >
   typographer: true,
   html: true,
 });
-const mathjax3 = require('markdown-it-mathjax3');
 markdown.use(mathjax3);
 
 export default class Views {
@@ -1103,7 +1104,7 @@ export default class Views {
         alignItems: "center",
         justifyContent: "center",
       }
-    }, this.outputContainer)
+    }, this.outputContainer) as HTMLElement
     docs.forEach((doc: Document, index: number) => {
       ztoolkit.UI.appendElement({
         namespace: "html",
@@ -1248,7 +1249,7 @@ export default class Views {
         }
         return arr
       })() as any
-    }, document.documentElement)
+    }, document.documentElement) as HTMLDivElement
     
     const winRect = document.documentElement.getBoundingClientRect()
     const nodeRect = menuNode.getBoundingClientRect()
@@ -1258,7 +1259,7 @@ export default class Views {
       menuNode.style.bottom = "0px"
     }
     // menuNode.querySelector(".menu-item:first-child")?.classList.add("selected")
-    const nodes = menuNode.querySelectorAll(".menu-item")
+    const nodes = menuNode.querySelectorAll(".menu-item") as NodeListOf<HTMLElement>
     nodes[0].classList.add("selected")
     let currentIndex = 0
     this.inputContainer.querySelector("input")?.blur()
@@ -1391,4 +1392,3 @@ export default class Views {
     );
   }
 }
-

@@ -1,6 +1,23 @@
-<!ENTITY zotero.__addonRef__.pref.title "插件模板设置示例">
+<!ENTITY zotero.__addonRef__.pref.title "__addonName__ 设置">
 <!ENTITY zotero.__addonRef__.itemmenu.test.label "插件模板">
-<!ENTITY zotero.__addonRef__.pref.enable.label "开启">
+<!ENTITY zotero.__addonRef__.pref.section.general "常规">
+<!ENTITY zotero.__addonRef__.pref.section.api "API">
+<!ENTITY zotero.__addonRef__.pref.section.behavior "行为">
+<!ENTITY zotero.__addonRef__.pref.enable.label "启用插件">
+<!ENTITY zotero.__addonRef__.pref.secretKey.label "API Key">
+<!ENTITY zotero.__addonRef__.pref.api.label "API 基础地址">
+<!ENTITY zotero.__addonRef__.pref.model.label "模型">
+<!ENTITY zotero.__addonRef__.pref.temperature.label "temperature">
+<!ENTITY zotero.__addonRef__.pref.deltaTime.label "流式延迟 (毫秒)">
+<!ENTITY zotero.__addonRef__.pref.chatNumber.label "上下文条数">
+<!ENTITY zotero.__addonRef__.pref.relatedNumber.label "相关条目数量">
+<!ENTITY zotero.__addonRef__.pref.embeddingBatchNum.label "Embedding 批量数">
+<!ENTITY zotero.__addonRef__.pref.width.label "弹窗宽度">
+<!ENTITY zotero.__addonRef__.pref.tagsMore.label "标签展示">
+<!ENTITY zotero.__addonRef__.pref.tagsMore.expand "展开">
+<!ENTITY zotero.__addonRef__.pref.tagsMore.scroll "滚动">
+<!ENTITY zotero.__addonRef__.pref.api.note "API Key 会保存在本地偏好设置中。基础地址不要以 / 结尾。">
+<!ENTITY zotero.__addonRef__.pref.width.note "百分比格式，例如 32%。">
 <!ENTITY zotero.__addonRef__.pref.input.label "输入">
 
 <!ENTITY zotero.__addonRef__.help.version.label "__addonName__ 版本 __buildVersion__">

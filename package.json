@@ -1,14 +1,14 @@
 {
-  "name": "zotero-gpt",
+  "name": "zotero-gpt-z",
   "version": "0.2.8",
   "description": "GPT Meet Zotero",
   "config": {
-    "addonName": "Zotero GPT",
-    "addonID": "zoterogpt@polygon.org",
-    "addonRef": "zoterogpt",
-    "addonInstance": "ZoteroGPT",
-    "releasepage": "",
-    "updaterdf": ""
+    "addonName": "zotero-gpt-z",
+    "addonID": "zoterogpt-dev@polygon.org",
+    "addonRef": "zoterogpt-dev",
+    "addonInstance": "ZoteroGPTDev",
+    "releasepage": "https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi",
+    "updaterdf": "https://raw.githubusercontent.com/MuiseDestiny/zotero-gpt/bootstrap/update.json"
   },
   "main": "src/index.ts",
   "scripts": {

@@ -1,10 +1,10 @@
 {
   "addons": {
-    "zoterogpt@polygon.org": {
+    "zoterogpt-dev@polygon.org": {
       "updates": [
         {
-          "version": "0.2.9",
-          "update_link": "",
+          "version": "0.2.8",
+          "update_link": "https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi",
           "applications": {
             "gecko": {
               "strict_min_version": "60.0"
@@ -13,7 +13,7 @@
         },
         {
           "version": "0.2.8",
-          "update_link": "",
+          "update_link": "https://github.com/MuiseDestiny/zotero-gpt/releases/latest/download/zotero-gpt.xpi",
           "applications": {
             "zotero": {
               "strict_min_version": "6.999"

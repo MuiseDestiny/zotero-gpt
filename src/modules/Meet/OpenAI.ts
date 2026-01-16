@@ -1,10 +1,10 @@
 import { config } from "../../../package.json";
 import { MD5 } from "crypto-js"
-import { Document } from "langchain/document";
+import type { Document } from "langchain/document";
 import LocalStorage from "../localStorage";
 import Views from "../views";
 import Meet from "./api";
-const similarity = require('compute-cosine-similarity');
+import similarity from "compute-cosine-similarity";
 declare type RequestArg = { headers: any, api: string, body: Function, remove?: string | RegExp, process?: Function }
 let chatID: string
 const requestArgs: RequestArg[] = [
@@ -86,11 +86,15 @@ class OpenAIEmbeddings {
   constructor() {
   }
   private async request(input: string[]) {
-    const views = Zotero.ZoteroGPT.views as Views
+    const views = Zotero[config.addonInstance].views as Views
     let api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
     api = api.replace(/\/(?:v1)?\/?$/, "")
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
-    const split_len = Zotero.Prefs.get(`${config.addonRef}.embeddingBatchNum`)
+    const splitLenPref = Zotero.Prefs.get(`${config.addonRef}.embeddingBatchNum`)
+    const splitLenRaw =
+      typeof splitLenPref === "number" ? splitLenPref : Number(splitLenPref)
+    const splitLen =
+      Number.isFinite(splitLenRaw) && splitLenRaw > 0 ? splitLenRaw : 10
     let res
     const url = `${api}/v1/embeddings`
     if (!secretKey) {
@@ -99,10 +103,9 @@ class OpenAIEmbeddings {
         .show()
       return
     }
-    var final_embeddings=[]
-    for (let i = 0; i < input.length; i += split_len) {
-
-      const chunk = input.slice(i, i + split_len)
+    const finalEmbeddings: number[][] = []
+    for (let i = 0; i < input.length; i += splitLen) {
+      const chunk = input.slice(i, i + splitLen)
       ztoolkit.log("input", chunk)
       try {
         res = await Zotero.HTTP.request(
@@ -134,10 +137,12 @@ class OpenAIEmbeddings {
         }
       }
       if (res?.response?.data) {
-        final_embeddings = final_embeddings.concat(res.response.data.map((i: any) => i.embedding))
+        finalEmbeddings.push(
+          ...res.response.data.map((i: any) => i.embedding as number[])
+        )
       }
-    }
-    return final_embeddings
+    }
+    return finalEmbeddings
   }
 
   public async embedDocuments(texts: string[]) {
@@ -164,7 +169,7 @@ export async function getGPTResponse(requestText: string) {
  * @returns 
  */
 export async function getGPTResponseByOpenAI(requestText: string) {
-  const views = Zotero.ZoteroGPT.views as Views
+  const views = Zotero[config.addonInstance].views as Views
   const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
   const temperature = Zotero.Prefs.get(`${config.addonRef}.temperature`)
   let api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
@@ -274,7 +279,7 @@ export async function getGPTResponseBy(
   requestArg: RequestArg,
   requestText: string,
 ) {
-  const views = Zotero.ZoteroGPT.views as Views
+  const views = Zotero[config.addonInstance].views as Views
   const deltaTime = Zotero.Prefs.get(`${config.addonRef}.deltaTime`) as number
   let responseText: string | undefined
   let _responseText = ""

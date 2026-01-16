@@ -1,0 +1,129 @@
+<!-- Preference pane fragment for Zotero Settings -->
+<vbox id="zoterogpt-prefpane" class="main-section">
+  <html:style>
+    .zoterogpt-pref-input { width: 22em; }
+    .zoterogpt-pref-row { margin: 0.25em 0; }
+  </html:style>
+
+  <groupbox>
+    <html:h2>General</html:h2>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <checkbox
+        label="Enable"
+        preference="extensions.zotero.__addonRef__.enable"
+        native="true"
+      />
+    </hbox>
+  </groupbox>
+
+  <groupbox>
+    <html:h2>API</html:h2>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <label value="API key" control="zoterogpt-pref-secretKey"/>
+      <html:input
+        id="zoterogpt-pref-secretKey"
+        class="zoterogpt-pref-input"
+        type="password"
+        preference="extensions.zotero.__addonRef__.secretKey"
+      />
+    </hbox>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <label value="API base URL" control="zoterogpt-pref-api"/>
+      <html:input
+        id="zoterogpt-pref-api"
+        class="zoterogpt-pref-input"
+        type="text"
+        preference="extensions.zotero.__addonRef__.api"
+      />
+    </hbox>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <label value="Model" control="zoterogpt-pref-model"/>
+      <html:input
+        id="zoterogpt-pref-model"
+        class="zoterogpt-pref-input"
+        type="text"
+        preference="extensions.zotero.__addonRef__.model"
+      />
+    </hbox>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <label value="Temperature" control="zoterogpt-pref-temperature"/>
+      <html:input
+        id="zoterogpt-pref-temperature"
+        class="zoterogpt-pref-input"
+        type="number"
+        step="0.1"
+        min="0"
+        preference="extensions.zotero.__addonRef__.temperature"
+      />
+    </hbox>
+    <description>API base URL should not include a trailing slash.</description>
+  </groupbox>
+
+  <groupbox>
+    <html:h2>Behavior</html:h2>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <label value="Streaming delay (ms)" control="zoterogpt-pref-deltaTime"/>
+      <html:input
+        id="zoterogpt-pref-deltaTime"
+        class="zoterogpt-pref-input"
+        type="number"
+        min="0"
+        preference="extensions.zotero.__addonRef__.deltaTime"
+      />
+    </hbox>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <label value="Chat history size" control="zoterogpt-pref-chatNumber"/>
+      <html:input
+        id="zoterogpt-pref-chatNumber"
+        class="zoterogpt-pref-input"
+        type="number"
+        min="1"
+        preference="extensions.zotero.__addonRef__.chatNumber"
+      />
+    </hbox>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <label value="Related items count" control="zoterogpt-pref-relatedNumber"/>
+      <html:input
+        id="zoterogpt-pref-relatedNumber"
+        class="zoterogpt-pref-input"
+        type="number"
+        min="0"
+        preference="extensions.zotero.__addonRef__.relatedNumber"
+      />
+    </hbox>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <label value="Embedding batch size" control="zoterogpt-pref-embeddingBatchNum"/>
+      <html:input
+        id="zoterogpt-pref-embeddingBatchNum"
+        class="zoterogpt-pref-input"
+        type="number"
+        min="1"
+        preference="extensions.zotero.__addonRef__.embeddingBatchNum"
+      />
+    </hbox>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <label value="Popup width" control="zoterogpt-pref-width"/>
+      <html:input
+        id="zoterogpt-pref-width"
+        class="zoterogpt-pref-input"
+        type="text"
+        preference="extensions.zotero.__addonRef__.width"
+      />
+    </hbox>
+    <hbox align="center" class="zoterogpt-pref-row">
+      <label value="Tags display" control="zoterogpt-pref-tagsMore"/>
+      <menulist
+        id="zoterogpt-pref-tagsMore"
+        preference="extensions.zotero.__addonRef__.tagsMore"
+        native="true"
+        class="zoterogpt-pref-input"
+      >
+        <menupopup>
+          <menuitem label="Expand" value="expand"/>
+          <menuitem label="Scroll" value="scroll"/>
+        </menupopup>
+      </menulist>
+    </hbox>
+    <description>Popup width should be a percentage, e.g. 32%.</description>
+  </groupbox>
+</vbox>

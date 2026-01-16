@@ -13,6 +13,8 @@ const {
   version,
   config,
 } = require("../package.json");
+const mathjaxVersion =
+  require("mathjax-full/package.json").version || "0.0.0";
 
 function copyFileSync(source, target) {
   var targetFile = target;
@@ -104,6 +106,7 @@ async function main() {
       entryPoints: ["src/index.ts"],
       define: {
         __env__: `"${process.env.NODE_ENV}"`,
+        PACKAGE_VERSION: `"${mathjaxVersion}"`,
       },
       bundle: true,
       outfile,

@@ -64,3 +64,13 @@ interface Rect {
   y: number;
 }
 interface Tag { tag: string; color: string; position: number, trigger: string, text: string }
+
+declare module "compute-cosine-similarity" {
+  const similarity: (a: number[], b: number[]) => number;
+  export default similarity;
+}
+
+declare module "markdown-it-mathjax3" {
+  const plugin: (md: any) => void;
+  export default plugin;
+}

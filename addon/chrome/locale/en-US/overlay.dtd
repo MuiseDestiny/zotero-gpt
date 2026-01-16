@@ -1,6 +1,23 @@
-<!ENTITY zotero.__addonRef__.pref.title "Addon Template Example">
+<!ENTITY zotero.__addonRef__.pref.title "__addonName__ Settings">
 <!ENTITY zotero.__addonRef__.itemmenu.test.label "addon template">
+<!ENTITY zotero.__addonRef__.pref.section.general "General">
+<!ENTITY zotero.__addonRef__.pref.section.api "API">
+<!ENTITY zotero.__addonRef__.pref.section.behavior "Behavior">
 <!ENTITY zotero.__addonRef__.pref.enable.label "Enable">
+<!ENTITY zotero.__addonRef__.pref.secretKey.label "API key">
+<!ENTITY zotero.__addonRef__.pref.api.label "API base URL">
+<!ENTITY zotero.__addonRef__.pref.model.label "Model">
+<!ENTITY zotero.__addonRef__.pref.temperature.label "Temperature">
+<!ENTITY zotero.__addonRef__.pref.deltaTime.label "Streaming delay (ms)">
+<!ENTITY zotero.__addonRef__.pref.chatNumber.label "Chat history size">
+<!ENTITY zotero.__addonRef__.pref.relatedNumber.label "Related items count">
+<!ENTITY zotero.__addonRef__.pref.embeddingBatchNum.label "Embedding batch size">
+<!ENTITY zotero.__addonRef__.pref.width.label "Popup width">
+<!ENTITY zotero.__addonRef__.pref.tagsMore.label "Tags display">
+<!ENTITY zotero.__addonRef__.pref.tagsMore.expand "Expand">
+<!ENTITY zotero.__addonRef__.pref.tagsMore.scroll "Scroll">
+<!ENTITY zotero.__addonRef__.pref.api.note "The API key is stored locally in Zotero preferences. The base URL should not include a trailing slash.">
+<!ENTITY zotero.__addonRef__.pref.width.note "Use a percentage, e.g. 32%.">
 <!ENTITY zotero.__addonRef__.pref.input.label "Input">
 
 <!ENTITY zotero.__addonRef__.help.version.label "__addonName__ VERSION __buildVersion__">
