@@ -1,6 +1,12 @@
 <div align="center">
   <img src="imgs/background.png" width="50%" />
 
+# New features:
+
+- compatible with zotero7
+- Improved the 'Translate' Tag
+
+**Original info:**
 
 # Awesome GPT
 
