@@ -1,5 +1,7 @@
 # Repository Guidelines
 
+This codebase is a plugin of Zotero.
+
 ## Project Structure & Module Organization
 - `src/` holds the TypeScript source; `src/index.ts` is the entry point and feature code lives under `src/modules/` (notably `src/modules/Meet/`).
 - `addon/` contains the Zotero extension scaffold (manifest, bootstrap, chrome content, locales, CSS, icons).

@@ -47,6 +47,19 @@ Features about UI:
 - [x] 🔧 Compatible with **Zotero 6** and **Zotero 7**.
 - [x] 🎉 Discover more exciting features that are not listed here.
 
+## src/modules 功能概览
+### Meet 子模块
+- `src/modules/Meet/api.ts`: 统一导出 Meet API，暴露 Zotero/BetterNotes/OpenAI 功能及 Global 运行时状态，供命令标签与脚本调用。
+- `src/modules/Meet/Zotero.ts`: Zotero 与 PDF 侧能力封装（剪贴板、条目字段、PDF 选区/批注），并将条目或 PDF 解析成文档段落，做相似度检索与定位辅助。
+- `src/modules/Meet/OpenAI.ts`: OpenAI/第三方 API 请求与流式输出、嵌入向量生成与本地缓存、相似度检索逻辑。
+- `src/modules/Meet/BetterNotes.ts`: Better Notes 编辑器交互（读取选中/上下文、插入/替换文本、聚焦、跟随光标位置显示 GPT UI）。
+
+### 其他模块
+- `src/modules/views.ts`: GPT 浮窗 UI 与交互核心（输入/输出、Markdown 渲染、历史记录、标签管理、快捷键、跟随/拖拽/缩放、输出插入笔记等）。
+- `src/modules/base.ts`: 内置帮助文案、字体设置、标签解析与默认命令标签模板。
+- `src/modules/utils.ts`: 工具方法（颜色十六进制转 RGB；兼容旧版的 relatedText 调用封装）。
+- `src/modules/locale.ts`: 国际化字符串加载与按需重载。
+- `src/modules/localStorage.ts`: 基于 JSON 文件的简单本地存储封装，带初始化锁与异步写入。
 
 ## How to use
 - [x] Get `.xpi` file
@@ -131,4 +144,3 @@ Automatically create tags for entries: [open and copy](https://github.com/MuiseD
 ## Support the project
 
 [Here](https://github.com/MuiseDestiny/zotero-reference#%E8%B5%9E%E5%8A%A9)
-

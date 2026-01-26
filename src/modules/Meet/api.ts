@@ -2,6 +2,7 @@ import {
   getClipboardText,
   getItemField,
   getPDFSelection,
+  getPDFSelectionContext,
   getRelatedText,
   getPDFAnnotations
 } from "./Zotero"
@@ -45,6 +46,13 @@ const Meet: {
      * 返回阅读PDF时选中的文字
      */
     getPDFSelection,
+    /**
+     * 返回阅读PDF时选中文本及其上下文段落
+     * @selectionText 选中文本
+     * @before 前置段落数
+     * @after 后置段落数
+     */
+    getPDFSelectionContext,
     /**
      * 返回相关段落，如你选中多条条目，则返回与问题最相关的5个条目
      * 如果你在PDF中则会读取整个PDF，返回与问题最相关的5个段落

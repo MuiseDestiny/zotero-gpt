@@ -1313,7 +1313,7 @@ export default class Views {
               [
                 {
                   role: "user",
-                  content: `I am reading a PDF, and the following text is a part of the PDF. Please read it first, and I will ask you some question later: \n${Meet.Zotero.getPDFSelection()}`
+                  content: `I am reading an academic paper PDF, and the following text is a part of the PDF. Please read it first, and I will ask you some question later: \n${Meet.Zotero.getPDFSelection()}`
                 },
                 {
                   role: "assistant",

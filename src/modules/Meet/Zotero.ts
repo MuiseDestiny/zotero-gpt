@@ -395,6 +395,67 @@ export async function getRelatedText(queryText: string) {
 }
 
 /**
+ * 获取PDF选中文本所在段落及其上下文段落
+ * @param selectionText 选中文本
+ * @param before 前置段落数
+ * @param after 后置段落数
+ */
+export async function getPDFSelectionContext(
+  selectionText?: string,
+  before: number = 1,
+  after: number = 1
+) {
+  const selection = (selectionText ?? getPDFSelection() ?? "").trim()
+  if (!selection) { return "" }
+  if (Zotero_Tabs.selectedIndex == 0) { return selection }
+  // @ts-ignore
+  const cache = (window._GPTGlobal ??= { cache: {} }).cache
+  const pdfItem = Zotero.Items.get(
+    Zotero.Reader.getByTabID(Zotero_Tabs.selectedID)!.itemID as number
+  )
+  const key = pdfItem.key
+  let docs: Document[] = cache[key] || await pdf2documents(key)
+  cache[key] = docs
+  const normalize = (text: string) => text.replace(/\s+/g, " ").trim()
+  const normalizedSelection = normalize(selection)
+  if (!normalizedSelection) { return "" }
+  let matchIndex = -1
+  for (let i = 0; i < docs.length; i++) {
+    const docText = normalize(docs[i].pageContent)
+    if (docText.includes(normalizedSelection)) {
+      matchIndex = i
+      break
+    }
+  }
+  if (matchIndex == -1) {
+    const tokens = normalizedSelection.split(" ").filter(t => t.length >= 2)
+    if (tokens.length) {
+      let bestIndex = -1
+      let bestHits = 0
+      for (let i = 0; i < docs.length; i++) {
+        const docText = normalize(docs[i].pageContent)
+        let hits = 0
+        for (let token of tokens) {
+          if (docText.includes(token)) { hits++ }
+        }
+        if (hits > bestHits) {
+          bestHits = hits
+          bestIndex = i
+        }
+      }
+      const minHits = Math.min(3, tokens.length)
+      if (bestHits >= minHits) {
+        matchIndex = bestIndex
+      }
+    }
+  }
+  if (matchIndex == -1) { return "" }
+  const start = Math.max(0, matchIndex - Math.max(0, before))
+  const end = Math.min(docs.length - 1, matchIndex + Math.max(0, after))
+  return docs.slice(start, end + 1).map((doc: Document) => doc.pageContent).join("\n\n")
+}
+
+/**
  * 获取选中条目某个字段
  * @param fieldName 
  * @returns 

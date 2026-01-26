@@ -51,6 +51,28 @@ if (!basicTool.getGlobal("Zotero")[config.addonInstance]) {
 
   _globalThis.document = basicTool.getGlobal("document");
   try {
+    const zotero = basicTool.getGlobal("Zotero");
+    const components = basicTool.getGlobal("Components") as any;
+    const reader = zotero?.Reader;
+    if (reader && Array.isArray(reader._readers)) {
+      reader._readers = reader._readers.filter((readerInstance: any) => {
+        try {
+          if (components?.utils?.isDeadWrapper?.(readerInstance)) {
+            return false;
+          }
+          const iframeWindow = readerInstance?._iframeWindow;
+          if (!iframeWindow) { return false; }
+          if (components?.utils?.isDeadWrapper?.(iframeWindow)) {
+            return false;
+          }
+          return true;
+        } catch {
+          return false;
+        }
+      });
+    }
+  } catch {}
+  try {
     const toolkitGlobal = ToolkitGlobal.getInstance() as any;
     toolkitGlobal.fieldHooks ||= {
       _ready: false,

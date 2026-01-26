@@ -98,11 +98,25 @@ Reply in ${Zotero.locale}
 `,
 `
 #🌟Translate[c=#D14D72][pos=11][trigger=/^翻译/]
-Translate these content to 简体中文:
 $\{
-Meet.Global.input.replace("翻译", "") ||
-Meet.Zotero.getPDFSelection() ||
-Meet.Global.views.messages[0].content
+(() => {
+  const rawInput = (Meet.Global.input || "").trim()
+  const strippedInput = rawInput.replace("翻译", "").trim()
+  const selection = Meet.Zotero.getPDFSelection()
+  const hasSelection = selection && selection.trim().length > 0
+  const isPdfReader = (typeof Zotero_Tabs !== "undefined") && Zotero_Tabs.selectedIndex != 0
+  if (!strippedInput && hasSelection && isPdfReader) {
+    return Meet.Zotero.getPDFSelectionContext(selection, 0, 0).then((context) => {
+      const contextText = (context && context.trim().length) ? context : selection
+      return "翻译下面学术论文中的这段话：\n" + selection + "\n所在段落：\n" + contextText
+    })
+  }
+  const content =
+    strippedInput ||
+    selection ||
+    Meet.Global.views.messages[0].content
+  return content
+})()
 \}
 
 `,
