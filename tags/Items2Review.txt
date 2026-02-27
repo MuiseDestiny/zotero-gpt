@@ -1,0 +1,29 @@
+Command Tag 内容如下
+
+#摘要批量转综述[position=1][color=#D89B67][trigger=]
+
+下面是几篇论文的标题、发表日期、第一作者、和摘要：
+```js
+ZoteroPane.getSelectedItems().map(
+  (doc, index) => `[${ index + 1}]
+TITLE:${doc.getField("title")}
+PUBLISH DATE:${doc.getField("date")}
+FIRST AUTHOR:${doc.getCreatorJSON(0).firstName} ${doc.getCreatorJSON(0).lastName}
+ABSTRACT:${doc.getField("abstractNote")}`
+).join("\n\n")
+```
+现在我想引用它写一篇文献综述。请你把这些文献分类，每一类对应综述的一个段落。请你帮我总结每一篇论文的工作，每一篇论文的总结要求50字左右。然后请你把论文的总结，按照观点，组织成一个或多个段落。你只需要输出组成好的段落，不要输出每一篇的总结。作者没有告诉你，你可以用XX代替。我要中文的。
+
+目前是测试阶段，所以你只需要输出第一个段落即可。
+
+---
+
+使用场景：
+
+在文献库界面，选中多篇想要纳入综述的相关文献，最好是围绕一个或少数几个观点的<10篇文献（太多可能会超过输入长度）；激活zotero-gpt界面，点击本tag
+
+---
+
+使用示例
+
+!()[https://private-user-images.githubusercontent.com/37971170/297032879-2ccaa3de-1e38-41c5-bcae-14bf7574a647.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDU0MDU2NjQsIm5iZiI6MTcwNTQwNTM2NCwicGF0aCI6Ii8zNzk3MTE3MC8yOTcwMzI4NzktMmNjYWEzZGUtMWUzOC00MWM1LWJjYWUtMTRiZjc1NzRhNjQ3LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTYlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTE2VDExNDI0NFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWY0ZDljMWJhZWM1ZTEyMDExYjgwNmZlY2M0ZTE4MzI0Y2NkZDNmZWY4MzdmNDE1N2JiOWIzNTEwNmE3OWQxNjUmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.WThOR2gJ-o9f1z-BzLSeigkrE6oz1LIEhbfKuYQRpw4]
