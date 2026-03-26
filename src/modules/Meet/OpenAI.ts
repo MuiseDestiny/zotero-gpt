@@ -92,8 +92,6 @@ class ProviderEmbeddings {
     api = api.replace(/\/(?:v1)?\/?$/, "")
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
     const split_len = Zotero.Prefs.get(`${config.addonRef}.embeddingBatchNum`)
-    const provider = (Zotero.Prefs.get(`${config.addonRef}.provider`) as string) || "openai"
-    const preset = getProviderPreset(provider)
     let res
     const url = `${api}/v1/embeddings`
     if (!secretKey) {
@@ -118,7 +116,7 @@ class ProviderEmbeddings {
               "Authorization": `Bearer ${secretKey}`,
             },
             body: JSON.stringify(
-              preset.buildEmbeddingBody(chunk, preset.embeddingModel)
+              { model: "text-embedding-ada-002", input: chunk }
             ),
           }
         )
@@ -136,7 +134,7 @@ class ProviderEmbeddings {
         }
       }
       if (res?.response) {
-        final_embeddings = final_embeddings.concat(preset.extractEmbeddings(res.response))
+        final_embeddings = final_embeddings.concat(res.response.data.map((i: any) => i.embedding))
       }
     }
     return final_embeddings
