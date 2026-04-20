@@ -473,12 +473,43 @@ export default class Views {
     const textareaNode = inputContainer.querySelector("textarea")!
     const that = this;
     let lastInputText = ""
+
+    // Fix: Ctrl+S may be intercepted by Zotero at the application level before keyup fires.
+    // Handle Ctrl+S and Ctrl+R on keydown with preventDefault() to ensure they always work.
+    textareaNode.addEventListener("keydown", (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && ["s", "r"].indexOf(event.key) >= 0) {
+        event.preventDefault()
+        event.stopPropagation()
+        const text = textareaNode.value
+        const tag = parseTag(text)
+        if (tag) {
+          textareaNode.value = tag.text
+          let tags = that.getTags()
+          tags = tags.filter((_tag: Tag) => _tag.tag !== tag.tag)
+          tags.push(tag)
+          that.setTags(tags)
+          that.renderTags()
+          if (event.key === "s") {
+            new ztoolkit.ProgressWindow("Save Tag")
+              .createLine({ text: tag.tag, type: "success" })
+              .show()
+          } else if (event.key === "r") {
+            that.execTag(tag)
+          }
+        } else if (event.key === "r") {
+          that.execTag({ tag: "Untitled", position: -1, color: "", trigger: "", text })
+        }
+      }
+    })
+
     let inputListener = function (event: KeyboardEvent) {
       // @ts-ignore
       if(this.style.display == "none") { return }
       // @ts-ignore
       let text = Meet.Global.input = this.value
-      if ((event.ctrlKey || event.metaKey) && ["s", "r"].indexOf(event.key) >= 0 && textareaNode.style.display != "none") {
+      // Ctrl+S and Ctrl+R in textarea are handled by the keydown listener above to prevent
+      // Zotero from intercepting the shortcut before keyup fires.
+      if ((event.ctrlKey || event.metaKey) && ["s", "r"].indexOf(event.key) >= 0 && textareaNode.style.display != "none" && event.target !== textareaNode) {
         // 必定保存，但未必运行
         const tag = parseTag(text)
         if (tag) {
