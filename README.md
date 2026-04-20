@@ -8,7 +8,7 @@
 👋
 
 Welcome to share your command tag [here](https://github.com/MuiseDestiny/zotero-gpt/discussions/3) using [Meet API](src/modules/Meet/api.ts). 
-[✨ Download the latest xpi file](https://gitee.com/MuiseDestiny/plugins/raw/master/zotero-style.xpi)
+[✨ Download the latest xpi file](https://gitee.com/MuiseDestiny/plugins/raw/master/zotero-gpt.xpi)
 
 
 
