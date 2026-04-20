@@ -7,7 +7,10 @@
 
 👋
 
-Welcome to share your command tag [here](https://github.com/MuiseDestiny/zotero-gpt/discussions/3) using [Meet API](src/modules/Meet/api.ts).
+Welcome to share your command tag [here](https://github.com/MuiseDestiny/zotero-gpt/discussions/3) using [Meet API](src/modules/Meet/api.ts). 
+[✨ Download the latest xpi file](https://gitee.com/MuiseDestiny/plugins/raw/master/zotero-style.xpi)
+
+
 
 [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-round&logo=github)](https://github.com/windingwind/zotero-plugin-template)
 [![Latest release](https://img.shields.io/github/v/release/MuiseDestiny/zotero-gpt)](https://github.com/MuiseDestiny/zotero-gpt/releases)
@@ -19,8 +22,6 @@ Welcome to share your command tag [here](https://github.com/MuiseDestiny/zotero-
   <img src="https://user-images.githubusercontent.com/51939531/228763331-90baa9aa-8bef-4b32-9d6f-35538b58b158.png" width="80%" />
 
 </div>
-
-
 
 
 ---
