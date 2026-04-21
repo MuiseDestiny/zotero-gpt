@@ -4,6 +4,7 @@ import { Document } from "langchain/document";
 import LocalStorage from "../localStorage";
 import Views from "../views";
 import Meet from "./api";
+import { getProviderPreset } from "./providers";
 const similarity = require('compute-cosine-similarity');
 declare type RequestArg = { headers: any, api: string, body: Function, remove?: string | RegExp, process?: Function }
 let chatID: string
@@ -13,7 +14,7 @@ const requestArgs: RequestArg[] = [
     headers: {
       "path": "v1/chat/completions"
     },
-    body: (requestText: string, messages: any) => { 
+    body: (requestText: string, messages: any) => {
       return {
         "model": "gpt-3.5-turbo",
         messages: messages,
@@ -21,7 +22,7 @@ const requestArgs: RequestArg[] = [
         "max_tokens": 2000,
         "presence_penalty": 0
       }
-    } 
+    }
   },
   {
     api: "https://chatbot.theb.ai/api/chat-process",
@@ -40,15 +41,15 @@ const requestArgs: RequestArg[] = [
 
 /**
  * 给定文本和文档，返回文档列表，返回最相似的几个
- * @param queryText 
- * @param docs 
- * @param obj 
- * @returns 
+ * @param queryText
+ * @param docs
+ * @param obj
+ * @returns
  */
 export async function similaritySearch(queryText: string, docs: Document[], obj: { key: string }) {
   const storage = Meet.Global.storage = Meet.Global.storage || new LocalStorage(config.addonRef)
   await storage.lock.promise;
-  const embeddings = new OpenAIEmbeddings() as any
+  const embeddings = new ProviderEmbeddings() as any
   // 查找本地，为节省空间，只储存向量
   // 因为随着插件更新，解析出的PDF可能会有优化，因此再此进行提取MD5值作为验证
   // 但可以预测，本地JSON文件可能会越来越大
@@ -82,7 +83,7 @@ export async function similaritySearch(queryText: string, docs: Document[], obj:
 }
 
 
-class OpenAIEmbeddings {
+class ProviderEmbeddings {
   constructor() {
   }
   private async request(input: string[]) {
@@ -102,7 +103,7 @@ class OpenAIEmbeddings {
     var final_embeddings=[]
     for (let i = 0; i < input.length; i += split_len) {
 
-      const chunk = input.slice(i, i + split_len)
+      const chunk = input.slice(i, i + split_len)
       ztoolkit.log("input", chunk)
       try {
         res = await Zotero.HTTP.request(
@@ -114,10 +115,9 @@ class OpenAIEmbeddings {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${secretKey}`,
             },
-            body: JSON.stringify({
-              model: "text-embedding-ada-002",
-              input: chunk
-            }),
+            body: JSON.stringify(
+              { model: "text-embedding-ada-002", input: chunk }
+            ),
           }
         )
       } catch (error: any) {
@@ -133,10 +133,10 @@ class OpenAIEmbeddings {
             .show()
         }
       }
-      if (res?.response?.data) {
+      if (res?.response) {
         final_embeddings = final_embeddings.concat(res.response.data.map((i: any) => i.embedding))
       }
-    }
+    }
     return final_embeddings
   }
 
@@ -159,9 +159,9 @@ export async function getGPTResponse(requestText: string) {
 
 /**
  * 所有getGPTResponseTextByXXX参照此函数实现
- * gpt-3.5-turbo / gpt-4
- * @param requestText 
- * @returns 
+ * Supports OpenAI-compatible providers (OpenAI, MiniMax, etc.)
+ * @param requestText
+ * @returns
  */
 export async function getGPTResponseByOpenAI(requestText: string) {
   const views = Zotero.ZoteroGPT.views as Views
@@ -170,6 +170,8 @@ export async function getGPTResponseByOpenAI(requestText: string) {
   let api = Zotero.Prefs.get(`${config.addonRef}.api`) as string
   api = api.replace(/\/(?:v1)?\/?$/, "")
   const model = Zotero.Prefs.get(`${config.addonRef}.model`)
+  const provider = (Zotero.Prefs.get(`${config.addonRef}.provider`) as string) || "openai"
+  const preset = getProviderPreset(provider)
   views.messages.push({
     role: "user",
     content: requestText
@@ -213,7 +215,7 @@ export async function getGPTResponseByOpenAI(requestText: string) {
           model: model,
           messages: views.messages.slice(-chatNumber),
           stream: true,
-          temperature: Number(temperature)
+          temperature: preset.clampTemperature(Number(temperature))
         }),
         responseType: "text",
         requestObserver: (xmlhttp: XMLHttpRequest) => {
@@ -266,9 +268,9 @@ export async function getGPTResponseByOpenAI(requestText: string) {
 /**
  * 返回值要是纯文本
  * @param requestArg
- * @param requestText 
- * @param views 
- * @returns 
+ * @param requestText
+ * @param views
+ * @returns
  */
 export async function getGPTResponseBy(
   requestArg: RequestArg,
@@ -303,7 +305,7 @@ export async function getGPTResponseBy(
       headers: {
         "Content-Type": "application/json",
         ...requestArg.headers
-      }, 
+      },
       body,
       responseType: "text",
       requestObserver: (xmlhttp: XMLHttpRequest) => {

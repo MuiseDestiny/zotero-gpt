@@ -7,9 +7,10 @@ const help = `
 \`/help\` Show all commands.
 \`/clear\` Clear history conversation.
 \`/report\` Run this and copy the output content to give feedback to the developer.
-\`/secretKey sk-xxx\` Set GPT secret key. Generate it in https://platform.openai.com/account/api-keys.
-\`/api https://api.openai.com\` Set API. 
-\`/model gpt-4/gpt-3.5-turbo\` Set GPT model. For example, \`/model gpt-3.5-turbo\`.
+\`/provider openai/minimax\` Switch LLM provider. Auto-configures API URL and default model.
+\`/secretKey sk-xxx\` Set API secret key.
+\`/api https://api.openai.com\` Set API URL.
+\`/model gpt-4/gpt-3.5-turbo\` Set LLM model. For example, \`/model gpt-3.5-turbo\` or \`/model MiniMax-M2.7\`.
 \`/temperature 1.0\` Set GPT temperature. Controls the randomness and diversity of generated text, specified within a range of 0 to 1.
 \`/chatNumber 3\` Set the number of saved historical conversations.
 \`/relatedNumber 5\` Set the number of most relevant text. For example, the number of paragraphs referenced while using askPDF.
