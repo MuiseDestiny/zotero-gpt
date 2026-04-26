@@ -3,6 +3,7 @@ import Meet from "./Meet/api"
 import Utils from "./utils";
 import { Document } from "langchain/document";
 import { help, fontFamily, defaultTags, parseTag } from "./base"
+import { getProviderPreset, getProviderNames } from "./Meet/providers"
 const markdown = require("markdown-it")({
   breaks: true, // 将行结束符\n转换为 <br> 标签
   xhtmlOut: true, // 使用 /> 关闭标签，而不是 >
@@ -572,7 +573,24 @@ export default class Views {
             // window.setTimeout(() => {
             //   Zotero.launchURL("https://platform.openai.com/account/usage")
             // }, 1000)
-            return that.setText(`\`api\` ${Zotero.Prefs.get(`${config.addonRef}.api`)}\n\`secretKey\` ${secretKey.slice(0, 3) + "..." + secretKey.slice(-4)}\n\`model\` ${Zotero.Prefs.get(`${config.addonRef}.model`)}\n\`temperature\` ${Zotero.Prefs.get(`${config.addonRef}.temperature`)}`, true, false)
+            return that.setText(`\`provider\` ${Zotero.Prefs.get(`${config.addonRef}.provider`) || "openai"}\n\`api\` ${Zotero.Prefs.get(`${config.addonRef}.api`)}\n\`secretKey\` ${secretKey.slice(0, 3) + "..." + secretKey.slice(-4)}\n\`model\` ${Zotero.Prefs.get(`${config.addonRef}.model`)}\n\`temperature\` ${Zotero.Prefs.get(`${config.addonRef}.temperature`)}`, true, false)
+          } else if (key == "provider") {
+            const names = getProviderNames()
+            if (value?.length > 0) {
+              if (names.indexOf(value) < 0) {
+                return that.setText(`Invalid provider \`${value}\`. Available: ${names.map(n => `\`${n}\``).join(", ")}`, true, false)
+              }
+              const preset = getProviderPreset(value)
+              Zotero.Prefs.set(`${config.addonRef}.provider`, value)
+              Zotero.Prefs.set(`${config.addonRef}.api`, preset.apiBase)
+              Zotero.Prefs.set(`${config.addonRef}.model`, preset.defaultModel)
+              that.setText(`Switched to **${preset.name}** provider.\n\`api\` = ${preset.apiBase}\n\`model\` = ${preset.defaultModel}\nAvailable models: ${preset.models.join(", ")}`, true, false)
+            } else {
+              const current = (Zotero.Prefs.get(`${config.addonRef}.provider`) as string) || "openai"
+              that.setText(`provider = ${current}\nAvailable: ${names.join(", ")}`, true, false)
+            }
+            // @ts-ignore
+            this.value = ""
           } else if (["secretKey", "model", "api", "temperature", "deltaTime", "width", "tagsMore", "chatNumber", "relatedNumber"].indexOf(key) >= 0) {  
             if (value?.length > 0) {
               if (value == "default") {

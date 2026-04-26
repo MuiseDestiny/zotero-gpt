@@ -29,14 +29,14 @@ Welcome to share your command tag [here](https://github.com/MuiseDestiny/zotero-
 ## 🚀 Main Features
 Features about GPT:  
 - [x] 🔗 **Integrate with Zotero**: You can use the plugin to search and ask items in the library based on the selected text or the PDF file.
-- [x] 🧠 Use GPT to generate reply text: support `gpt-3.5-turbo` and `gpt-4`
+- [x] 🧠 Use GPT to generate reply text: support `gpt-3.5-turbo`, `gpt-4`, and [MiniMax](https://www.minimaxi.com/) models (`MiniMax-M2.7`, `MiniMax-M2.5`)
 - [x] 🏷️ [Command tags](https://github.com/MuiseDestiny/zotero-gpt#command-tags): **Click once** to accelerate your research.  
   - [x] 💬 Ask questions about current **PDF file** (full-text or selected text).
   - [x] 💬 Ask questions about **selected paper** (Abstract).
   - [x] 📝 **Summarize the selected paper** into several highly condensed sentences.
   - [x] 🔍 **Search items** in the library based on the selected text.
   - [x] ... ...
-- [x] ⚙️ **Advanced settings for GPT**: You can set the [api key](https://platform.openai.com/account/api-keys), [model name](https://platform.openai.com/docs/api-reference/chat/create#chat/create-model), [api url](https://platform.openai.com/docs/api-reference/chat/create), [temperature](https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature).
+- [x] ⚙️ **Advanced settings**: You can set the [api key](https://platform.openai.com/account/api-keys), [model name](https://platform.openai.com/docs/api-reference/chat/create#chat/create-model), [api url](https://platform.openai.com/docs/api-reference/chat/create), [temperature](https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature), and LLM provider.
 - [x] 📚 **Integrate with Better Notes**: You can directly open this plugin when using [Better Notes](https://github.com/windingwind/zotero-better-notes).
 
 Features about UI:
@@ -83,6 +83,28 @@ Click on the gear icon at the top right of the window. Click on `Install Add-on 
 ### [4] Set up the API key
 
 ![image](https://github.com/MuiseDestiny/zotero-gpt/assets/51939531/225c468a-acfc-43be-b5ac-cf6aaaa33e96)
+
+### Using MiniMax as LLM Provider
+
+[MiniMax](https://www.minimaxi.com/) offers powerful LLM models with an OpenAI-compatible API. To use MiniMax:
+
+1. Get your API key from the [MiniMax Platform](https://platform.minimaxi.com/)
+2. Open Zotero GPT and run:
+```
+/provider minimax
+/secretKey your-minimax-api-key
+```
+
+This automatically configures the API URL (`https://api.minimax.io`) and default model (`MiniMax-M2.7`).
+
+Available MiniMax models:
+- `MiniMax-M2.7` — Latest flagship model
+- `MiniMax-M2.5` — Balanced performance
+- `MiniMax-M2.5-highspeed` — Fast responses, 204K context
+
+To switch models: `/model MiniMax-M2.5-highspeed`
+
+To switch back to OpenAI: `/provider openai`
 
 ## Hi, Command Tag.
 > 👻 Follow the steps below, and you will gain a new understanding of command tags.
