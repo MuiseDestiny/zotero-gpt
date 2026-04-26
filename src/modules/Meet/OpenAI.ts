@@ -93,7 +93,10 @@ class ProviderEmbeddings {
     const secretKey = Zotero.Prefs.get(`${config.addonRef}.secretKey`)
     const split_len = Zotero.Prefs.get(`${config.addonRef}.embeddingBatchNum`)
     let res
-    const url = `${api}/v1/embeddings`
+    const provider = (Zotero.Prefs.get(`${config.addonRef}.provider`) as string) || "openai"
+    const preset = getProviderPreset(provider)
+    const embeddingsPath = preset.embeddingsPath ?? "/v1/embeddings"
+    const url = `${api}${embeddingsPath}`
     if (!secretKey) {
       new ztoolkit.ProgressWindow(url, { closeOtherProgressWindows: true })
         .createLine({ text: "Your secretKey is not configured.", type: "default" })
@@ -201,7 +204,8 @@ export async function getGPTResponseByOpenAI(requestText: string) {
     id: id
   })
   const chatNumber = Zotero.Prefs.get(`${config.addonRef}.chatNumber`) as number
-  const url = `${api}/v1/chat/completions`
+  const chatPath = preset.chatPath ?? "/v1/chat/completions"
+  const url = `${api}${chatPath}`
   try {
     await Zotero.HTTP.request(
       "POST",
