@@ -1,4 +1,4 @@
-# <img src="addon/chrome/content/icons/favicon.png" width="36" height="36" alt=""> Awesome GPT
+# <img src="addon/chrome/content/icons/favicon.png" width="32" height="32" alt="" align="absmiddle"> Awesome GPT
 
 [English README](README.en.md)
 
